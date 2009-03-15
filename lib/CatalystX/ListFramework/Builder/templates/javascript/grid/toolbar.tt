@@ -1,0 +1,46 @@
+    // this is the bar at the top of the grid
+
+    var toolbar = new Ext.Toolbar({
+        id: 'toolbar'
+        ,items: [
+            {
+                text: 'Clear Filters'
+                ,cls: 'x-btn-text-icon'
+                ,icon: '[% c.uri_for( c.controller('LFB::Static').action_for('static'), "bin_closed.png" ) %]'
+                // XXX private method to refresh
+                ,handler: function (){
+                    store.baseParams = {}; // clear search opts
+                    pagebar.doLoad(pagebar.cursor);
+                }
+            }
+            ,' ' ,{
+                text: 'Apply Filters'
+                ,cls: 'x-btn-text-icon'
+                ,icon: '[% c.uri_for( c.controller('LFB::Static').action_for('static'), "find.png" ) %]'
+                ,handler: function (){
+                    var params = {};
+                    var searchrow = grid.getStore().getAt(0).data;
+                    for (var key in searchrow) {
+                        if ((searchrow[key].search('click to ') != -1)
+                            || (searchrow[key] === '')) {
+                            // don't submit if still the default, or empty
+                            continue;
+                        }
+                        params['search.' + key] = searchrow[key];
+                    }
+                    store.baseParams = params;
+                    pagebar.doLoad(pagebar.cursor);
+                }
+            }
+            ,'->' ,{
+                text: 'Add New [% lf.main.title %]'
+                ,cls: 'x-btn-text-icon'
+                ,icon: '[% c.uri_for( c.controller('LFB::Static').action_for('static'), "add.png" ) %]'
+                ,handler: function(){
+                    // draw the window!
+                    var win = generate_win();
+                    win.show(this);
+                }
+            }
+        ]
+    });

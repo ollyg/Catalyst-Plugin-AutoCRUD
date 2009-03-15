@@ -1,0 +1,76 @@
+    // the column model has information about grid columns
+    // dataIndex maps the column to the specific data field in
+    // the data store
+
+    // we first process the main, ordinary cols (pk and others)
+    // the do the one_to_many cols, and then add a column with a delete button
+
+    var cm = new Ext.grid.ColumnModel([
+      [% FOREACH col IN lf.main.col_order %]
+        [% ',' IF lf.main.col_order.size > 1 AND NOT loop.first %]{
+          [% IF lf.main.cols.$col.is_fk %]
+            header:     '[% lf.main.cols.$col.heading %] (FK)'
+          [% ELSE %]
+            header:     '[% lf.main.cols.$col.heading %]'
+          [% END %]
+            ,dataIndex: '[% col %]'
+            ,editor:    new Ext.form.TextField({})
+            ,renderer: function (value,metadata,record,rowindex,colindex,store) {
+              [% IF lf.main.cols.$col.extjs_xtype == 'checkbox' %]
+                if (rowindex === 0) { return '' }
+                if (value == '1') {
+                  return '<img src="[% c.uri_for( c.controller('LFB::Static').action_for('static'), "bullet_green.png" ) %]" />';
+                }
+                else {
+                  return '<img src="[% c.uri_for( c.controller('LFB::Static').action_for('static'), "bullet_red.png" ) %]" />';
+                }
+              [% ELSE %]
+                return value;
+              [% END %]
+            }
+        }
+      [% END %]
+      [% FOREACH col IN lf.main.mfks.keys %]
+        ,{
+            header: '[% lf.main.mfks.item(col) %]'
+            ,dataIndex: 'lf-multi-column'
+            ,align: 'center'
+            ,sortable: false
+            ,menuDisabled: true
+            ,tooltip: 'Hover mouse over a cell<br />to show related data'
+            ,renderer: function (value,metadata,record,rowindex,colindex,store) {
+                if (rowindex === 0) { return '' }
+                else {
+                    metadata.css += 'half-grey';
+                    metadata.attr += 'ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
+                        + (record.get('[% col %]').join(',<br />') || '(none)') + '"';
+                    return '<img ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
+                        + (record.get('[% col %]').join(',<br />') || '(none)')
+                        + '" src="[% c.uri_for( c.controller('LFB::Static').action_for('static'), "magnifier.png" ) %]" />'
+                        + ' Show';
+                }
+            }
+        }
+      [% END %]
+        ,{
+            header: 'Delete'
+            ,width: 35
+            ,dataIndex: 'lf-delete-column'
+            ,align: 'left'
+            ,sortable: false
+            ,menuDisabled: true
+            ,renderer: function (value,metadata,record,rowindex,colindex,store) {
+                if (rowindex === 0) { return '' }
+                else {
+                    metadata.attr += 'ext:qtitle="Delete" ext:qtip="'
+                        + ' [% lf.main.pk %](' + record.get('[% lf.main.pk %]') + ')"';
+                    return '<img ext:qtitle="Delete" ext:qtip="'
+                        + ' [% lf.main.pk %](' + record.get('[% lf.main.pk %]') + ')"'
+                        + ' src="[% c.uri_for( c.controller('LFB::Static').action_for('static'), "bin_closed.png" ) %]" />';
+                }
+            }
+        }
+    ]);
+
+    // by default columns are sortable
+    cm.defaultSortable = true;

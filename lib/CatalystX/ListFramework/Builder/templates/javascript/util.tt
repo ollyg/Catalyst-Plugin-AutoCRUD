@@ -1,0 +1,19 @@
+    // toolkit for checkbox cols
+    var CheckTable = new Array();
+    [% FOREACH col IN lf.main.cols.keys %]
+      [% NEXT UNLESS lf.main.cols.$col.extjs_xtype == 'checkbox' %]
+      CheckTable['[% col %]'] = 1;
+    [% END %]
+    function isCheck (c) {
+        return !! CheckTable[c];
+    }
+
+    // toolkit for checking for foreign keys
+    var FKTable = new Array();
+    [% FOREACH col IN lf.main.cols.keys %]
+      [% NEXT UNLESS lf.main.cols.$col.is_fk OR lf.main.cols.$col.is_rr %]
+      FKTable['[% col %]'] = 1;
+    [% END %]
+    function isFK (c) {
+        return !! FKTable[c];
+    }

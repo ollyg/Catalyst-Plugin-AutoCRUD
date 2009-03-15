@@ -1,0 +1,68 @@
+    // this override allows the grid panel to resize with more rows, then
+    // start scrolling as it exceeds the length of the viewport (browser win)
+
+    // it's probably going to need some TLC, as what it does is very hacky :-(
+
+    Ext.override(Ext.grid.GridView, {
+        layout : function(){
+            if(!this.mainBody){
+                return; // not rendered
+            }
+            var g = this.grid;
+            var c = g.getGridEl();
+            var csize = c.getSize(true);
+            var vw = csize.width;
+    
+            if(vw < 20 || csize.height < 20){ // display: none?
+                return;
+            }
+    
+            if(g.autoHeight){
+                var bb = Ext.select('div.x-grid3-body').first().getBottom();
+                var bt = Ext.select('div.x-grid3-body').first().getTop();
+                var bh = (((bb - bt) > 0) ? (bb -bt) : bb);
+
+                if (bb > 20) {
+                    var vph = ((Ext.isIE) ? document.documentElement.clientHeight : window.innerHeight);
+                    var hdHeight = this.mainHd.getHeight();
+                    var bnr = document.getElementById('banner').scrollHeight;
+                    var hdr = document.getElementById('header').scrollHeight;
+                    var ftr = document.getElementById('footer').scrollHeight;
+                    var pad = 85; // padding between divs aka "fudge factor"
+
+                    var avail = vph - ftr - pad - hdHeight; // viewport height minus footer height
+
+                    if (bb > avail) {
+                        var vh = vph - bnr - hdr - ftr - pad; // space we have for the grid
+                        this.scroller.setSize(vw, vh - (2 * hdHeight));
+                        this.el.setSize(vw, vh - (1 * hdHeight));
+                    }
+                    else {
+                        var vh = bh + (2 * hdHeight);
+                        this.scroller.setSize(vw, vh);
+                        this.el.setSize(vw, vh - hdHeight);
+                    }
+                }
+            }else{
+                this.el.setSize(csize.width, csize.height);
+    
+                var hdHeight = this.mainHd.getHeight();
+                var vh = csize.height - (hdHeight);
+    
+                this.scroller.setSize(vw, vh);
+                if(this.innerHd){
+                    this.innerHd.style.width = (vw)+'px';
+                }
+            }
+            if(this.forceFit){
+                if(this.lastViewWidth != vw){
+                    this.fitColumns(false, false);
+                    this.lastViewWidth = vw;
+                }
+            }else {
+                this.autoExpand();
+                this.syncHeaderScroll();
+            }
+            this.onLayout(vw, vh);
+        }
+    });
