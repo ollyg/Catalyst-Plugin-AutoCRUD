@@ -3,6 +3,10 @@ package Catalyst::Model::DBIC::Metadata::Util;
 use strict;
 use warnings FATAL => 'all';
 
+use base 'Exporter';
+use vars qw(@EXPORT);
+@EXPORT = qw(_ism2m _rs2path _2title _moniker2model);
+
 # is this col really part of a many to many?
 # test checks for related source having two belongs_to rels *only*,
 # and one of them refers to ourselves, and at most one other col (id pk)

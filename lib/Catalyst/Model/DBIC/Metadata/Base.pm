@@ -4,8 +4,7 @@ use base qw(Catalyst::Model Class::Data::Accessor);
 use strict;
 use warnings FATAL => 'all';
 
-use NEXT;
-use Scalar::Util qw(weaken);
+use Catalyst::Model::DBIC::Metadata::Util;
 
 __PACKAGE__->mk_classdata($_) for qw(
     schemas
@@ -14,8 +13,8 @@ __PACKAGE__->mk_classdata($_) for qw(
 
 sub _load_schemas {
     my ($self) = @_;
-    $c->log->debug("_load_schemas") if $c->debug;
     my $c = $self->context;
+    $c->log->debug("_load_schemas") if $c->debug;
     my %schemas;
     
     # find models which represent schemas but not sources
@@ -57,8 +56,8 @@ sub _load_schemas {
 
 sub _load_sources {
     my ($self, $schema) = @_;
-    $c->log->debug("_load_sources") if $c->debug;
     my $c = $self->context;
+    $c->log->debug("_load_sources") if $c->debug;
 
     foreach my $moniker ($c->model( $schema->{model} )->schema->sources) {
         $c->log->debug("...adding source [$moniker]") if $c->debug;
@@ -72,11 +71,13 @@ sub _load_sources {
     }
 }
 
-sub _add_source_metadata {
-    my ($self, $schema) = @_;
-    $c->log->debug("_load_sources: [$schema]") if $c->debug;
+sub _get_source_metadata {
+    my ($self, $source) = @_;
+    my $context = $self->context;
+    my $name = $source->source_name; # XXX
+
+    $context->log->debug("_get_source_metadata: [$name]") if $context->debug;
     my $table = {};
-    my $source = $self->schema->source($moniker);
 
     # column and relation caches for this run through
     my (%mfks, %sfks, %fks);
@@ -85,7 +86,7 @@ sub _add_source_metadata {
     my @rels = $source->relationships;
     foreach my $r (@rels) {
         my $type = $source->relationship_info($r)->{attrs}->{accessor};
-        $ENV{LFB_DEBUG} && print STDERR "\trelation $r of type $type\n";
+        $context->log->debug("...relation $r of type $type") if $context->debug;
 
         if ($type eq 'multi') {
             $mfks{$r} = $source->relationship_info($r);
@@ -108,89 +109,92 @@ sub _add_source_metadata {
             eval "use Lingua::EN::Inflect::Number";
             $target_source = Lingua::EN::Inflect::Number::to_PL($target_source)
                 if not $@;
-            $table->mfks->set($t, _2title( $target_source ));
-            $table->m2ms->set($t, $target);
+            $table->{mfks}->{$t} = _2title($target_source);
+            $table->{m2ms}->{$t} = $target;
         }
         else {
-            $table->mfks->set($t, _2title( $t ));
+            $table->{mfks}->{$t} = _2title($t);
         }
     }
 
-    $table->pks->push( $source->primary_columns );
-    $table->col_list->push(
-        $table->pks->elements,                                            # primary keys
-        (grep {not(exists $fks{$_} or $table->pks->contains($_))} @cols), # ordinary cols
-    );
+    my %pk_lkp = map {($_ => 1)} $source->primary_columns;
+    $table->{pks} = [keys %pk_lkp];
 
-    # create column stubs in the table
+    $table->{col_list} = [
+        $source->primary_columns,                                # primary keys
+        (grep {!exists $fks{$_} and !exists $pk_lkp{$_}} @cols), # ordinary cols
+    ];
+
+    # create column stubs in the table, helps with debugging
     foreach my $c (@cols, keys %sfks) {
-        $table->columns->set($c,
-            CatalystX::ListFramework::Builder::Library::DBIC::Column->new);
-        $ENV{LFB_DEBUG} && print STDERR "\tcolumn $c created\n";
+        $table->{columns}->{$c} = {};
+        $context->log->debug("...column $c created") if $context->debug;
     }
 
     # consider table columns
     foreach my $c (@cols) {
         my $info = $source->column_info($c) or next;
-        my $column = $table->columns->get($c);
-        $ENV{LFB_DEBUG} && print STDERR "\t\tcolumn $c being configured\n";
+        my $column = $table->{columns}->{$c};
+        $context->log->debug("...column $c being configured") if $context->debug;
 
-        $column->heading( _2title($c) );
-        $column->editable( ($info->{is_auto_increment} ? 0 : 1) );
-        $column->required( ((exists $info->{is_nullable}
-                                and $info->{is_nullable} == 0) ? 1 : 0) );
+        $column->{heading}  = _2title($c);
+        $column->{editable} = ($info->{is_auto_increment} ? 0 : 1);
+        $column->{required} = ((exists $info->{is_nullable}
+                                and $info->{is_nullable} == 0) ? 1 : 0);
 
-        $column->extjs_xtype( _xtype_for($info->{data_type}) )
-            if exists $info->{data_type};
-        $column->default_value( $info->{default_value} )
-            if ($info->{default_value} and $column->editable);
-
-        $table->columns->set($c, $column);
+        # TODO
+        #$column->extjs_xtype( _xtype_for($info->{data_type}) )
+        #    if exists $info->{data_type};
+        $column->{default_value} = $info->{default_value}
+            if ($info->{default_value} and $column->{editable});
     }
 
     # extra data for foreign key columns
     foreach my $c (keys %fks, keys %sfks) {
-        $ENV{LFB_DEBUG} && print STDERR "\t\tfurther processing column $c\n";
-        my $column = $table->columns->get($c);
+        $context->log->debug("......further processing column$c") if $context->debug;
+        my $column = $table->{columns}->{$c};
 
         # link to other entry in $self->tables()
-        $column->fk_moniker( $source->related_source($c)->source_name );
+        $column->{fk_moniker} = $source->related_source($c)->source_name;
 
         # override the heading for this col to be the foreign table name
-        $column->heading( _2title( _rs2path($source->related_source($c)) ) );
+        $column->{heading} = _2title( _rs2path($source->related_source($c)) );
 
         # we want to see relation columns unless they're part of our PK
         # (which has already been added to the col_order list)
-        $table->col_list->push($c) if not $table->pks->contains($c);
+        push @{$table->{col_list}}, $c if !exists $pk_lkp{$c};
 
         if (exists $sfks{$c}) {
-        # has_one or might_have cols are reverse relations, so pass hint
-            $column->is_rr(1);
+            # has_one or might_have cols are reverse relations, so pass hint
+            $column->{is_rr} = 1;
         }
         else {
-        # otherwise mark as a foreign key
-            $column->is_fk(1);
+            # otherwise mark as a foreign key
+            $column->{is_fk} = 1;
         }
 
         # relations where the foreign table is the main table are not editable
         # because the template/extjs will complete the field automatically
         if ($source->related_source($c)->source_name eq $self->source->source_name) {
-            $column->editable(0);
+            $column->{editable} = 0;
         }
         else {
-        # otherwise it's editable (and this sub will be run for related table)
-            $column->editable(1);
-            $self->_related_sources->push( $source->related_source($c)->source_name );
+            # otherwise it's editable (and this sub will be run for related table)
+            $column->{editable} = 1;
+            # XXX $self->_related_sources->push( $source->related_source($c)->source_name );
         }
     }
 
-    $table->title( _2title(_rs2path($source)) );
-    $self->tabs->push($moniker);
-    $self->tables->set($moniker, $table);
+    $table->{title} = _2title(_rs2path($source));
+    # XXX push @{$self->{tabs}}, $moniker;
 }
 
-# shamelessly taken from Catalyst::Component::ACCEPT_CONTEXT
+
+# shamelessly taken with thanks from Catalyst::Component::ACCEPT_CONTEXT
 # it's not used to change the object state, merely to grok components
+
+use NEXT;
+use Scalar::Util qw(weaken);
 
 sub context { return shift->{context} }
 
