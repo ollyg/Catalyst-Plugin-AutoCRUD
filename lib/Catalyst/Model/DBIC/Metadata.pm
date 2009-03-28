@@ -1,90 +1,51 @@
-package CatalystX::ListFramework::Builder::Model::Metadata;
+package Catalyst::Model::DBIC::Metadata;
+use base 'Catalyst::Model::DBIC::Metadata::Base';
 
-use Moose;
-use CatalystX::ListFramework::Builder::Library::Catalyst::Schema;
-use CatalystX::ListFramework::Builder::Library::Type::Primitives;
-use CatalystX::ListFramework::Builder::Library::Util;
+use strict;
+use warnings FATAL => 'all';
 
-# should be instantiated with any DBIC models already set up, because
-# we hooked in -after- setup_components. if that isn't the case, either need
-# to let users know to put this plugin last, via the docs, or work other
-# magic to make sure we are loaded last of all.
+use Carp;
 
-has_boxed (
-    hash  => [qw/ schemata schema_for_path dbtitle_for_path /],
-);
+sub list_schemas {
+    my ($self) = @_;
+    __PACKAGE__->schemas or $self->_load_schemas;
+    my $schemas = __PACKAGE__->schemas;
 
-sub COMPONENT {
-    my ($self, $c, $params) = @_;
-    my %schemata;
-    
-    # find models which represent schemata but not sources
-    MODEL:
-    foreach my $m ($c->models) {
-        print STDERR "candidate model $m\n";
-        my $model = $c->model($m);
-        next unless eval { $model->isa('Catalyst::Model::DBIC::Schema') };
-        foreach my $s (keys %schemata) {
-            if (eval { $model->isa($s) }) {
-                delete $schemata{$s};
-            }
-            elsif (eval { $c->model($s)->isa($m) }) {
-                next MODEL;
-            }
-        }
-        $schemata{$m} = 1;
-    }
-
-    foreach my $s (keys %schemata) {
-        print STDERR "inspecting model $s\n";
-        my $name = $c->model($s)->storage->dbh->{Name};
-
-        if ($name =~ m/\W/) {
-            # SQLite will return a file name as the "database name"
-            $name = lc [ reverse split '::', $s ]->[0];            
-        }
-
-        my $new_schema = CatalystX::ListFramework::Builder::Library::Catalyst::Schema->new(
-            path  => $name,
-            title => _2title($name),
-            model => $s,
-        );
-
-        $new_schema->add_all_sources_metadata($c);
-        $self->schemata->set($s, $new_schema);
-
-        $self->schema_for_path->set($name, $s);
-        $self->dbtitle_for_path->set($name, _2title($name));
-    }
-
-    return $self;
+    return {map {( $schemas->{$_}->{title} => $schemas->{$_}->{path} )} keys %$schemas};
 }
 
-# set stash to contain reference to the relevant source metadata
-sub process {
-    my ($self, $c) = @_;
+sub list_sources {
+    my ($self, $schema_path) = @_;
+    __PACKAGE__->schemas or $self->_load_schemas;
 
-    # only one db anyway? pretend the user selected that
-    $c->stash->{db_path} = [$self->schema_for_path->keys]->[0]
-        if $self->schema_for_path->count == 1;
+    my $model = __PACKAGE__->schema_for_path->{$schema_path}
+        or croak "failed to find schema mapped by [$schema_path]";
+    my $schema = __PACKAGE__->schemas->{$model}
+        or croak "failed to load schema [$model]";
 
-    # no db specified, or unknown db
-    return if !defined $c->stash->{db_path}
-        or not $self->schema_for_path->exists( $c->stash->{db_path} );
+    exists $schema->{sources} or $self->_load_sources($schema);
+    my $sources = $schema->{sources};
 
-    $c->stash->{db} = $self->schema_for_path->get( $c->stash->{db_path} );
-    my $schema = $self->schemata->get( $c->stash->{db} );
-
-    # no table specified, or unknown table
-    return if !defined $c->stash->{table_path}
-        or not $schema->moniker_for_path->exists( $c->stash->{table_path} );
-
-    $c->stash->{table}
-        = $schema->moniker_for_path->get( $c->stash->{table_path} );
-
-    return $self;
+    return {map {( $sources->{$_}->{title} => $sources->{$_}->{path} )} keys %$sources};
 }
 
-no Moose;
+sub get_source {
+    my ($self, $schema_path, $source_path) = @_;
+    __PACKAGE__->schemas or $self->_load_schemas;
+
+    my $model = __PACKAGE__->schema_for_path->{$schema_path}
+        or croak "failed to find schema mapped by [$schema_path]";
+    my $schema = __PACKAGE__->schemas->{$model}
+        or croak "failed to load schema [$model]";
+    exists $schema->{sources} or $self->_load_sources($schema);
+
+    my $moniker = $schema->{moniker_for_path}->{$source_path}
+        or croak "failed to find source mapped by [$source_path]";
+    my $source = $schema->{sources}->{$moniker}
+        or croak "failed to laod source [$moniker]";
+
+    return $source;
+}
+
 1;
 __END__

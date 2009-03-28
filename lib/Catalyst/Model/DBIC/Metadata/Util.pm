@@ -1,11 +1,7 @@
-package CatalystX::ListFramework::Builder::Library::Util;
+package Catalyst::Model::DBIC::Metadata::Util;
 
-use Moose;
-use Moose::Exporter;
-
-Moose::Exporter->setup_import_methods(
-    as_is => [qw/ _ism2m _rs2path _2title /],
-);
+use strict;
+use warnings FATAL => 'all';
 
 # is this col really part of a many to many?
 # test checks for related source having two belongs_to rels *only*,
@@ -50,7 +46,20 @@ sub _2title {
     return join ' ', map ucfirst, split /[\W_]+/, lc shift;
 }
 
-no Moose;
+# find catalyst model which is serving this DBIC result source
+sub _moniker2model {
+    my ($c, $moniker, $dbmodel) = @_;
+
+    foreach my $m ($c->models) {
+        my $model = $c->model($m);
+        my $test = eval { $model->result_source->source_name };
+        next if !defined $test;
+
+        return $m if $test eq $moniker and $m =~ m/^${dbmodel}::/;
+    }
+    return undef;
+}
+
 1;
 __END__
 

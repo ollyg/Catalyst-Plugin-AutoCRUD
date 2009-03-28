@@ -1,42 +1,81 @@
-package CatalystX::ListFramework::Builder::Library::DBIC::Source;
+package Catalyst::Model::DBIC::Metadata::Base;
+use base qw(Catalyst::Model Class::Data::Accessor);
 
-use Moose;
-use CatalystX::ListFramework::Builder::Library::Type::Primitives;
-use CatalystX::ListFramework::Builder::Library::Type::ExtJS;
-use CatalystX::ListFramework::Builder::Library::DBIC::Table;
-use CatalystX::ListFramework::Builder::Library::DBIC::Column;
-use CatalystX::ListFramework::Builder::Library::Util;
+use strict;
+use warnings FATAL => 'all';
 
-has_boxed (
-    hash  => [qw/ tables /],
-    array => [qw/ tabs _related_sources /],
+use NEXT;
+use Scalar::Util qw(weaken);
+
+__PACKAGE__->mk_classdata($_) for qw(
+    schemas
+    schema_for_path
 );
 
-has 'source' => (
-    is  => 'ro',
-    isa => 'DBIx::Class::ResultSource',
-    required => 1,
-);
+sub _load_schemas {
+    my ($self) = @_;
+    $c->log->debug("_load_schemas") if $c->debug;
+    my $c = $self->context;
+    my %schemas;
+    
+    # find models which represent schemas but not sources
+    MODEL:
+    foreach my $m ($c->models) {
+        $c->log->debug("...candidate model [$m]") if $c->debug;
+        my $model = $c->model($m);
+        next unless eval { $model->isa('Catalyst::Model::DBIC::Schema') };
+        foreach my $s (keys %schemas) {
+            if (eval { $model->isa($s) }) {
+                delete $schemas{$s};
+            }
+            elsif (eval { $c->model($s)->isa($m) }) {
+                next MODEL;
+            }
+        }
+        $schemas{$m} = 1;
+    }
 
-sub schema {
-    return $_[0]->source->schema;
+    foreach my $s (keys %schemas) {
+        $c->log->debug("...inspecting model [$s]") if $c->debug;
+        my $name = $c->model($s)->storage->dbh->{Name};
+
+        if ($name =~ m/\W/) {
+            # SQLite will return a file name as the "database name"
+            $name = lc [ reverse split '::', $s ]->[0];            
+        }
+
+        $schemas{$s} = {
+            path  => $name,
+            title => _2title($name),
+            model => $s,
+        };
+    }
+
+    __PACKAGE__->schemas(\%schemas);
+    __PACKAGE__->schema_for_path(map {($schemas{$_}->{path} => $schemas{$_}->{model})} keys %schemas);
 }
 
-sub main_table {
-    my $self = shift;
-    return $self->tables->get( $self->source->source_name );
+sub _load_sources {
+    my ($self, $schema) = @_;
+    $c->log->debug("_load_sources") if $c->debug;
+    my $c = $self->context;
+
+    foreach my $moniker ($c->model( $schema->{model} )->schema->sources) {
+        $c->log->debug("...adding source [$moniker]") if $c->debug;
+        my $model = _moniker2model($c, $moniker, $schema->{model}); # find source model
+        my $source = $c->model($model)->result_source; # DBIC ResultSource
+        my $path = _rs2path($source);
+
+        # $self->title_for_path->set($path, _2title($path));
+        $schema->{moniker_for_path}->{$path} = $moniker;
+        $schema->{sources}->{$moniker} = _get_source_metadata($source);
+    }
 }
 
-sub BUILD {
-    my ($self, $params) = @_;
-    $self->_build_table_info( $self->source->source_name );
-    $self->_build_table_info( $_ ) for $self->_related_sources->elements;
-}
-
-sub _build_table_info {
-    my ($self, $moniker) = @_;
-    $ENV{LFB_DEBUG} && print STDERR "table for $moniker\n";
-    my $table = CatalystX::ListFramework::Builder::Library::DBIC::Table->new;
+sub _add_source_metadata {
+    my ($self, $schema) = @_;
+    $c->log->debug("_load_sources: [$schema]") if $c->debug;
+    my $table = {};
     my $source = $self->schema->source($moniker);
 
     # column and relation caches for this run through
@@ -150,6 +189,29 @@ sub _build_table_info {
     $self->tables->set($moniker, $table);
 }
 
-no Moose;
+# shamelessly taken from Catalyst::Component::ACCEPT_CONTEXT
+# it's not used to change the object state, merely to grok components
+
+sub context { return shift->{context} }
+
+sub ACCEPT_CONTEXT {
+    my $self    = shift;
+    my $context = shift;
+
+    $self->{context} = $context;
+    weaken($self->{context});
+    
+    return $self->NEXT::ACCEPT_CONTEXT($context, @_) || $self;
+}
+
+sub COMPONENT {
+    my $class = shift;
+    my $app   = shift;
+    my $args  = shift;
+    $args->{context} = $app;
+    weaken($args->{context}) if ref $args->{context};
+    return $class->NEXT::COMPONENT($app, $args, @_);
+}
+
 1;
 __END__
