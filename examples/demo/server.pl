@@ -16,12 +16,11 @@ package DemoApp;
     use Catalyst qw/-Debug
                     ConfigLoader
                     Static::Simple
-                    +CatalystX::ListFramework::Builder/;
+                    AutoCRUD/;
     DemoApp->config(
         root => "$FindBin::Bin/root",
-#        extjs2 => '/static/extjs-2',
         'Plugin::ConfigLoader' => { file => "$FindBin::Bin/demo.conf" },
-        'Controller::LFB::Root' => { action => { base => { PathPart => 'lfb' } } },
+# FIXME        'Controller::LFB::Root' => { action => { base => { PathPart => 'lfb' } } },
     );
     DemoApp->setup();
 package main;
@@ -78,7 +77,7 @@ DemoApp->run( $port, $host, {
 
 =head1 NAME
 
-server.pl - Copy of the Catalyst Testserver using LFB
+server.pl - Copy of the Catalyst Testserver using AutoCRUD
 
 =head1 SYNOPSIS
 

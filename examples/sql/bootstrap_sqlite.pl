@@ -7,7 +7,7 @@
 use DBI;
 use Data::Dumper;
 
-my $dbfile = "__listframework_testapp.sqlite";
+my $dbfile = "__autocrud_testapp.sqlite";
 
 if (-e $dbfile) { unlink $dbfile or die "Failed to unlink $dbfile: $!"; }
 
