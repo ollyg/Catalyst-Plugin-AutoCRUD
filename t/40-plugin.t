@@ -24,7 +24,7 @@ is($mech->ct, 'text/html', 'Hello World page content type');
 $mech->content_contains('Hello, World!', 'Hello World (View TT) page content');
 
 # can still use AutoCRUD JSON View
-$mech->get_ok('/dbic/album/dumpmeta', 'AJAX (View JSON) also works');
+$mech->get_ok('/site/default/schema/dbic/source/album/dumpmeta', 'AJAX (View JSON) also works');
 is( $mech->ct, 'application/json', 'Metadata content type' );
 # $mech->content_contains('"model":"AutoCRUD::DBIC::Album","table_info":', 'AJAX data content');
 

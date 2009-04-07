@@ -12,7 +12,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the artist table
-$mech->get_ok( '/dbic/artist/dumpmeta', 'Get artist autocrud metadata' );
+$mech->get_ok( '/site/default/schema/dbic/source/artist/dumpmeta', 'Get artist autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );

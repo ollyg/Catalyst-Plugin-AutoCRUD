@@ -11,7 +11,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppM2M" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the album table
-$mech->get_ok( '/dbic/album/dumpmeta', 'Get album autocrud metadata' );
+$mech->get_ok( '/site/default/schema/dbic/source/album/dumpmeta', 'Get album autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );

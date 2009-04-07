@@ -81,7 +81,7 @@ my $default_artist_page = {
     ]
 };
 
-$mech->ajax_ok( '/dbic/album/list', {}, $default_album_page, 'album no args' );
-$mech->ajax_ok( '/dbic/artist/list', {}, $default_artist_page, 'artist no args' );
+$mech->ajax_ok( '/site/default/schema/dbic/source/album/list', {}, $default_album_page, 'album no args' );
+$mech->ajax_ok( '/site/default/schema/dbic/source/artist/list', {}, $default_artist_page, 'artist no args' );
 
 __END__

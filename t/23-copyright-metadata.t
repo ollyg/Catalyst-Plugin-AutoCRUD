@@ -12,7 +12,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the copyright table
-$mech->get_ok( '/dbic/copyright/dumpmeta', 'Get copyright autocrud metadata' );
+$mech->get_ok( '/site/default/schema/dbic/source/copyright/dumpmeta', 'Get copyright autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );
