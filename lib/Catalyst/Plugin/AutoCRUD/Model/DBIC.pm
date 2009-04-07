@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::Model::DBIC;
+package Catalyst::Plugin::AutoCRUD::Model::DBIC;
 
 use strict;
 use warnings FATAL => 'all';

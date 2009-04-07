@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::Controller::AJAX;
+package Catalyst::Plugin::AutoCRUD::Controller::AJAX;
 
 use strict;
 use warnings FATAL => 'all';
@@ -59,7 +59,7 @@ sub _sfy {
 
 sub base : Chained('/lfb/root/ajax') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
-    $c->stash->{current_view} = 'LFB::JSON';
+    $c->stash->{current_view} = 'AutoCRUD::JSON';
 }
 
 sub end : ActionClass('RenderView') {}

@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::Controller::Root;
+package Catalyst::Plugin::AutoCRUD::Controller::Root;
 
 use strict;
 use warnings FATAL => 'all';
@@ -8,9 +8,9 @@ use base 'Catalyst::Controller';
 sub base : Chained PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
 
-    $c->stash->{current_view} = 'LFB::TT';
-    $c->stash->{version} = 'LFB v'
-        . $CatalystX::ListFramework::Builder::VERSION;
+    $c->stash->{current_view} = 'AutoCRUD::TT';
+    $c->stash->{version} = 'CPAC v'
+        . $Catalyst::Plugin::AutoCRUD::VERSION;
 }
 
 sub db_picker : Chained('base') PathPart('') Args(0) {
@@ -32,7 +32,7 @@ sub do_meta : Private {
     my ($self, $c, $table) = @_;
     $c->stash->{table} = $table;
 
-    $c->forward('LFB::Metadata');
+    $c->forward('AutoCRUD::Metadata');
     $c->detach('err_message') if !defined $c->stash->{lf}->{model};
 }
 
@@ -50,7 +50,7 @@ sub ajax : Chained('db') PathPart('') CaptureArgs(1) {
 
 sub err_message : Private {
     my ($self, $c) = @_;
-    $c->forward('LFB::Metadata') if !defined $c->stash->{lf}->{db2path};;
+    $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{lf}->{db2path};;
     $c->stash->{template} = 'tables.tt';
 }
 

@@ -1,4 +1,4 @@
-<h3>Welcome to LFB, an automagic web interface for databases</h3>
+<h3>Welcome to AutoCRUD, an automagic web interface for databases</h3>
 <br />
 
 [% IF NOT lf.exists('db2path') %]
@@ -14,7 +14,7 @@
         <ul>
         [% FOREACH t IN lf.table2path.keys.sort %]
             <li>
-            <a href="[% c.uri_for( c.controller('LFB::Root').action_for('db_picker'), db, lf.table2path.item(t) ) %]">[% t %]</a>
+            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('db_picker'), db, lf.table2path.item(t) ) %]">[% t %]</a>
             </li>
         [% END %]
         </ul>
@@ -22,7 +22,7 @@
 
         [% IF lf.db2path.keys.size > 1 %]
             <br />
-            <p>Return <a href="[% c.uri_for( c.controller('LFB::Root').action_for('db_picker') ) %]">Home</a> to select another database.</p>
+            <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('db_picker') ) %]">Home</a> to select another database.</p>
         [% END %]
 
     [% ELSE %]
@@ -33,7 +33,7 @@
         <ul>
         [% FOREACH d IN lf.db2path.keys.sort %]
             <li>
-            <a href="[% c.uri_for( c.controller('LFB::Root').action_for('db_picker'), lf.db2path.item(d) ) %]">[% d %]</a>
+            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('db_picker'), lf.db2path.item(d) ) %]">[% d %]</a>
             </li>
         [% END %]
         </ul>

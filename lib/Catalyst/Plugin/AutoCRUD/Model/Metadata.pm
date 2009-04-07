@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::Model::Metadata;
+package Catalyst::Plugin::AutoCRUD::Model::Metadata;
 
 use strict;
 use warnings FATAL => 'all';

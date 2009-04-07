@@ -6,7 +6,7 @@
             {
                 text: 'Clear Filters'
                 ,cls: 'x-btn-text-icon'
-                ,icon: '[% c.uri_for( c.controller('LFB::Static').action_for('static'), "bin_closed.png" ) %]'
+                ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bin_closed.png" ) %]'
                 // XXX private method to refresh
                 ,handler: function (){
                     store.baseParams = {}; // clear search opts
@@ -16,7 +16,7 @@
             ,' ' ,{
                 text: 'Apply Filters'
                 ,cls: 'x-btn-text-icon'
-                ,icon: '[% c.uri_for( c.controller('LFB::Static').action_for('static'), "find.png" ) %]'
+                ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "find.png" ) %]'
                 ,handler: function (){
                     var params = {};
                     var searchrow = grid.getStore().getAt(0).data;
@@ -35,7 +35,7 @@
             ,'->' ,{
                 text: 'Add New [% lf.main.title %]'
                 ,cls: 'x-btn-text-icon'
-                ,icon: '[% c.uri_for( c.controller('LFB::Static').action_for('static'), "add.png" ) %]'
+                ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "add.png" ) %]'
                 ,handler: function(){
                     // draw the window!
                     var win = generate_win();

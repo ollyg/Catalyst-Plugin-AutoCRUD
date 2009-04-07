@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::Controller::Static;
+package Catalyst::Plugin::AutoCRUD::Controller::Static;
 
 use strict;
 use warnings FATAL => 'all';

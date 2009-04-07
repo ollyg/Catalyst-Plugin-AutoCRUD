@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::View::TT;
+package Catalyst::Plugin::AutoCRUD::View::TT;
 
 use strict;
 use warnings FATAL => 'all';
@@ -34,8 +34,8 @@ sub process {
     # default_view, meaning $c->view ends here by mistake
 
     if (!exists $c->{stash}->{current_view}) {
-        my @views = grep {$_ !~ m/^LFB::/} $c->views;
-        scalar @views || die "View::LFB::TT called, but not by LFB.\n";
+        my @views = grep {$_ !~ m/^AutoCRUD::/} $c->views;
+        scalar @views || die "View::AutoCRUD::TT called, but not by CPAC.\n";
         $c->forward( $c->view( $views[0] ) );
     }
     else {

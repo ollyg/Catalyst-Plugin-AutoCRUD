@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder::View::JSON;
+package Catalyst::Plugin::AutoCRUD::View::JSON;
 
 
 use strict;

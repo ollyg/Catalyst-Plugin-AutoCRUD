@@ -61,7 +61,7 @@
                     ,pageSize: 5
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore({
-                        url: '[% c.uri_for( c.controller('LFB::Root').action_for('db_picker'), db, info.path, "list_stringified" ) %]'
+                        url: '[% c.uri_for( c.controller('AutoCRUD::Root').action_for('db_picker'), db, info.path, "list_stringified" ) %]'
                         ,root: 'rows' ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]
                         ,listeners: {

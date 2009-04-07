@@ -1,4 +1,4 @@
-package CatalystX::ListFramework::Builder;
+package Catalyst::Plugin::AutoCRUD;
 
 use strict;
 use warnings FATAL => 'all';
@@ -13,7 +13,7 @@ sub setup_components {
     my $class = shift;
     $class->next::method(@_);
 
-    # these are the boilerplate Catalyst components for ListFramework
+    # these are the boilerplate Catalyst components for AutoCRUD
     my @packages = qw(
         Controller::Root
         Controller::Static
@@ -24,9 +24,9 @@ sub setup_components {
     );
 
     # will auto-load other models, so this one is not -required-
-    if (exists $class->config->{'Model::LFB::DBIC'}) {
+    if (exists $class->config->{'Model::AutoCRUD::DBIC'}) {
         push @packages, 'Model::DBIC';
-        my $p = 'Model::LFB::DBIC';
+        my $p = 'Model::AutoCRUD::DBIC';
 
         # on the fly schema engineering
         if (!exists $class->config->{$p}->{schema_class}) {
@@ -35,24 +35,24 @@ sub setup_components {
                 if eval "$DBIx::Class::Schema::Loader::VERSION" <= 0.04005;
 
             DBIx::Class::Schema::Loader::make_schema_at(
-                'LFB::Loader::Schema', {},
+                'AutoCRUD::Loader::Schema', {},
                 $class->config->{$p}->{connect_info},
             );
 
             eval q{
-                package LFB::Loader::Schema;
+                package AutoCRUD::Loader::Schema;
                 use base 'DBIx::Class::Schema';
-                LFB::Loader::Schema->load_classes();
+                AutoCRUD::Loader::Schema->load_classes();
                 1;
             };
-            $INC{'LFB/Loader/Schema.pm'} = 'loaded';
+            $INC{'AutoCRUD/Loader/Schema.pm'} = 'loaded';
 
-            $class->config->{$p}->{schema_class} = 'LFB::Loader::Schema';
+            $class->config->{$p}->{schema_class} = 'AutoCRUD::Loader::Schema';
         }
     }
 
     foreach my $orig (@packages) {
-        (my $p = $orig) =~ s/::/::LFB::/;
+        (my $p = $orig) =~ s/::/::AutoCRUD::/;
         my $comp = "${class}::${p}";
 
         # require will shortcircuit and return true if the component is
@@ -62,7 +62,7 @@ sub setup_components {
             # make a component on the fly in the App namespace
             eval qq(
                 package $comp;
-                use base qw/CatalystX::ListFramework::Builder::${orig}/;
+                use base qw/Catalyst::Plugin::AutoCRUD::${orig}/;
                 1;
             );
             die $@ if $@;
