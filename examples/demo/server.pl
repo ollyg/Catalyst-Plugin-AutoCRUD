@@ -20,7 +20,6 @@ package DemoApp;
     DemoApp->config(
         root => "$FindBin::Bin/root",
         'Plugin::ConfigLoader' => { file => "$FindBin::Bin/demo.conf" },
-# FIXME        'Controller::LFB::Root' => { action => { base => { PathPart => 'lfb' } } },
     );
     DemoApp->setup();
 package main;

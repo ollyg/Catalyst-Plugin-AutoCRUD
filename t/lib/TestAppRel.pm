@@ -9,7 +9,7 @@ use Class::Data::Inheritable;
 
 __PACKAGE__->mk_classdata('__dbfile');
 
-use Catalyst qw(AutoCRUD);
+use Catalyst qw(-Debug AutoCRUD);
 
 my $dbfile = File::Temp->new( UNLINK => 1, EXLOCK => 0);
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile",'','');
@@ -27,13 +27,13 @@ $dbh->disconnect;
 __PACKAGE__->__dbfile($dbfile);
 
 __PACKAGE__->config(
-    extjs2 => '/javascript/extjs-2',
+    'Catalyst::Plugin::AutoCRUD' => {
+        extjs2 => '/javascript/extjs-2',
+        basepath => 'relocate',
+    },
     'Model::AutoCRUD::DBIC' => {
         schema_class => 'TestApp::Schema',
         connect_info => ["dbi:SQLite:dbname=$dbfile", '', ''],
-    },
-    'Controller::AutoCRUD::Root' => {
-        action => { base => { PathPart => 'relocate' } },
     },
 );
    

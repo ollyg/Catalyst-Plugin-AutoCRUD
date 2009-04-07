@@ -8,6 +8,7 @@ use Devel::InnerPackage qw/list_packages/;
 
 our $VERSION = '0.42';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
+our $this_package = __PACKAGE__; # so it can be used in hash keys
 
 sub setup_components {
     my $class = shift;
@@ -51,6 +52,14 @@ sub setup_components {
         }
     }
 
+    # bodge the config for chained PathPart so the user can use our basepath
+    # shortcut in their config, which is less verbose than Cat's alternative
+    if (exists $class->config->{$this_package}
+        and exists $class->config->{$this_package}->{basepath}) {
+        $class->config->{'Controller::AutoCRUD::Root'}->{action}->{base}->{PathPart}
+            = $class->config->{$this_package}->{basepath};
+    }
+
     foreach my $orig (@packages) {
         (my $p = $orig) =~ s/::/::AutoCRUD::/;
         my $comp = "${class}::${p}";
@@ -62,7 +71,7 @@ sub setup_components {
             # make a component on the fly in the App namespace
             eval qq(
                 package $comp;
-                use base qw/Catalyst::Plugin::AutoCRUD::${orig}/;
+                use base qw/${this_package}::${orig}/;
                 1;
             );
             die $@ if $@;
@@ -90,12 +99,11 @@ __END__
 
 =head1 NAME
 
-CatalystX::ListFramework::Builder - Instant AJAX web front-end for
-DBIx::Class, using Catalyst
+Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.41 of CatalystX::ListFramework::Builder
+This document refers to version 0.42 of Catalyst::Plugin::AutoCRUD
 
 =head1 WARNING
 
@@ -116,11 +124,13 @@ interfaces on the fly. They are a bit whizzy and all Web 2.0-ish.
 
 A configuration file somewhere on your system:
 
- # [listframeworkuser.conf] in Config::General format
+ # [autocruduser.conf] in Config::General format
+
+ <Catalyst::Plugin::AutoCRUD>
+    extjs2   /static/javascript/extjs-2
+ </Catalyst::Plugin::AutoCRUD>
  
- extjs2   /static/javascript/extjs-2
- 
- <Model::LFB::DBIC>
+ <Model::AutoCRUD::DBIC>
      schema_class   My::Database::Schema
      connect_info   dbi:Pg:dbname=mydbname;host=mydbhost.example.com;
      connect_info   username
@@ -128,12 +138,12 @@ A configuration file somewhere on your system:
      <connect_info>
          AutoCommit   1
      </connect_info>
- </Model::LFB::DBIC>
+ </Model::AutoCRUD::DBIC>
 
 And in the CGI area of your web server:
 
- package ListFrameworkUser;
- use Catalyst qw(ConfigLoader +CatalystX::ListFramework::Builder);
+ package AutoCRUDUser;
+ use Catalyst qw(ConfigLoader AutoCRUD);
  
  __PACKAGE__->setup;
  1;
@@ -151,7 +161,7 @@ The interface is not written to static files on your system, and uses AJAX to
 act upon the database without reloading your web page (much like other
 Web 2.0 appliactions, for example Google Mail).
 
-Almost all the information required by the application is retrieved from the
+Almost all the information required by the plugin is retrieved from the
 L<DBIx::Class> ORM frontend to your database, which it is expected that you
 have already set up (although see L</USAGE>, below). This means that any
 change in database schema ought to be reflected immediately in the web
@@ -175,34 +185,30 @@ This mode is for when you have written your Catalyst application, but the
 Views are catering for the users and as an admin you'd like a more direct,
 secondary web interface to the database.
 
- package ListFrameworkUser;
- use Catalyst qw(ConfigLoader +CatalystX::ListFramework::Builder);
+ package AutoCRUDUser;
+ use Catalyst qw(ConfigLoader AutoCRUD);
  
  __PACKAGE__->setup;
  1;
 
-Adding C<CatalystX::ListFramework::Builder> (LFB) as a plugin to your Catalyst
-application, as above, causes it to scan your existing Models. If any of them
-are built using L<Catalyst::Model::DBIC::Schema>, they are automatically
-loaded. You still need to provide a small amount of configuration:
+Adding C<Catalyst::Plugin::AutoCRUD> as a plugin to your Catalyst application,
+as above, causes it to scan your existing Models. If any of them are built
+using L<Catalyst::Model::DBIC::Schema>, they are automatically loaded. You
+still need to provide a small amount of configuration:
 
- extjs2   /static/javascript/extjs-2
- <Controller::LFB::Root>
-     <action>
-         <base>
-             PathPart   admin
-         </base>
-     </action>
- </Controller::LFB::Root>
-
-First the application needs to know where your copy of ExtJS is, on the web
-server.  Use the C<extjs2> option as shown above to specify the URL path to
-the libraries. This will be used in the templates in some way like this:
+ <Catalyst::Plugin::AutoCRUD>
+    extjs2   /static/javascript/extjs-2
+    basepath admin
+ </Catalyst::Plugin::AutoCRUD>
+ 
+First the plugin needs to know where your copy of ExtJS is, on the web server.
+Use the C<extjs2> option as shown above to specify the URL path to the
+libraries. This will be used in the templates in some way like this:
 
  <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
-In the above example, the path C<...E<sol>adminE<sol>> will contain the LFB
-application, and all generated links in LFB will also make use of that path.
+In the above example, the path C<...E<sol>adminE<sol>> will contain the AutoCRUD
+application, and all generated links in AutoCRUD will also make use of that path.
 Remember this is added to the C<base> of your Cataylst application which,
 depending on your web server configuration, might also have a leading path.
 
@@ -212,21 +218,24 @@ select the table within that.
 
 =head2 Scenario 2: Frontend for an existing C<DBIx::Class::Schema> based class
 
-In this mode, C<CatalystX::ListFramework::Builder> (LFB) is running
-standalone, in a sense as the Catalyst application itself. Your main
-application file looks the same as in Scenario 1, though:
+In this mode, C<Catalyst::Plugin::AutoCRUD> is running standalone, in a sense
+as the Catalyst application itself. Your main application file looks the same
+as in Scenario 1, though:
 
- package ListFrameworkUser;
- use Catalyst qw(ConfigLoader +CatalystX::ListFramework::Builder);
+ package AutoCRUDUser;
+ use Catalyst qw(ConfigLoader AutoCRUD);
  
  __PACKAGE__->setup;
  1;
 
-For the configuration, you need to tell LFB which package contains the
+For the configuration, you need to tell AutoCRUD which package contains the
 C<DBIx::Class> schema, and also provide database connection parameters.
 
- extjs2   /static/javascript/extjs-2
- <Model::LFB::DBIC>
+ <Catalyst::Plugin::AutoCRUD>
+    extjs2   /static/javascript/extjs-2
+ </Catalyst::Plugin::AutoCRUD>
+ 
+ <Model::AutoCRUD::DBIC>
      schema_class   My::Database::Schema
      connect_info   dbi:Pg:dbname=mydbname;host=mydbhost.example.com;
      connect_info   username
@@ -234,15 +243,15 @@ C<DBIx::Class> schema, and also provide database connection parameters.
      <connect_info>
          AutoCommit   1
      </connect_info>
- </Model::LFB::DBIC>
+ </Model::AutoCRUD::DBIC>
 
-First the application needs to know where your copy of ExtJS is, on the web
-server.  Use the C<extjs2> option as shown above to specify the URL path to
-the libraries. This will be used in the templates in some way like this:
+First the plugin needs to know where your copy of ExtJS is, on the web server.
+Use the C<extjs2> option as shown above to specify the URL path to the
+libraries. This will be used in the templates in some way like this:
 
  <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
-The C<Model::LFB::DBIC> section must look (and be named) exactly like that
+The C<Model::AutoCRUD::DBIC> section must look (and be named) exactly like that
 above, except you should of course change the C<schema_class> value and the
 values within C<connect_info>.
 
@@ -268,31 +277,34 @@ your Perl Include path (one of the paths shown at the end of C<perl -V>).
 =head2 Scenario 3: Lazy loading a C<DBIx::Class> schema
 
 If you're in such a hurry that you can't create the C<DBIx::Class> schema, as
-shown in the previous section, then C<CatalystX::ListFramework::Builder> (LFB)
-is able to do this on the fly, but it will slow the application down a little.
+shown in the previous section, then C<Catalyst::Plugin::AutoCRUD> is able to
+do this on the fly, but it will slow the application's startup just a little.
 
 The application file and configuration are very similar to those in Scenario
-2, above, except that you omit the C<schema_class> configuration option
-because you want LFB to generate that on the fly (rather than reading an
+two, above, except that you omit the C<schema_class> configuration option
+because you want AutoCRUD to generate that on the fly (rather than reading an
 existing one from disk).
 
- package ListFrameworkUser;
- use Catalyst qw(ConfigLoader +CatalystX::ListFramework::Builder);
+ package AutoCRUDUser;
+ use Catalyst qw(ConfigLoader AutoCRUD);
  
  __PACKAGE__->setup;
  1;
 
- extjs2   /static/javascript/extjs-2
- <Model::LFB::DBIC>
+ <Catalyst::Plugin::AutoCRUD>
+    extjs2   /static/javascript/extjs-2
+ </Catalyst::Plugin::AutoCRUD>
+ 
+ <Model::AutoCRUD::DBIC>
      connect_info   dbi:Pg:dbname=mydbname;host=mydbhost.example.com;
      connect_info   username
      connect_info   password
      <connect_info>
          AutoCommit   1
      </connect_info>
- </Model::LFB::DBIC>
+ </Model::AutoCRUD::DBIC>
 
-When LFB loads it will connect to the database and use the
+When AutoCRUD loads it will connect to the database and use the
 L<DBIx::Class::Schema::Loader> module to reverse engineer its schema. To work
 properly you'll need the very latest version of that module (0.05 or greater).
 
@@ -310,9 +322,9 @@ When the web interface wants to display a column which references another
 table, you can make things look much better by adding a custom render method
 to your C<DBIx::Class> Result Classes (i.e. the class files for each table).
 
-First, the application will look for a method called C<display_name> and use
-that. Here is an example which could be added to your Result Class files below
-the line which reads C<DO NOT MODIFY THIS OR ANYTHING ABOVE>, and in this case
+First, the plugin will look for a method called C<display_name> and use that.
+Here is an example which could be added to your Result Class files below the
+line which reads C<DO NOT MODIFY THIS OR ANYTHING ABOVE>, and in this case
 returns the data from the C<title> column:
 
  sub display_name {
@@ -320,7 +332,7 @@ returns the data from the C<title> column:
      return $self->title || '';
  }
 
-Failing the existence of a C<display_name> method, the application attempts to
+Failing the existence of a C<display_name> method, the plugin attempts to
 stringify the row object. Using stringification is not recommended, although
 some people like it. Here is an example of a stringification handler:
 
@@ -329,7 +341,7 @@ some people like it. Here is an example of a stringification handler:
      return $self->title || '';
  }, fallback => 1;
 
-If all else fails the application prints the best hint it can to describe the
+If all else fails the plugin prints the best hint it can to describe the
 foreign row. This is something approximating the name of the foreign table,
 the names of the primary keys, and associated values. It's better than
 stringifying the object the way Perl does, anyway.
@@ -338,7 +350,7 @@ stringifying the object the way Perl does, anyway.
 
 For those columns where your database uses an auto-incremented value, add the
 C<< is_auto_increment => 1, >> option to the relevant hash in add_columns().
-This will let the application know you don't need to supply a value for new or
+This will let the plugin know you don't need to supply a value for new or
 updated records. The interface will look much better as a result.
 
 =head2 Database IO filters
@@ -349,32 +361,28 @@ you find a particular data type is not being rendered correctly, please drop
 the author a line at the email address below, explaining what you'd like to
 see instead.
 
-=head2 Relocating LFB to another URL path
+=head2 Relocating AutoCRUD to another URL path
 
 If you want to use this application as a plugin with another Catalyst system,
 it should work fine, but you probably want to serve pages under a different
 path on your web site. To do that, add the following to your configuration
 file:
 
- <Controller::LFB::Root>
-     <action>
-         <base>
-             PathPart   admin
-         </base>
-     </action>
- </Controller::LFB::Root>
+ <Catalyst::Plugin::AutoCRUD>
+    basepath admin
+ </Catalyst::Plugin::AutoCRUD>
 
-In the above example, the path C<...E<sol>adminE<sol>> will contain the LFB
-application, and all generated links in LFB will also make use of that path.
+In the above example, the path C<...E<sol>adminE<sol>> will contain the AutoCRUD
+application, and all generated links in AutoCRUD will also make use of that path.
 Remember this is added to the C<base> of your Cataylst application which,
 depending on your web server configuration, might also have a leading path.
 
 =head1 EXAMPLES
 
-The code examples give above in this manual are also supplied in the form of a
-sample application. You'll find the application itself in the C<examples/app/>
-directory of this distribution, and the SQLite3 data source in the
-C<examples/sql/> directory.
+The code examples given above in this manual are also supplied in the form of
+a sample application. You'll find the application itself in the
+C<examples/app/> directory of this distribution, and the SQLite3 data source
+in the C<examples/sql/> directory.
 
 =head1 INSTANT DEMO APPLICATION
 
@@ -398,7 +406,7 @@ Now start the demo application like so:
 
 Although the instruction at the end of the output says to visit (something
 like) C<http://localhost:3000>, you I<must> instead visit
-C<http://localhost:3000/lfb/> (i.e. add C</lfb/> to the end).
+C<http://localhost:3000/cpac/> (i.e. add C</cpac/> to the end).
 
 =head1 LIMITATIONS
 
@@ -413,7 +421,7 @@ simplifies the L<Catalyst> and L<DBIx::Class> code.
 =item No two columns in a given table may have the same FK constraint
 
 If you have two columns which both have foreign key constraints to the same
-table, it's very likely LFB will not work. Again this is a simplification
+table, it's very likely AutoCRUD will not work. Again this is a simplification
 which speeded the initial development.
 
 =back
@@ -486,7 +494,7 @@ This distribution ships with the Ext.ux.form.DateTime Extension Class for Ext
 2.x Library, Copyright (c) 2008, Ing. Jozef Sakalos, and released under the
 LGPL 3.0 license (library version 289, 2008-06-12 21:08:08).
 
-The rest is Copyright (c) Oliver Gorwits 2008.
+The rest is Copyright (c) Oliver Gorwits 200999999999.
 
 This library is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.

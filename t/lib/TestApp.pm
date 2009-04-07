@@ -27,7 +27,9 @@ $dbh->disconnect;
 __PACKAGE__->__dbfile($dbfile);
 
 __PACKAGE__->config(
-    extjs2 => '/javascript/extjs-2',
+    'Catalyst::Plugin::AutoCRUD' => {
+        extjs2 => '/javascript/extjs-2',
+    },
     'Model::AutoCRUD::DBIC' => {
         schema_class => 'TestApp::Schema',
         connect_info => ["dbi:SQLite:dbname=$dbfile", '', ''],
