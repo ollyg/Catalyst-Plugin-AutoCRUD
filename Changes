@@ -1,3 +1,17 @@
+libcatalystx-listframework-builder (0.42) UNRELEASED; urgency=low
+
+  * resolve RT.cpan#44019 by checking whether moniker can be converted to model
+  * Metadata now cached in the Model's class data
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sat, 28 Mar 2009 18:43:48 +0000
+
+libcatalystx-listframework-builder (0.41) UNRELEASED; urgency=low
+
+  * resolve rt.cpan#41225 not escaping quote chars in default values 
+  * resolve rt.cpan#42352 Uses 'true'/'false' for booleans instead of 1/0
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sat, 07 Feb 2009 17:36:36 +0000
+
 libcatalystx-listframework-builder (0.39) UNRELEASED; urgency=low
 
   * t/44 failed when missing Lingua module, also spurious deps (RT#42300) 

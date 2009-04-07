@@ -11,9 +11,9 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get basic template, no Metadata
-#$mech->get_ok('/helloworld', 'Get Hello World page');
-#is($mech->ct, 'text/html', 'Hello World page content type');
-#$mech->content_contains('Hello, World!', 'Hello World page content');
+$mech->get_ok('/helloworld', 'Get Hello World page');
+is($mech->ct, 'text/html', 'Hello World page content type');
+$mech->content_contains('Hello, World!', 'Hello World page content');
 
 # basic Metadata processing - tables list
 for (qw( /foobar / )) {
@@ -24,7 +24,7 @@ for (qw( /foobar / )) {
         "Tables list page content ($_)"
     );
 }
-exit;
+
 $mech->content_contains(
     qq{<a href="http://localhost//dbic/$_">},
     "Tables list page contains a link to $_ table"

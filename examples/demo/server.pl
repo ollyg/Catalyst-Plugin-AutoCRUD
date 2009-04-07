@@ -19,7 +19,7 @@ package DemoApp;
                     +CatalystX::ListFramework::Builder/;
     DemoApp->config(
         root => "$FindBin::Bin/root",
-        extjs2 => '/static/extjs-2',
+#        extjs2 => '/static/extjs-2',
         'Plugin::ConfigLoader' => { file => "$FindBin::Bin/demo.conf" },
         'Controller::LFB::Root' => { action => { base => { PathPart => 'lfb' } } },
     );

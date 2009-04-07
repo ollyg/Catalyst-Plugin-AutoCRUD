@@ -3,7 +3,7 @@ NAME
     DBIx::Class, using Catalyst
 
 VERSION
-    This document refers to version 0.39 of
+    This document refers to version 0.41 of
     CatalystX::ListFramework::Builder
 
 WARNING
