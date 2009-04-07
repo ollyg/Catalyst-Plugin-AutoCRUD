@@ -39,7 +39,7 @@
             ,menuDisabled: true
             ,tooltip: 'Hover mouse over a cell<br />to show related data'
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
-                if (rowindex === 0) { return '' }
+                if (rowindex === 0 || record.get('[% col %]').join('') === '') { return '' }
                 else {
                     metadata.css += 'half-grey';
                     metadata.attr += 'ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
