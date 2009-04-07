@@ -9,7 +9,7 @@ use Class::Data::Inheritable;
 
 __PACKAGE__->mk_classdata('__dbfile');
 
-use Catalyst qw(+CatalystX::ListFramework::Builder);
+use Catalyst qw(AutoCRUD);
 
 my $dbfile = File::Temp->new( UNLINK => 1, EXLOCK => 0);
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile",'','');
@@ -28,7 +28,7 @@ __PACKAGE__->__dbfile($dbfile);
 
 __PACKAGE__->config(
     extjs2 => '/javascript/extjs-2',
-    'Model::LFB::DBIC' => {
+    'Model::AutoCRUD::DBIC' => {
         connect_info => ["dbi:SQLite:dbname=$dbfile", '', ''],
     },
 );

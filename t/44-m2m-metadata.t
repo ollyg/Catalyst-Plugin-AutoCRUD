@@ -11,7 +11,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppM2M" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the album table
-$mech->get_ok( '/dbic/album/dumpmeta', 'Get album listframework metadata' );
+$mech->get_ok( '/dbic/album/dumpmeta', 'Get album autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );
@@ -20,13 +20,13 @@ my $response = JSON::from_json( $mech->content );
 #print STDERR Dumper $response;
 
 my $expected = {
-    'model'      => 'LFB::DBIC::Album',
+    'model'      => 'AutoCRUD::DBIC::Album',
     'table2path' => {
         'Album'        => 'album',
         'Artist Album' => 'artist_album',
         'Artist'       => 'artist'
     },
-    'tab_order' => { 'LFB::DBIC::Album' => 1 },
+    'tab_order' => { 'AutoCRUD::DBIC::Album' => 1 },
     'main'      => {
         'mfks'    => { 'artist_albums' => 'Artists' },
         'pk'      => 'id',
@@ -62,9 +62,9 @@ my $expected = {
         }
     },
     'db2path'      => { 'Dbic' => 'dbic' },
-    'dbpath2model' => { 'dbic' => 'LFB::DBIC' },
+    'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
     'table_info'   => {
-        'LFB::DBIC::Album' => {
+        'AutoCRUD::DBIC::Album' => {
             'mfks'    => { 'artist_albums' => 'Artists' },
             'pk'      => 'id',
             'moniker' => 'Album',
@@ -101,9 +101,9 @@ my $expected = {
     },
     'path2model' => {
         'dbic' => {
-            'artist'       => 'LFB::DBIC::Artist',
-            'artist_album' => 'LFB::DBIC::ArtistAlbum',
-            'album'        => 'LFB::DBIC::Album'
+            'artist'       => 'AutoCRUD::DBIC::Artist',
+            'artist_album' => 'AutoCRUD::DBIC::ArtistAlbum',
+            'album'        => 'AutoCRUD::DBIC::Album'
         }
     }
 };

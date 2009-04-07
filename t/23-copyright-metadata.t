@@ -12,7 +12,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the copyright table
-$mech->get_ok( '/dbic/copyright/dumpmeta', 'Get copyright listframework metadata' );
+$mech->get_ok( '/dbic/copyright/dumpmeta', 'Get copyright autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );
@@ -22,7 +22,7 @@ my $response = JSON::from_json( $mech->content );
 
 my $expected = {
     'table_info' => {
-        'LFB::DBIC::Copyright' => {
+        'AutoCRUD::DBIC::Copyright' => {
             'mfks'    => { 'tracks' => 'Tracks' },
             'pk'      => 'id',
             'moniker' => 'Copyright',
@@ -50,7 +50,7 @@ my $expected = {
             }
         }
     },
-    'model'      => 'LFB::DBIC::Copyright',
+    'model'      => 'AutoCRUD::DBIC::Copyright',
     'table2path' => {
         'Album'        => 'album',
         'Copyright'    => 'copyright',
@@ -58,7 +58,7 @@ my $expected = {
         'Track'        => 'track',
         'Artist'       => 'artist'
     },
-    'tab_order' => { 'LFB::DBIC::Copyright' => 1 },
+    'tab_order' => { 'AutoCRUD::DBIC::Copyright' => 1 },
     'main'      => {
         'mfks'    => { 'tracks' => 'Tracks' },
         'pk'      => 'id',
@@ -88,15 +88,15 @@ my $expected = {
     },
     'path2model' => {
         'dbic' => {
-            'sleeve_notes' => 'LFB::DBIC::SleeveNotes',
-            'artist'       => 'LFB::DBIC::Artist',
-            'album'        => 'LFB::DBIC::Album',
-            'track'        => 'LFB::DBIC::Track',
-            'copyright'    => 'LFB::DBIC::Copyright'
+            'sleeve_notes' => 'AutoCRUD::DBIC::SleeveNotes',
+            'artist'       => 'AutoCRUD::DBIC::Artist',
+            'album'        => 'AutoCRUD::DBIC::Album',
+            'track'        => 'AutoCRUD::DBIC::Track',
+            'copyright'    => 'AutoCRUD::DBIC::Copyright'
         }
     },
     'db2path'      => { 'Dbic' => 'dbic' },
-    'dbpath2model' => { 'dbic' => 'LFB::DBIC' },
+    'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
 };
 
 is_deeply( $response, $expected, 'Metadata is as we expect' );

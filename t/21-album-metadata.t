@@ -12,7 +12,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the album table
-$mech->get_ok( '/dbic/album/dumpmeta', 'Get album listframework metadata' );
+$mech->get_ok( '/dbic/album/dumpmeta', 'Get album autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );
@@ -22,7 +22,7 @@ my $response = JSON::from_json( $mech->content );
 
 my $expected = {
     'table_info' => {
-        'LFB::DBIC::SleeveNotes' => {
+        'AutoCRUD::DBIC::SleeveNotes' => {
             'pk'        => 'id',
             'moniker'   => 'SleeveNotes',
             'col_order' => [ 'id', 'text', 'album_id' ],
@@ -32,7 +32,7 @@ my $expected = {
                 'album_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Album',
+                    'fk_model'    => 'AutoCRUD::DBIC::Album',
                     'editable'    => 0,
                     'heading'     => 'Album',
                     'is_fk'       => 1
@@ -50,7 +50,7 @@ my $expected = {
                 }
             }
         },
-        'LFB::DBIC::Artist' => {
+        'AutoCRUD::DBIC::Artist' => {
             'mfks'    => { 'albums' => 'Albums' },
             'pk'      => 'id',
             'moniker' => 'Artist',
@@ -87,7 +87,7 @@ my $expected = {
                 }
             }
         },
-        'LFB::DBIC::Album' => {
+        'AutoCRUD::DBIC::Album' => {
             'mfks'      => { 'tracks' => 'Tracks' },
             'pk'        => 'id',
             'moniker'   => 'Album',
@@ -101,13 +101,13 @@ my $expected = {
                 'sleeve_notes' => {
                     'editable' => 1,
                     'heading'  => 'Sleeve Notes',
-                    'fk_model' => 'LFB::DBIC::SleeveNotes',
+                    'fk_model' => 'AutoCRUD::DBIC::SleeveNotes',
                     'is_rr'    => 1
                 },
                 'artist_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Artist',
+                    'fk_model'    => 'AutoCRUD::DBIC::Artist',
                     'editable'    => 1,
                     'heading'     => 'Artist',
                     'is_fk'       => 1
@@ -138,7 +138,7 @@ my $expected = {
             }
         }
     },
-    'model'      => 'LFB::DBIC::Album',
+    'model'      => 'AutoCRUD::DBIC::Album',
     'table2path' => {
         'Album'        => 'album',
         'Copyright'    => 'copyright',
@@ -147,9 +147,9 @@ my $expected = {
         'Artist'       => 'artist'
     },
     'tab_order' => {
-        'LFB::DBIC::SleeveNotes' => 3,
-        'LFB::DBIC::Artist'      => 2,
-        'LFB::DBIC::Album'       => 1
+        'AutoCRUD::DBIC::SleeveNotes' => 3,
+        'AutoCRUD::DBIC::Artist'      => 2,
+        'AutoCRUD::DBIC::Album'       => 1
     },
     'main' => {
         'mfks'    => { 'tracks' => 'Tracks' },
@@ -163,13 +163,13 @@ my $expected = {
             'sleeve_notes' => {
                 'editable' => 1,
                 'heading'  => 'Sleeve Notes',
-                'fk_model' => 'LFB::DBIC::SleeveNotes',
+                'fk_model' => 'AutoCRUD::DBIC::SleeveNotes',
                 'is_rr'    => 1
             },
             'artist_id' => {
                 'required'    => 1,
                 'extjs_xtype' => 'numberfield',
-                'fk_model'    => 'LFB::DBIC::Artist',
+                'fk_model'    => 'AutoCRUD::DBIC::Artist',
                 'editable'    => 1,
                 'heading'     => 'Artist',
                 'is_fk'       => 1
@@ -201,15 +201,15 @@ my $expected = {
     },
     'path2model' => {
         'dbic' => {
-            'sleeve_notes' => 'LFB::DBIC::SleeveNotes',
-            'artist'       => 'LFB::DBIC::Artist',
-            'album'        => 'LFB::DBIC::Album',
-            'track'        => 'LFB::DBIC::Track',
-            'copyright'    => 'LFB::DBIC::Copyright'
+            'sleeve_notes' => 'AutoCRUD::DBIC::SleeveNotes',
+            'artist'       => 'AutoCRUD::DBIC::Artist',
+            'album'        => 'AutoCRUD::DBIC::Album',
+            'track'        => 'AutoCRUD::DBIC::Track',
+            'copyright'    => 'AutoCRUD::DBIC::Copyright'
         }
     },
     'db2path'      => { 'Dbic' => 'dbic' },
-    'dbpath2model' => { 'dbic' => 'LFB::DBIC' }
+    'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' }
 
 };
 

@@ -32,10 +32,10 @@ $mech->content_contains(
 my @links = $mech->find_all_links( url_regex => qr/localhost/ );
 $mech->links_ok( [$_], 'Check table link '. $_->url ) for @links;
 
-my $VERSION = $CatalystX::ListFramework::Builder::VERSION;
+my $VERSION = $Catalyst::Plugin::AutoCRUD::VERSION;
 foreach (qw( album artist copyright track )) {
-    $mech->get_ok("/dbic/$_", "Get listframework for $_ table");
-    $mech->title_is(ucfirst($_) ." List - Powered by LFB v$VERSION", "Page title for $_");
+    $mech->get_ok("/dbic/$_", "Get autocrud for $_ table");
+    $mech->title_is(ucfirst($_) ." List - Powered by CPAC v$VERSION", "Page title for $_");
 }
 
 #warn $mech->content;

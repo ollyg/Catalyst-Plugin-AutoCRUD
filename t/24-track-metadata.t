@@ -12,7 +12,7 @@ BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the track table
-$mech->get_ok( '/dbic/track/dumpmeta', 'Get track listframework metadata' );
+$mech->get_ok( '/dbic/track/dumpmeta', 'Get track autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );
@@ -22,7 +22,7 @@ my $response = JSON::from_json( $mech->content );
 
 my $expected = {
     'table_info' => {
-        'LFB::DBIC::Track' => {
+        'AutoCRUD::DBIC::Track' => {
             'pk'        => 'id',
             'moniker'   => 'Track',
             'col_order' => [
@@ -40,7 +40,7 @@ my $expected = {
                 'album_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Album',
+                    'fk_model'    => 'AutoCRUD::DBIC::Album',
                     'editable'    => 1,
                     'heading'     => 'Album',
                     'is_fk'       => 1
@@ -54,7 +54,7 @@ my $expected = {
                 'copyright_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Copyright',
+                    'fk_model'    => 'AutoCRUD::DBIC::Copyright',
                     'editable'    => 1,
                     'heading'     => 'Copyright',
                     'is_fk'       => 1
@@ -78,7 +78,7 @@ my $expected = {
                 }
             }
         },
-        'LFB::DBIC::Copyright' => {
+        'AutoCRUD::DBIC::Copyright' => {
             'mfks'    => { 'tracks' => 'Tracks' },
             'pk'      => 'id',
             'moniker' => 'Copyright',
@@ -105,7 +105,7 @@ my $expected = {
                 }
             }
         },
-        'LFB::DBIC::Album' => {
+        'AutoCRUD::DBIC::Album' => {
             'mfks'      => { 'tracks' => 'Tracks' },
             'pk'        => 'id',
             'moniker'   => 'Album',
@@ -119,13 +119,13 @@ my $expected = {
                 'sleeve_notes' => {
                     'editable' => 1,
                     'heading'  => 'Sleeve Notes',
-                    'fk_model' => 'LFB::DBIC::SleeveNotes',
+                    'fk_model' => 'AutoCRUD::DBIC::SleeveNotes',
                     'is_rr'    => 1
                 },
                 'artist_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Artist',
+                    'fk_model'    => 'AutoCRUD::DBIC::Artist',
                     'editable'    => 1,
                     'heading'     => 'Artist',
                     'is_fk'       => 1
@@ -156,7 +156,7 @@ my $expected = {
             }
         }
     },
-    'model'      => 'LFB::DBIC::Track',
+    'model'      => 'AutoCRUD::DBIC::Track',
     'table2path' => {
         'Album'        => 'album',
         'Copyright'    => 'copyright',
@@ -165,9 +165,9 @@ my $expected = {
         'Artist'       => 'artist'
     },
     'tab_order' => {
-        'LFB::DBIC::Track'     => 1,
-        'LFB::DBIC::Copyright' => 3,
-        'LFB::DBIC::Album'     => 2
+        'AutoCRUD::DBIC::Track'     => 1,
+        'AutoCRUD::DBIC::Copyright' => 3,
+        'AutoCRUD::DBIC::Album'     => 2
     },
     'main' => {
         'pk'        => 'id',
@@ -187,7 +187,7 @@ my $expected = {
             'album_id' => {
                 'required'    => 1,
                 'extjs_xtype' => 'numberfield',
-                'fk_model'    => 'LFB::DBIC::Album',
+                'fk_model'    => 'AutoCRUD::DBIC::Album',
                 'editable'    => 1,
                 'heading'     => 'Album',
                 'is_fk'       => 1
@@ -201,7 +201,7 @@ my $expected = {
             'copyright_id' => {
                 'required'    => 1,
                 'extjs_xtype' => 'numberfield',
-                'fk_model'    => 'LFB::DBIC::Copyright',
+                'fk_model'    => 'AutoCRUD::DBIC::Copyright',
                 'editable'    => 1,
                 'heading'     => 'Copyright',
                 'is_fk'       => 1
@@ -227,15 +227,15 @@ my $expected = {
     },
     'path2model' => {
         'dbic' => {
-            'sleeve_notes' => 'LFB::DBIC::SleeveNotes',
-            'artist'       => 'LFB::DBIC::Artist',
-            'album'        => 'LFB::DBIC::Album',
-            'track'        => 'LFB::DBIC::Track',
-            'copyright'    => 'LFB::DBIC::Copyright'
+            'sleeve_notes' => 'AutoCRUD::DBIC::SleeveNotes',
+            'artist'       => 'AutoCRUD::DBIC::Artist',
+            'album'        => 'AutoCRUD::DBIC::Album',
+            'track'        => 'AutoCRUD::DBIC::Track',
+            'copyright'    => 'AutoCRUD::DBIC::Copyright'
         }
     },
     'db2path'      => { 'Dbic' => 'dbic' },
-    'dbpath2model' => { 'dbic' => 'LFB::DBIC' },
+    'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
 };
 
 is_deeply( $response, $expected, 'Metadata is as we expect' );

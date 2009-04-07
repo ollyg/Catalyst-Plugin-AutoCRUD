@@ -13,7 +13,7 @@ my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the copyright table
 $mech->get_ok( '/dbic/sleeve_notes/dumpmeta',
-    'Get sleeve_notes listframework metadata' );
+    'Get sleeve_notes autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
 my $response = JSON::from_json( $mech->content );
@@ -23,7 +23,7 @@ my $response = JSON::from_json( $mech->content );
 
 my $expected = {
     'table_info' => {
-        'LFB::DBIC::SleeveNotes' => {
+        'AutoCRUD::DBIC::SleeveNotes' => {
             'pk'        => 'id',
             'moniker'   => 'SleeveNotes',
             'col_order' => [ 'id', 'text', 'album_id' ],
@@ -33,7 +33,7 @@ my $expected = {
                 'album_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Album',
+                    'fk_model'    => 'AutoCRUD::DBIC::Album',
                     'editable'    => 1,
                     'heading'     => 'Album',
                     'is_fk'       => 1
@@ -51,7 +51,7 @@ my $expected = {
                 }
             }
         },
-        'LFB::DBIC::Album' => {
+        'AutoCRUD::DBIC::Album' => {
             'mfks'      => { 'tracks' => 'Tracks' },
             'pk'        => 'id',
             'moniker'   => 'Album',
@@ -65,13 +65,13 @@ my $expected = {
                 'sleeve_notes' => {
                     'editable' => 0,
                     'heading'  => 'Sleeve Notes',
-                    'fk_model' => 'LFB::DBIC::SleeveNotes',
+                    'fk_model' => 'AutoCRUD::DBIC::SleeveNotes',
                     'is_rr'    => 1
                 },
                 'artist_id' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
-                    'fk_model'    => 'LFB::DBIC::Artist',
+                    'fk_model'    => 'AutoCRUD::DBIC::Artist',
                     'editable'    => 1,
                     'heading'     => 'Artist',
                     'is_fk'       => 1
@@ -102,7 +102,7 @@ my $expected = {
             }
         }
     },
-    'model'      => 'LFB::DBIC::SleeveNotes',
+    'model'      => 'AutoCRUD::DBIC::SleeveNotes',
     'table2path' => {
         'Album'        => 'album',
         'Copyright'    => 'copyright',
@@ -111,8 +111,8 @@ my $expected = {
         'Artist'       => 'artist'
     },
     'tab_order' => {
-        'LFB::DBIC::SleeveNotes' => 1,
-        'LFB::DBIC::Album'       => 2
+        'AutoCRUD::DBIC::SleeveNotes' => 1,
+        'AutoCRUD::DBIC::Album'       => 2
     },
     'main' => {
         'pk'        => 'id',
@@ -124,7 +124,7 @@ my $expected = {
             'album_id' => {
                 'required'    => 1,
                 'extjs_xtype' => 'numberfield',
-                'fk_model'    => 'LFB::DBIC::Album',
+                'fk_model'    => 'AutoCRUD::DBIC::Album',
                 'editable'    => 1,
                 'heading'     => 'Album',
                 'is_fk'       => 1
@@ -144,15 +144,15 @@ my $expected = {
     },
     'path2model' => {
         'dbic' => {
-            'sleeve_notes' => 'LFB::DBIC::SleeveNotes',
-            'artist'       => 'LFB::DBIC::Artist',
-            'album'        => 'LFB::DBIC::Album',
-            'track'        => 'LFB::DBIC::Track',
-            'copyright'    => 'LFB::DBIC::Copyright'
+            'sleeve_notes' => 'AutoCRUD::DBIC::SleeveNotes',
+            'artist'       => 'AutoCRUD::DBIC::Artist',
+            'album'        => 'AutoCRUD::DBIC::Album',
+            'track'        => 'AutoCRUD::DBIC::Track',
+            'copyright'    => 'AutoCRUD::DBIC::Copyright'
         }
     },
     'db2path'      => { 'Dbic' => 'dbic' },
-    'dbpath2model' => { 'dbic' => 'LFB::DBIC' },
+    'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
 };
 
 is_deeply( $response, $expected, 'Metadata is as we expect' );
