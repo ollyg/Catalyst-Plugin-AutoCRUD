@@ -69,7 +69,7 @@ sub source : Chained('schema') PathPart Args(1) {
     $c->stash->{template} = 'list.tt';
 }
 
-sub ajax : Chained('schema') PathPart('') CaptureArgs(1) {
+sub ajax : Chained('source') PathPart('') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
 }
