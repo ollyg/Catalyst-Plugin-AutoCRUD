@@ -14,7 +14,11 @@
         <ul>
         [% FOREACH t IN lf.table2path.keys.sort %]
             <li>
-            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('schema_picker'), db, lf.table2path.item(t) ) %]">[% t %]</a>
+            [% IF site == 'default' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], lf.table2path.item(t) ) %]">[% t %]</a>
+            [% ELSE %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site, db], lf.table2path.item(t) ) %]">[% t %]</a>
+            [% END %]
             </li>
         [% END %]
         </ul>
@@ -33,7 +37,7 @@
         <ul>
         [% FOREACH d IN lf.db2path.keys.sort %]
             <li>
-            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('schema_picker'), lf.db2path.item(d) ) %]">[% d %]</a>
+            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [lf.db2path.item(d)] ) %]">[% d %]</a>
             </li>
         [% END %]
         </ul>
