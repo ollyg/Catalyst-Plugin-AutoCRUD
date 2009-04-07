@@ -57,7 +57,7 @@ sub _sfy {
 }
 
 
-sub base : Chained('/lfb/root/ajax') PathPart('') CaptureArgs(0) {
+sub base : Chained('/autocrud/root/ajax') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
     $c->stash->{current_view} = 'AutoCRUD::JSON';
 }

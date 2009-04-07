@@ -18,7 +18,7 @@ my %mime = (
 # cheap. there are a couple of nice icons we want to make sure the users have
 # but it'd be too much hassle to ask them to install, so we bundle them.
 #
-sub static : Chained('/lfb/root/base') Args(1) {
+sub static : Chained('/autocrud/root/base') Args(1) {
     my ($self, $c, $file) = @_;
 
     (my $pkg_path = __PACKAGE__) =~ s{::}{/}g;
