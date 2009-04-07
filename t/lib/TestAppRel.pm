@@ -9,7 +9,7 @@ use Class::Data::Inheritable;
 
 __PACKAGE__->mk_classdata('__dbfile');
 
-use Catalyst qw(-Debug AutoCRUD);
+use Catalyst qw(AutoCRUD);
 
 my $dbfile = File::Temp->new( UNLINK => 1, EXLOCK => 0);
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile",'','');
