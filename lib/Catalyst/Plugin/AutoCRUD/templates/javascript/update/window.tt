@@ -18,7 +18,7 @@
                 xtype: 'form'
                 ,id: 'form-panel'
                 ,border: false
-                ,url: '[% c.uri_for( c.controller('AutoCRUD::Root').action_for('db_picker'), db, lf.main.path, "update" ) %]'
+                ,url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('update'), [site,db,lf.main.path] ) %]'
                 ,autoHeight: true
                 ,layout: 'fit'
     
