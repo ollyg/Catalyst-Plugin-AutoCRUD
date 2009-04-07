@@ -26,7 +26,7 @@ for (qw( /foobar / )) {
 }
 
 $mech->content_contains(
-    qq{<a href="http://localhost//dbic/$_">},
+    qq{<a href="http://localhost/dbic/$_">},
     "Tables list page contains a link to $_ table"
 ) for qw( album artist copyright track );
 
