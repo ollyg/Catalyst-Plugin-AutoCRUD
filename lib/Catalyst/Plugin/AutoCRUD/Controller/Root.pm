@@ -14,15 +14,15 @@ sub base : Chained PathPart('') CaptureArgs(0) {
     $c->stash->{site} = 'default';
 }
 
-sub schema_picker : Chained('base') PathPart('') Args(0) {
-    my ($self, $c) = @_;
-    $c->detach('err_message');
-}
-
 # =====================================================================
 
 # old back-compat /<schema>/<source> which uses default site
 # also good for friendly URLs which use default site
+
+sub no_db : Chained('base') PathPart('') Args(0) {
+    my ($self, $c) = @_;
+    $c->forward('no_schema');
+}
 
 sub db : Chained('base') PathPart('') CaptureArgs(1) {
     my ($self, $c) = @_;
@@ -45,6 +45,11 @@ sub table : Chained('db') PathPart('') Args(1) {
 sub site : Chained('base') PathPart CaptureArgs(1) {
     my ($self, $c, $site) = @_;
     $c->stash->{site} = $site;
+}
+
+sub no_schema : Chained('site') PathPart('') Args(0) {
+    my ($self, $c) = @_;
+    $c->detach('err_message');
 }
 
 sub schema : Chained('site') PathPart CaptureArgs(1) {

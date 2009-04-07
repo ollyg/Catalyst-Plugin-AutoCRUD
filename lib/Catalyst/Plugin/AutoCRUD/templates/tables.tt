@@ -26,7 +26,11 @@
 
         [% IF lf.db2path.keys.size > 1 %]
             <br />
-            <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('schema_picker') ) %]">Home</a> to select another database.</p>
+            [% IF site == 'default' %]
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> to select another database.</p>
+            [% ELSE %]
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [site] ) %]">Home</a> to select another database.</p>
+            [% END %]
         [% END %]
 
     [% ELSE %]
@@ -37,7 +41,11 @@
         <ul>
         [% FOREACH d IN lf.db2path.keys.sort %]
             <li>
-            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [lf.db2path.item(d)] ) %]">[% d %]</a>
+            [% IF site == 'default' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [lf.db2path.item(d)] ) %]">[% d %]</a>
+            [% ELSE %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site, lf.db2path.item(d)] ) %]">[% d %]</a>
+            [% END %]
             </li>
         [% END %]
         </ul>
