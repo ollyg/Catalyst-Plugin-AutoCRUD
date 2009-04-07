@@ -1,6 +1,6 @@
 WHAT IS THIS?
 
-This is CatalystX::ListFramework::Builder, a Perl module.
+This is Catalyst::Plugin::AutoCRUD, a Perl module.
 Please see the README that comes with this distribution.
 
 HOW DO I INSTALL IT?

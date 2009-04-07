@@ -1,5 +1,6 @@
-libcatalystx-listframework-builder (0.42) UNRELEASED; urgency=low
+libcatalyst-plugin-autocrud-perl (0.42) UNRELEASED; urgency=low
 
+  * renamed distribution to be Catalyst::Plugin::AutoCRUD
   * resolve RT.cpan#44019 by checking whether moniker can be converted to model
   * Metadata now cached in the Model's class data
 

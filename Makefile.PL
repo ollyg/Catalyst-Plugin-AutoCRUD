@@ -1,8 +1,8 @@
 use inc::Module::Install 0.67;
 perl_version '5.008001';
   
-name           'CatalystX-ListFramework-Builder';
-all_from       'lib/CatalystX/ListFramework/Builder.pm';
+name           'Catalyst-Plugin-AutoCRUD';
+all_from       'lib/Catalyst/Plugin/AutoCRUD.pm';
 
 requires       'Catalyst::Runtime' => '5.70';
 requires       'Catalyst::Model::DBIC::Schema' => 0;
