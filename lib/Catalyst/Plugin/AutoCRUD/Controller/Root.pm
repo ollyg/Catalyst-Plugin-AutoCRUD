@@ -11,22 +11,65 @@ sub base : Chained PathPart('') CaptureArgs(0) {
     $c->stash->{current_view} = 'AutoCRUD::TT';
     $c->stash->{version} = 'CPAC v'
         . $Catalyst::Plugin::AutoCRUD::VERSION;
+    $c->stash->{site} = 'default';
 }
 
-sub db_picker : Chained('base') PathPart('') Args(0) {
+sub schema_picker : Chained('base') PathPart('') Args(0) {
     my ($self, $c) = @_;
     $c->detach('err_message');
 }
 
+# =====================================================================
+
+# old back-compat /<schema>/<source> which uses default site
+# also good for friendly URLs which use default site
+
 sub db : Chained('base') PathPart('') CaptureArgs(1) {
-    my ($self, $c, $db) = @_;
-    $c->stash->{db} = $db;
+    my ($self, $c) = @_;
+    $c->forward('schema');
 }
 
 sub no_table : Chained('db') PathPart('') Args(0) {
     my ($self, $c) = @_;
+    $c->forward('no_source');
+}
+
+sub table : Chained('db') PathPart('') Args(1) {
+    my ($self, $c) = @_;
+    $c->forward('source');
+}
+
+# new RPC-style which specifies site, schema, source explicitly
+# like /site/<site>/schema/<schema>/source/<source>
+
+sub site : Chained('base') PathPart CaptureArgs(1) {
+    my ($self, $c, $site) = @_;
+    $c->stash->{site} = $site;
+}
+
+sub schema : Chained('site') PathPart CaptureArgs(1) {
+    my ($self, $c, $db) = @_;
+    $c->stash->{db} = $db;
+}
+
+sub no_source : Chained('schema') PathPart('') Args(0) {
+    my ($self, $c) = @_;
     $c->detach('err_message');
 }
+
+sub source : Chained('schema') PathPart Args(1) {
+    my ($self, $c) = @_;
+    $c->forward('do_meta');
+    $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' List';
+    $c->stash->{template} = 'list.tt';
+}
+
+sub ajax : Chained('schema') PathPart('') CaptureArgs(1) {
+    my ($self, $c) = @_;
+    $c->forward('do_meta');
+}
+
+# =====================================================================
 
 sub do_meta : Private {
     my ($self, $c, $table) = @_;
@@ -34,18 +77,6 @@ sub do_meta : Private {
 
     $c->forward('AutoCRUD::Metadata');
     $c->detach('err_message') if !defined $c->stash->{lf}->{model};
-}
-
-sub main : Chained('db') PathPart('') Args(1) {
-    my ($self, $c) = @_;
-    $c->forward('do_meta');
-    $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' List';
-    $c->stash->{template} = 'list.tt';
-}
-
-sub ajax : Chained('db') PathPart('') CaptureArgs(1) {
-    my ($self, $c) = @_;
-    $c->forward('do_meta');
 }
 
 sub err_message : Private {
