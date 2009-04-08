@@ -5,7 +5,7 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
 
-sub base : Chained PathPart('') CaptureArgs(0) {
+sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     my ($self, $c) = @_;
 
     $c->stash->{current_view} = 'AutoCRUD::TT';

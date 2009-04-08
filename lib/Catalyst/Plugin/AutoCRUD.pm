@@ -406,7 +406,7 @@ Now start the demo application like so:
 
 Although the instruction at the end of the output says to visit (something
 like) C<http://localhost:3000>, you I<must> instead visit
-C<http://localhost:3000/cpac/> (i.e. add C</cpac/> to the end).
+C<http://localhost:3000/autocrud/> (i.e. add C</autocrud/> to the end).
 
 =head1 LIMITATIONS
 

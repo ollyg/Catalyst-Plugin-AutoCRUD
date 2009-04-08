@@ -29,6 +29,7 @@ __PACKAGE__->__dbfile($dbfile);
 __PACKAGE__->config(
     'Catalyst::Plugin::AutoCRUD' => {
         extjs2 => '/javascript/extjs-2',
+        basepath => '',
     },
     'Model::AutoCRUD::DBIC' => {
         schema_class => 'TestApp::M2MSchema',
