@@ -51,6 +51,7 @@ META.yml
 README
 t/00-load.t
 t/10-www.t
+t/11-site.t
 t/21-album-metadata.t
 t/22-artist-metadata.t
 t/23-copyright-metadata.t
