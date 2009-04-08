@@ -4,6 +4,9 @@ use strict;
 use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
+use Catalyst::Utils;
+
+__PACKAGE__->mk_classdata(_site_conf_cache => {});
 
 sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     my ($self, $c) = @_;
@@ -80,14 +83,69 @@ sub do_meta : Private {
     my ($self, $c, $table) = @_;
     $c->stash->{table} = $table;
 
+    $c->forward('build_site_config');
     $c->forward('AutoCRUD::Metadata');
     $c->detach('err_message') if !defined $c->stash->{lf}->{model};
 }
 
 sub err_message : Private {
     my ($self, $c) = @_;
+
+    $c->forward('build_site_config') if !exists $c->stash->{site_conf};
     $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{lf}->{db2path};;
     $c->stash->{template} = 'tables.tt';
+}
+
+# build site config for filtering the frontend
+sub build_site_config : Private {
+    my ($self, $c) = @_;
+    my $site = __PACKAGE__->_site_conf_cache->{$c->stash->{site}} ||= {};
+
+    # if we have it cached
+    if ($site->{__built}) {
+        $c->stash->{site_conf} = $site;
+        $c->log->debug(sprintf "autocrud: retreived cached config for site [%s]",
+            $c->stash->{site}) if $c->debug;
+        return;
+    }
+
+    # load whatever the user set in their site config
+    $site = Catalyst::Utils::merge_hashes(
+        $c->config->{'Catalyst::Plugin::AutoCRUD'}->{sites}->{$c->stash->{site}} || {},
+        $site);
+
+    my %defaults = (
+        frontend => 'default',
+        create_allowed => 'yes',
+        update_allowed => 'yes',
+        delete_allowed => 'yes',
+        hidden => 'no',
+    );
+
+    # merge defaults into user prefs
+    $site = Catalyst::Utils::merge_hashes (\%defaults, $site);
+
+    # then bubble up the prefs until each source def has a complete set
+    foreach my $sc (keys %{$site}) {
+        next unless ref $site->{$sc} eq 'HASH';
+        $site->{$sc} = Catalyst::Utils::merge_hashes ({
+                map {($_ => $site->{$_})} keys %defaults
+            }, $site->{$sc});
+
+        foreach my $so (keys %{$site->{$sc}}) {
+            next unless ref $site->{$sc}->{$so} eq 'HASH';
+            $site->{$sc}->{$so} = Catalyst::Utils::merge_hashes ({
+                    map {($_ => $site->{$sc}->{$_})} keys %defaults
+                }, $site->{$sc}->{$so});
+        }
+    }
+
+    $site->{__built} = 1;
+    $c->stash->{site_conf} = $site;
+    __PACKAGE__->_site_conf_cache->{$c->stash->{site}} = $site;
+
+    $c->log->debug(sprintf "autocrud: cached the config for site [%s]",
+            $c->stash->{site}) if $c->debug;
 }
 
 sub helloworld : Chained('base') Args(0) {

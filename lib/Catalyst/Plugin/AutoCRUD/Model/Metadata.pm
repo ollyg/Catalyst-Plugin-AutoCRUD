@@ -7,7 +7,7 @@ use base 'Catalyst::Model';
 use Scalar::Util qw(weaken);
 use Carp;
 
-__PACKAGE__->mk_classdata(_lfb_cache => {});
+__PACKAGE__->mk_classdata(_schema_cache => {});
 
 my %xtype_for = (
     boolean => 'checkbox',
@@ -55,11 +55,11 @@ sub process {
 
     if (exists $c->stash->{db} and defined $c->stash->{db}
         and exists $c->stash->{table} and defined $c->stash->{table}
-        and exists $self->_lfb_cache->{$c->stash->{db}}->{$c->stash->{table}}) {
+        and exists $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}}) {
 
         # we have a cache!
-        $c->stash->{lf} = $self->_lfb_cache->{$c->stash->{db}}->{$c->stash->{table}};
-        $c->log->debug(sprintf 'retrieved cached metadata for db: [%s] table: [%s]',
+        $c->stash->{lf} = $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}};
+        $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
             $c->stash->{db}, $c->stash->{table}) if $c->debug;
 
         weaken $c->stash->{lf};
@@ -99,8 +99,8 @@ sub process {
     # build and store in cache
     _build_table_info($c, $lf, $lf->{model}, 1);
 
-    $self->_lfb_cache->{$c->stash->{db}}->{$c->stash->{table}} = $lf;
-    $c->log->debug(sprintf 'cached metadata for db: [%s] table: [%s]',
+    $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}} = $lf;
+    $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
         $c->stash->{db}, $c->stash->{table}) if $c->debug;
 
     weaken $c->stash->{lf};
