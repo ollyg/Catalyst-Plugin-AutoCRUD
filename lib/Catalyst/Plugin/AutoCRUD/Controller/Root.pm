@@ -83,7 +83,30 @@ sub do_meta : Private {
     my ($self, $c, $table) = @_;
     $c->stash->{table} = $table;
 
+    my $db = $c->stash->{db};
+    my $site = $c->stash->{site};
     $c->forward('build_site_config');
+
+    # ACLs on the schema and source from site config
+    if ($c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
+        if ($site eq 'default') {
+            $c->res->redirect( $c->uri_for( $self->action_for('no_db') ), 303 );
+        }
+        else {
+            $c->res->redirect( $c->uri_for( $self->action_for('no_schema'), [$site] ), 303 );
+        }
+        $c->detach();
+    }
+    if ($c->stash->{site_conf}->{$db}->{$table}->{hidden} eq 'yes') {
+        if ($site eq 'default') {
+            $c->res->redirect( $c->uri_for( $self->action_for('no_table'), [$db] ), 303 );
+        }
+        else {
+            $c->res->redirect( $c->uri_for( $self->action_for('no_source'), [$site, $db] ), 303 );
+        }
+        $c->detach();
+    }
+
     $c->forward('AutoCRUD::Metadata');
     $c->detach('err_message') if !defined $c->stash->{lf}->{model};
 }

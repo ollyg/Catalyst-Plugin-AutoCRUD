@@ -2,24 +2,33 @@
 <br />
 
 [% IF NOT lf.exists('db2path') %]
-
     <p>No database schemas were found in this appliaction. Please contact the site administrator.</p>
+    [% RETURN %]
 
 [% ELSE %]
     [% IF lf.dbpath2model.exists( db ) %]
+        [% IF site_conf.$db.hidden == 'yes' %]
+            [% IF site == 'default' %]
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> to select another database.</p>
+            [% ELSE %]
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [site] ) %]">Home</a> to select another database.</p>
+            [% END %]
+            [% RETURN %]
+        [% END %]
+
         <p>The schema for database &quot;[% dbtitle %]&quot; has been loaded, so please select a table by clicking on its label, below.</p>
         <br />
 
         <div id="navcontainer">
         <ul>
         [% FOREACH t IN lf.table2path.keys.sort %]
-            [% SET table = lf.table2path.item(t) %]
-            [% NEXT IF site_conf.$db.$table.hidden == 'yes' %]
+            [% SET tpath = lf.table2path.item(t) %]
+            [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
             <li>
             [% IF site == 'default' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], table ) %]">[% t %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], tpath ) %]">[% t %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site, db], table ) %]">[% t %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site, db], tpath ) %]">[% t %]</a>
             [% END %]
             </li>
         [% END %]
@@ -42,13 +51,13 @@
         <div id="navcontainer">
         <ul>
         [% FOREACH d IN lf.db2path.keys.sort %]
-            [% SET schema = lf.db2path.item(d) %]
-            [% NEXT IF site_conf.$schema.hidden == 'yes' %]
+            [% SET dpath = lf.db2path.item(d) %]
+            [% NEXT IF site_conf.$dpath.hidden == 'yes' %]
             <li>
             [% IF site == 'default' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [schema] ) %]">[% d %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [dpath] ) %]">[% d %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site, schema] ) %]">[% d %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site, dpath] ) %]">[% d %]</a>
             [% END %]
             </li>
         [% END %]

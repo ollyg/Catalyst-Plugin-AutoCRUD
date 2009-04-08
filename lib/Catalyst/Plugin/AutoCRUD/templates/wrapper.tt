@@ -47,10 +47,12 @@
                 [% ELSE %]
                     <select id="picker" onchange="window.location = document.getElementById(this.id).value">
                       [% FOREACH table IN lf.table2path.keys.sort %]
+                        [% SET tpath = lf.table2path.item(table) %]
+                        [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
                         [% IF site == 'default' %]
-                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], lf.table2path.item(table) ) %]"
+                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], tpath ) %]"
                         [% ELSE %]
-                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], lf.table2path.item(table) ) %]"
+                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], tpath ) %]"
                         [% END %]
                                 [% ' selected="selected"' IF table == lf.main.title %]>[% table %]</option>
                       [% END %]
