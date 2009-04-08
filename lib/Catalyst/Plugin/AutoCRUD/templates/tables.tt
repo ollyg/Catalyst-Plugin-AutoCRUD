@@ -13,11 +13,13 @@
         <div id="navcontainer">
         <ul>
         [% FOREACH t IN lf.table2path.keys.sort %]
+            [% SET table = lf.table2path.item(t) %]
+            [% NEXT IF site_conf.$db.$table.hidden == 'yes' %]
             <li>
             [% IF site == 'default' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], lf.table2path.item(t) ) %]">[% t %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], table ) %]">[% t %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site, db], lf.table2path.item(t) ) %]">[% t %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site, db], table ) %]">[% t %]</a>
             [% END %]
             </li>
         [% END %]
@@ -40,11 +42,13 @@
         <div id="navcontainer">
         <ul>
         [% FOREACH d IN lf.db2path.keys.sort %]
+            [% SET schema = lf.db2path.item(d) %]
+            [% NEXT IF site_conf.$schema.hidden == 'yes' %]
             <li>
             [% IF site == 'default' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [lf.db2path.item(d)] ) %]">[% d %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [schema] ) %]">[% d %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site, lf.db2path.item(d)] ) %]">[% d %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site, schema] ) %]">[% d %]</a>
             [% END %]
             </li>
         [% END %]
