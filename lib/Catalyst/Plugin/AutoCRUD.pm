@@ -128,6 +128,7 @@ A configuration file somewhere on your system:
 
  <Catalyst::Plugin::AutoCRUD>
     extjs2   /static/javascript/extjs-2
+    basepath autocrud
  </Catalyst::Plugin::AutoCRUD>
  
  <Model::AutoCRUD::DBIC>
@@ -148,8 +149,9 @@ And in the CGI area of your web server:
  __PACKAGE__->setup;
  1;
 
-Now going to the CGI area's URL will display a list of the tables in your
-database. Each item is a link to the web interface for that table.
+Now going to the CGI area's URL with C</autocrud/> on the path will display a
+list of the tables in your database. Each item is a link to the web interface
+for that table.
 
 =head1 DESCRIPTION
 
@@ -212,6 +214,10 @@ application, and all generated links in AutoCRUD will also make use of that path
 Remember this is added to the C<base> of your Cataylst application which,
 depending on your web server configuration, might also have a leading path.
 
+If you leave out the C<basepath> option then the plugin defaults to using
+C<autocrud>, so that it doesn't clash with your application's actions when
+loaded.
+
 This mode of operation works even if you have more than one database. You will
 be offered a Home screen to select the database, and then another menu to
 select the table within that.
@@ -254,6 +260,10 @@ libraries. This will be used in the templates in some way like this:
 The C<Model::AutoCRUD::DBIC> section must look (and be named) exactly like that
 above, except you should of course change the C<schema_class> value and the
 values within C<connect_info>.
+
+Remember that the pages available from this plugin will be located under the
+C<autocrud> path if your application. Use the C<basepath> option if you want
+to override this.
 
 =head3 C<DBIx::Class> setup
 
@@ -365,8 +375,9 @@ see instead.
 
 If you want to use this application as a plugin with another Catalyst system,
 it should work fine, but you probably want to serve pages under a different
-path on your web site. To do that, add the following to your configuration
-file:
+path on your web site. To that end, the plugin by default places its pages
+under a path part of C<...E<sol>autocrudE<sol>>. You can change this by adding
+the following option to your configuration file:
 
  <Catalyst::Plugin::AutoCRUD>
     basepath admin
@@ -376,6 +387,13 @@ In the above example, the path C<...E<sol>adminE<sol>> will contain the AutoCRUD
 application, and all generated links in AutoCRUD will also make use of that path.
 Remember this is added to the C<base> of your Cataylst application which,
 depending on your web server configuration, might also have a leading path.
+
+To have the links based at the root of your application, set this variable to
+an empty string in your configuration:
+
+ <Catalyst::Plugin::AutoCRUD>
+    basepath ""
+ </Catalyst::Plugin::AutoCRUD>
 
 =head1 EXAMPLES
 
