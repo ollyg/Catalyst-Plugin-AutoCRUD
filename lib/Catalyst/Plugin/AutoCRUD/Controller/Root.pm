@@ -156,9 +156,6 @@ sub build_site_config : Private {
     $c->stash->{site_conf} = $site;
     $self->_site_conf_cache->{$c->stash->{site}} = $site;
 
-    use Data::Dumper;
-    print STDERR Dumper $c->stash->{site_conf};
-
     $c->log->debug(sprintf "autocrud: cached the config for site [%s]",
             $c->stash->{site}) if $c->debug;
 }
