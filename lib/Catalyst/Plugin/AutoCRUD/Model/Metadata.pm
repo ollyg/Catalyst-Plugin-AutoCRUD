@@ -51,7 +51,6 @@ $xtype_for{$_} = 'xdatetime' for (
 
 sub process {
     my ($self, $c) = @_;
-    my $lf = $c->stash->{lf} = {};
 
     if (exists $c->stash->{db} and defined $c->stash->{db}
         and exists $c->stash->{table} and defined $c->stash->{table}
@@ -67,7 +66,7 @@ sub process {
     }
 
     # set up databases list, even if only to display to user
-    _build_db_info($c, $lf);
+    my $lf = $c->stash->{lf} = $self->build_db_info($c);
 
     # only one db anyway? pretend the user selected that
     $c->stash->{db} = [keys %{$lf->{dbpath2model}}]->[0]
@@ -78,17 +77,7 @@ sub process {
             or !exists $lf->{dbpath2model}->{ $c->stash->{db} };
 
     $c->stash->{dbtitle} = _2title( $c->stash->{db} );
-
-    # set up tables list, even if only to display to user
-    my $try_schema = $c->model( $lf->{dbpath2model}->{ $c->stash->{db} } )->schema;
-    foreach my $m ($try_schema->sources) {
-        my $model = _moniker2model($c, $m)
-            or croak "unable to translate model [$m] into moniker, bailing out";
-        my $p = _rs2path($c->model($model)->result_source);
-
-        $lf->{table2path}->{ _2title($p) } = $p;
-        $lf->{path2model}->{$c->stash->{db}}->{ $p } = $model;
-    }
+    $self->build_table_info_for_db($c, $lf, $c->stash->{db});
 
     # no table specified, or unknown table
     return if !defined $c->stash->{table}
@@ -107,9 +96,24 @@ sub process {
     return $self;
 }
 
-sub _build_db_info {
-    my ($c, $lf) = @_;
-    my %sources;
+sub build_table_info_for_db {
+    my ($self, $c, $lf, $db) = @_;
+
+    # set up tables list, even if only to display to user
+    my $try_schema = $c->model( $lf->{dbpath2model}->{$db} )->schema;
+    foreach my $m ($try_schema->sources) {
+        my $model = _moniker2model($c, $lf, $db, $m)
+            or croak "unable to translate model [$m] into moniker, bailing out";
+        my $p = _rs2path($c->model($model)->result_source);
+
+        $lf->{table2path}->{ _2title($p) } = $p;
+        $lf->{path2model}->{$db}->{ $p } = $model;
+    }
+}
+
+sub build_db_info {
+    my ($self, $c) = @_;
+    my (%lf, %sources);
 
     MODEL:
     foreach my $m ($c->models) {
@@ -134,9 +138,11 @@ sub _build_db_info {
             $name = lc [ reverse split '::', $s ]->[0];            
         }
 
-        $lf->{db2path}->{_2title($name)} = $name;
-        $lf->{dbpath2model}->{$name} = $s;
+        $lf{db2path}->{_2title($name)} = $name;
+        $lf{dbpath2model}->{$name} = $s;
     }
+
+    return \%lf;
 }
 
 sub _build_table_info {
@@ -219,7 +225,7 @@ sub _build_table_info {
     foreach my $col (keys %fks, keys %sfks) {
 
         $ti->{cols}->{$col}->{fk_model}
-            = _moniker2model( $c, $source->related_source($col)->source_name );
+            = _moniker2model( $c, $lf, $c->stash->{db}, $source->related_source($col)->source_name );
         next if !defined $ti->{cols}->{$col}->{fk_model};
 
         # override the heading for this col to be the foreign table name
@@ -299,8 +305,8 @@ sub _rs2path {
 
 # find catalyst model which is serving this DBIC result source
 sub _moniker2model {
-    my ($c, $moniker) = @_;
-    my $dbmodel = $c->stash->{lf}->{dbpath2model}->{ $c->stash->{db} };
+    my ($c, $lf, $db, $moniker) = @_;
+    my $dbmodel = $lf->{dbpath2model}->{ $db };
 
     foreach my $m ($c->models) {
         my $model = $c->model($m);

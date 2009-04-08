@@ -99,7 +99,7 @@ sub err_message : Private {
 # build site config for filtering the frontend
 sub build_site_config : Private {
     my ($self, $c) = @_;
-    my $site = __PACKAGE__->_site_conf_cache->{$c->stash->{site}} ||= {};
+    my $site = $self->_site_conf_cache->{$c->stash->{site}} ||= {};
 
     # if we have it cached
     if ($site->{__built}) {
@@ -109,9 +109,21 @@ sub build_site_config : Private {
         return;
     }
 
+    # first, prime our structure of schema and source aliases
+    # get stash of db path parts
+    my $lf = $c->forward(qw/AutoCRUD::Metadata build_db_info/);
+    foreach my $db (keys %{$lf->{dbpath2model}}) {
+        $site->{$db} ||= {};
+        # get stash of table path parts
+        $c->forward(qw/AutoCRUD::Metadata build_table_info_for_db/, [$lf, $db]);
+        foreach my $table (keys %{$lf->{path2model}->{$db}}) {
+            $site->{$db}->{$table} ||= {};
+        }
+    }
+
     # load whatever the user set in their site config
     $site = Catalyst::Utils::merge_hashes(
-        $c->config->{'Catalyst::Plugin::AutoCRUD'}->{sites}->{$c->stash->{site}} || {},
+        ($c->config->{'Catalyst::Plugin::AutoCRUD'}->{sites}->{$c->stash->{site}} || {}),
         $site);
 
     my %defaults = (
@@ -142,7 +154,10 @@ sub build_site_config : Private {
 
     $site->{__built} = 1;
     $c->stash->{site_conf} = $site;
-    __PACKAGE__->_site_conf_cache->{$c->stash->{site}} = $site;
+    $self->_site_conf_cache->{$c->stash->{site}} = $site;
+
+    use Data::Dumper;
+    print STDERR Dumper $c->stash->{site_conf};
 
     $c->log->debug(sprintf "autocrud: cached the config for site [%s]",
             $c->stash->{site}) if $c->debug;
