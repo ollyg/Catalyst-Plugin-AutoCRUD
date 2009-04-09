@@ -5,8 +5,15 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
 use Catalyst::Utils;
+use File::Basename;
 
 __PACKAGE__->mk_classdata(_site_conf_cache => {});
+
+# the templates are squirreled away in ../templates
+(my $pkg_path = __PACKAGE__) =~ s{::}{/}g;
+my (undef, $directory, undef) = fileparse(
+    $INC{ $pkg_path .'.pm' }
+);
 
 sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     my ($self, $c) = @_;
@@ -155,7 +162,7 @@ sub build_site_config : Private {
         $site);
 
     my %defaults = (
-        frontend => 'default',
+        frontend => 'full-fat', # needlessly copied to schema & sources
         create_allowed => 'yes',
         update_allowed => 'yes',
         delete_allowed => 'yes',
@@ -199,7 +206,12 @@ sub helloworld : Chained('base') Args(0) {
     $c->stash->{template} = 'helloworld.tt';
 }
 
-sub end : ActionClass('RenderView') {}
+sub end : ActionClass('RenderView') {
+    my ($self, $c) = @_;
+    my $frontend = $c->stash->{site_conf}->{frontend};
+    $c->stash->{additional_template_paths} =
+            ["$directory../templates/$frontend"];
+}
 
 1;
 __END__
