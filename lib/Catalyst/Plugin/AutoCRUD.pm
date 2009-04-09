@@ -410,7 +410,7 @@ system (> 0.04005).
 =item *
 
 SQLite3 and the accompanying DBD module, if you want to use the shipped demo
-database and not your own data source.
+database.
 
 =back
 

@@ -13,21 +13,22 @@ WARNING
 
 PURPOSE
     You have a database, and wish to have a basic web interface supporting
-    Create, Retrieve, Update, Delete and Search, with little effort.
-
-    This module, with only a few lines of configuration, is able to create
-    such interfaces on the fly. They are a bit whizzy and all Web 2.0-ish.
+    Create, Retrieve, Update, Delete and Search, with little effort. This
+    module is able to create such interfaces on the fly. They are a bit
+    whizzy and all Web 2.0-ish.
 
 SYNOPSIS
-    A configuration file somewhere on your system:
+    If you already have a Catalyst app with DBIx::Class models configured:
 
-     # [autocruduser.conf] in Config::General format
+     use Catalyst qw(AutoCRUD); # <-- add the plugin name here in myapp.pm
 
-     <Catalyst::Plugin::AutoCRUD>
-        extjs2   /static/javascript/extjs-2
-     </Catalyst::Plugin::AutoCRUD>
-     
- <Model::AutoCRUD::DBIC>
+    Now load your app in a web browser, but add "/autocrud" to the URL path.
+
+    Alternatively, to connect to an external database if you have the
+    DBIX::Class schema available, use the "ConfigLoader" plugin with the
+    following config:
+
+     <Model::AutoCRUD::DBIC>
          schema_class   My::Database::Schema
          connect_info   dbi:Pg:dbname=mydbname;host=mydbhost.example.com;
          connect_info   username
@@ -37,16 +38,8 @@ SYNOPSIS
          </connect_info>
      </Model::AutoCRUD::DBIC>
 
-    And in the CGI area of your web server:
-
-     package AutoCRUDUser;
-     use Catalyst qw(ConfigLoader AutoCRUD);
-     
- __PACKAGE__->setup;
-     1;
-
-    Now going to the CGI area's URL will display a list of the tables in
-    your database. Each item is a link to the web interface for that table.
+    If you don't have the DBIx::Class schema available, just omit the
+    "schema_class" option (and have DBIx::Class::Schema::Loader installed).
 
 DESCRIPTION
     This module contains an application which will automatically construct a
@@ -64,15 +57,15 @@ DESCRIPTION
     interface after a page refresh.
 
 USAGE
-  Pre-configuration
-    You'll need to download the ExtJS Javascript Library (version 2.2+
-    recommended), from this web page:
-    <http://extjs.com/products/extjs/download.php>.
+  Read Me First
+    If you're upgrading from CatalystX::ListFramework::Builder, please note
+    the following important changes:
 
-    Install it to your web server in a location that it is able to serve as
-    static content. Make a note of the path used in a URL to retrieve this
-    content, as it will be needed in the application configuration file,
-    below.
+    *   The base URL path now defaults to "/autocrud" if you don't set it.
+        Override this with the "basepath" option.
+
+    *   You probably want to delete the "extjs2" option from your config, as
+        this plugin can now pull the files from CacheFly.
 
   Scenario 1: Plugin to an existing Catalyst App
     This mode is for when you have written your Catalyst application, but
@@ -80,7 +73,7 @@ USAGE
     direct, secondary web interface to the database.
 
      package AutoCRUDUser;
-     use Catalyst qw(ConfigLoader AutoCRUD);
+     use Catalyst qw(AutoCRUD);
      
  __PACKAGE__->setup;
      1;
@@ -88,35 +81,21 @@ USAGE
     Adding "Catalyst::Plugin::AutoCRUD" as a plugin to your Catalyst
     application, as above, causes it to scan your existing Models. If any of
     them are built using Catalyst::Model::DBIC::Schema, they are
-    automatically loaded. You still need to provide a small amount of
-    configuration:
-
-     <Catalyst::Plugin::AutoCRUD>
-        extjs2   /static/javascript/extjs-2
-        basepath admin
-     </Catalyst::Plugin::AutoCRUD>
-
-    First the plugin needs to know where your copy of ExtJS is, on the web
-    server. Use the "extjs2" option as shown above to specify the URL path
-    to the libraries. This will be used in the templates in some way like
-    this:
-
-     <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
-
-    In the above example, the path ".../admin/" will contain the AutoCRUD
-    application, and all generated links in AutoCRUD will also make use of
-    that path. Remember this is added to the "base" of your Cataylst
-    application which, depending on your web server configuration, might
-    also have a leading path.
+    automatically loaded.
 
     This mode of operation works even if you have more than one database.
     You will be offered a Home screen to select the database, and then
     another menu to select the table within that.
 
+    Remember that the pages available from this plugin will be located under
+    the "/autocrud" path if your application. Use the "basepath" option if
+    you want to override this.
+
   Scenario 2: Frontend for an existing "DBIx::Class::Schema" based class
     In this mode, "Catalyst::Plugin::AutoCRUD" is running standalone, in a
     sense as the Catalyst application itself. Your main application file
-    looks the same as in Scenario 1, though:
+    looks almost the same as in Scenario 1, except you'll need the
+    "ConfigLoader" plugin:
 
      package AutoCRUDUser;
      use Catalyst qw(ConfigLoader AutoCRUD);
@@ -128,11 +107,7 @@ USAGE
     the "DBIx::Class" schema, and also provide database connection
     parameters.
 
-     <Catalyst::Plugin::AutoCRUD>
-        extjs2   /static/javascript/extjs-2
-     </Catalyst::Plugin::AutoCRUD>
-     
- <Model::AutoCRUD::DBIC>
+     <Model::AutoCRUD::DBIC>
          schema_class   My::Database::Schema
          connect_info   dbi:Pg:dbname=mydbname;host=mydbhost.example.com;
          connect_info   username
@@ -142,16 +117,13 @@ USAGE
          </connect_info>
      </Model::AutoCRUD::DBIC>
 
-    First the plugin needs to know where your copy of ExtJS is, on the web
-    server. Use the "extjs2" option as shown above to specify the URL path
-    to the libraries. This will be used in the templates in some way like
-    this:
-
-     <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
-
     The "Model::AutoCRUD::DBIC" section must look (and be named) exactly
     like that above, except you should of course change the "schema_class"
     value and the values within "connect_info".
+
+    Remember that the pages available from this plugin will be located under
+    the "/autocrud" path if your application. Use the "basepath" option if
+    you want to override this.
 
    "DBIx::Class" setup
     You will of course need the "DBIx::Class" schema to be created and
@@ -190,11 +162,7 @@ USAGE
  __PACKAGE__->setup;
      1;
 
-     <Catalyst::Plugin::AutoCRUD>
-        extjs2   /static/javascript/extjs-2
-     </Catalyst::Plugin::AutoCRUD>
-     
- <Model::AutoCRUD::DBIC>
+     <Model::AutoCRUD::DBIC>
          connect_info   dbi:Pg:dbname=mydbname;host=mydbhost.example.com;
          connect_info   username
          connect_info   password
@@ -263,8 +231,9 @@ TIPS AND TRICKS
   Relocating AutoCRUD to another URL path
     If you want to use this application as a plugin with another Catalyst
     system, it should work fine, but you probably want to serve pages under
-    a different path on your web site. To do that, add the following to your
-    configuration file:
+    a different path on your web site. To that end, the plugin by default
+    places its pages under a path part of ".../autocrud/". You can change
+    this by adding the following option to your configuration file:
 
      <Catalyst::Plugin::AutoCRUD>
         basepath admin
@@ -276,6 +245,38 @@ TIPS AND TRICKS
     application which, depending on your web server configuration, might
     also have a leading path.
 
+    To have the links based at the root of your application, set this
+    variable to an empty string in your configuration:
+
+     <Catalyst::Plugin::AutoCRUD>
+        basepath ""
+     </Catalyst::Plugin::AutoCRUD>
+
+  Using your own ExtJS libraries
+    The plugin will use copies of the ExtJS libraries hosted in the CacheFly
+    content delivery network out there on the Internet. Under some
+    circumstances you'll want to use your own hosted copy, for instance if
+    you are serving HTTPS (because browsers will warn about mixed HTTP and
+    HTTPS content).
+
+    In which case, you'll need to download the ExtJS Javascript Library
+    (version 2.2+ recommended), from this web page:
+    <http://extjs.com/products/extjs/download.php>.
+
+    Install it to your web server in a location that it is able to serve as
+    static content. Make a note of the path used in a URL to retrieve this
+    content, as it will be needed in the application configuration file,
+    like so:
+
+     <Catalyst::Plugin::AutoCRUD>
+        extjs2  /static/javascript/extjs-2
+     </Catalyst::Plugin::AutoCRUD>
+
+    Use the "extjs2" option as shown above to specify the URL path to the
+    libraries. This will be used in the templates in some way like this:
+
+     <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
+
 EXAMPLES
     The code examples given above in this manual are also supplied in the
     form of a sample application. You'll find the application itself in the
@@ -285,25 +286,31 @@ EXAMPLES
 INSTANT DEMO APPLICATION
     If you want to run an instant demo of this module, with minimal
     configuration, then a simple application for that is shipped with this
-    distribution. For this to work, you must have the very latest version of
-    DBIx::Class::Schema::Loader installed on your system (> 0.04005).
+    distribution. For this to work, you must have:
 
-    First go to the "examples/demo/" directory of this distribution and edit
-    "demo.conf" so that it contains the correct "dsn", username, and
-    password for your database. Next, download a copy of the ExtJS 2.x
-    Javascript library, and make a note of where you put it. Then create the
-    following directory, and symbolic link:
+    *   The very latest version of DBIx::Class::Schema::Loader installed on
+        your system (> 0.04005).
 
-     demo> mkdir -p root/static
-     demo> ln -s /path/to/your/extjs-2 root/static/extjs-2
+    *   SQLite3 and the accompanying DBD module, if you want to use the
+        shipped demo database.
 
-    Now start the demo application like so:
+    Go to the "examples/sql/" directory of this distribution and run the
+    "bootstrap_sqlite.pl" perl script. This will create an SQLite file.
+
+    Now change to the "examples/demo/" directory and start the demo
+    application like so:
 
      demo> perl ./server.pl
 
     Although the instruction at the end of the output says to visit
     (something like) "http://localhost:3000", you *must* instead visit
-    "http://localhost:3000/cpac/" (i.e. add "/cpac/" to the end).
+    "http://localhost:3000/autocrud" (i.e. add "/autocrud" to the end). Et
+    voila!
+
+    To use your own database rather than the SQLite demo, edit
+    "examples/demo/demo.conf" so that it contains the correct "dsn",
+    username, and password for your database. Upon restarting the
+    application you should see your own data source instaed.
 
 LIMITATIONS
     Single column primary key
@@ -322,9 +329,6 @@ LIMITATIONS
     you might be able to buy some of my time for the development.
 
 REQUIREMENTS
-    *   ExtJS Javascript Library (version 2.2+ recommended), from
-        <http://extjs.com>.
-
     *   Catalyst::Runtime >= 5.70
 
     *   Catalyst::Model::DBIC::Schema
