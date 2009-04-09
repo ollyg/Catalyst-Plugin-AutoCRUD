@@ -277,6 +277,202 @@ TIPS AND TRICKS
 
      <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
+SITES CONFIGURATION
+    Another feature borrowed from the original CatalystX::ListFramework is
+    the ability to have multiple views of your data, tailored in various
+    ways. For example you might choose to hide some tables, or columns
+    within tables, rename headings of columns, or disable updates or
+    deletes.
+
+  Altering the Default Site
+    When using this plugin out of the box you're already running within the
+    default site, which unsurprisingly is called "default". To override
+    settings in this, create the following configuration stub, and fill it
+    in with any of the options listed below:
+
+     <Catalyst::Plugin::AutoCRUD>
+        <sites>
+            <default>
+                # override settings here
+            </default>
+        </sites>
+     </Catalyst::Plugin::AutoCRUD>
+
+  Configuration Options for Sites
+   Notes
+    In the discussion below, the term *schema* is used to mean the database,
+    and *source* is used to mean table. These are just more accurate terms
+    for the purposes of this plugin.
+
+    In general, when you apply a setting to something at a higher level
+    (say, a schema), it *percolates* down to the child sections (i.e. the
+    sources). For example, setting "delete_allowed no" on a schema will
+    prevent records from any source within that from being deleted.
+
+    Some of the options are *global* for a site, others apply to the schema
+    or sources within it. To specify an option for one or the other, use the
+    schema and source names *as they appear in the URL path*:
+
+     <Catalyst::Plugin::AutoCRUD>
+        <sites>
+            <default>
+                # global settings for the site, here
+                <myschema>
+                    # override settings here
+                    <somesource>
+                        # and/or override settings here
+                    </somesource
+                </myschema>
+            </default>
+        </sites>
+     </Catalyst::Plugin::AutoCRUD>
+
+   Options
+    update_allowed [ yes* | no ]
+        This can be applied to either a schema or source; if applied to a
+        schema it percolates to all the sources, unless the source has a
+        different setting.
+
+        The default is to allow updates to be made to records in the
+        sources. Set this to a value of "no" to prevent updates from being
+        allowed. Widgets will also be removed from the user interface so as
+        not to confuse users.
+
+         <Catalyst::Plugin::AutoCRUD>
+            <sites>
+                <default>
+                    update_alowed no
+                </default>
+            </sites>
+         </Catalyst::Plugin::AutoCRUD>
+
+        Important note: this setting applies to both the creation of new
+        records in your source, as well as the updating of existing records.
+
+    delete_allowed [ yes* | no ]
+        This can be applied to either a schema or source; if applied to a
+        schema it percolates to all the sources, unless the source has a
+        different setting.
+
+        The default is to allow deletions of records in the sources. Set
+        this to a value of "no" to prevent deletions from being allowed.
+        Widgets will also be removed from the user interface so as not to
+        confuse users.
+
+         <Catalyst::Plugin::AutoCRUD>
+            <sites>
+                <default>
+                    delete_allowed no
+                </default>
+            </sites>
+         </Catalyst::Plugin::AutoCRUD>
+
+    list_returns [ \@columns | { col => title, ... } ]
+        To restrict the set of columns displayed, provide a list of the
+        column names (as the data source knows them) to this setting. In
+        "Config::General" format, this would look something like:
+
+         <Catalyst::Plugin::AutoCRUD>
+            <sites>
+                <default>
+                    list_returns    id
+                    list_returns    title
+                    list_returns    length
+                </default>
+            </sites>
+         </Catalyst::Plugin::AutoCRUD>
+
+        So any columns existing in the source, but not mentioned there, will
+        not be displayed in the main table. They'll still appear in the
+        record edit form, but that might be fixed in a future version of
+        this plugin. If using this feauture, you probably want to also use
+        "update_allowed no" to preserve your users' sanity.
+
+        At the same time, you can alter the titles given to some columns in
+        the user interface, by changing this option from a list to a hash
+        form:
+
+         <Catalyst::Plugin::AutoCRUD>
+            <sites>
+                <default>
+                    <list_returns>
+                        id      Key
+                        title   Name
+                        length  Time
+                    </list_returns>
+                </default>
+            </sites>
+         </Catalyst::Plugin::AutoCRUD>
+
+        Here, the columns are still restricted, and their titles are changed
+        to the values on the right hand side. To use the default value for a
+        column (i.e. what the Plugin works out for itself), just omit the
+        value on the right hand side.
+
+    hidden [ yes | no* ]
+        If you don't want a schema to be offered to the user, or likewise a
+        particular source, then set this option to "yes". By default, all
+        schema and sources are shown in the user interface.
+
+         <Catalyst::Plugin::AutoCRUD>
+            <sites>
+                <default>
+                    <myschema>
+                        <secretsource>
+                            hidden yes
+                        </secretsource>
+                    </myschema>
+                </default>
+            </sites>
+         </Catalyst::Plugin::AutoCRUD>
+
+        This can be applied to either a schema or source; if applied to a
+        schema it overrides all child sources, even if a source has a
+        different setting.
+
+    frontend [ full-fat | skinny | ... ]
+        This option isn't fully implemented. It allows you to swap out the
+        set of templates used to generate the web front-end. At the moment,
+        only the "full-fat" option is implemented, and it's the ExtJS
+        front-end you'll be familiar with.
+
+        The "skinny" front-end is just a stub (you can try if it you like),
+        and I'm hoping someone will write HTML/CSS with a more lightweight
+        JS library such as JQuery or YUI, and submit that.
+
+  Creating a New Site
+    You can create a new site by adding it to the "sites" section of your
+    configuration:
+
+     <Catalyst::Plugin::AutoCRUD>
+        <sites>
+            <mysite>
+                # local settings here
+            </mysite>
+        </sites>
+     </Catalyst::Plugin::AutoCRUD>
+
+    You'll notice that a non-default site is active because the path in your
+    URLs changes to a more RPC-like verbose form, mentioning the site,
+    schema and source:
+
+     from this:
+     .../autocrud/myschema/thesource    # (i.e. site == default)
+      
+ to this:
+     .../autocrud/site/mysite/schema/myschema/source/thesource
+
+    So let's say you've created a dumbed down site for your users which is
+    read-only (i.e. "update_allowed no" and "delete_allowed no"), and called
+    the site "simplesite" in your configuration. You need to give the
+    following URL to users:
+
+      .../autocrud/site/simplesite
+
+    You could also then place an access control on this path part in your
+    web server (e.g. Apache) which is different from the default site
+    itself.
+
 EXAMPLES
     The code examples given above in this manual are also supplied in the
     form of a sample application. You'll find the application itself in the
