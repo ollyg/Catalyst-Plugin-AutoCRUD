@@ -124,7 +124,7 @@ to create such interfaces on the fly. They are a bit whizzy and all Web
 
 If you already have a L<Catalyst> app with L<DBIx::Class> models configured:
 
- use Catalyst qw(AutoCRUD); # <-- add the plugin name here in myapp.pm
+ use Catalyst qw(AutoCRUD); # <-- add the plugin name here in MyApp.pm
 
 Now load your app in a web browser, but add C</autocrud> to the URL path.
 
