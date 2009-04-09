@@ -45,6 +45,7 @@
                     return false;
                 }
 
+              [% IF site_conf.$db.$table.delete_allowed == 'yes' %]
                 if (fieldName == 'lf-delete-column') {
                     if (row === 0) {
                         // edit row is ignored
@@ -89,6 +90,7 @@
 
                     return false;
                 }
+              [% END %]
 
                 if (row === 0) {
                     if (isFK(fieldName) || isCheck(fieldName)) {
@@ -99,6 +101,7 @@
                     rec.set(fieldName, '');
                     g.startEditing(row,col);
                 }
+              [% IF site_conf.$db.$table.update_allowed == 'yes' %]
                 else {
                     // draw the window!
                     var win = generate_win();
@@ -125,6 +128,7 @@
                       [% END %]
                     });
                 }
+              [% END %]
             }
             ,beforeedit: function(e) {
                 // cancel ENTER key driven edits from the filter row

@@ -6,9 +6,13 @@
     // the do the one_to_many cols, and then add a column with a delete button
 
     var cm = new Ext.grid.ColumnModel([
+      [% SET colcount = 0 %]
       [% FOREACH col IN lf.main.col_order %]
-        [% ',' IF lf.main.col_order.size > 1 AND NOT loop.first %]{
-          [% IF lf.main.cols.$col.is_fk %]
+        [% NEXT IF site_conf.$db.$table.list_returns.defined AND NOT site_conf.$db.$table.list_returns.$col.defined %]
+        [% ',' IF lf.main.col_order.size > 1 AND colcount != 0 %]{
+          [% IF site_conf.$db.$table.exists(list_returns) AND site_conf.$db.$table.list_returns.exists($col) AND site_conf.$db.$table.list_returns.$col != '' %]
+            header:     '[% site_conf.$db.$table.list_returns.$col %]'
+          [% ELSIF lf.main.cols.$col.is_fk %]
             header:     '[% lf.main.cols.$col.heading %] (FK)'
           [% ELSE %]
             header:     '[% lf.main.cols.$col.heading %]'
@@ -29,6 +33,7 @@
               [% END %]
             }
         }
+        [% SET colcount = colcount + 1 %]
       [% END %]
       [% FOREACH col IN lf.main.mfks.keys %]
         ,{
@@ -52,6 +57,7 @@
             }
         }
       [% END %]
+      [% IF site_conf.$db.$table.delete_allowed == 'yes' %]
         ,{
             header: 'Delete'
             ,width: 35
@@ -70,6 +76,7 @@
                 }
             }
         }
+      [% END %]
     ]);
 
     // by default columns are sortable

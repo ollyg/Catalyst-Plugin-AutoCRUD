@@ -7,10 +7,10 @@ libcatalyst-plugin-autocrud-perl (0.42) UNRELEASED; urgency=low
   * new config option basepath as an alternative to action->base->PathPart
   * AJAX now uses a more RPC-like url scheme, which is more extenisble as well
   * foreign table data link (magnifying glass) not shown if there's no data there
-  * if you have TT 2.20+ the runtime (but not tests) will use STRICT
   * default pathpart is now 'autocrud' so plugin should integrate better
   * added 'hidden' option to conf which can be applied to a schema or source
   * added 'delete_allowed', 'update_allowed' (also create) and 'list_returns'
+  * default for extjs2 option is to now use the CacheFly hosted libs :-)
 
  -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sat, 28 Mar 2009 18:43:48 +0000
 

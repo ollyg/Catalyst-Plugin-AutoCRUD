@@ -32,6 +32,7 @@
                     pagebar.doLoad(pagebar.cursor);
                 }
             }
+          [% IF site_conf.$db.$table.update_allowed == 'yes' %]
             ,'->' ,{
                 text: 'Add New [% lf.main.title %]'
                 ,cls: 'x-btn-text-icon'
@@ -42,5 +43,6 @@
                     win.show(this);
                 }
             }
+          [% END %]
         ]
     });

@@ -17,7 +17,7 @@ __PACKAGE__->config(
     INCLUDE_PATH => "$directory../templates",
     CATALYST_VAR => 'c',
     WRAPPER => 'wrapper.tt',
-    STRICT => 1,
+    # STRICT => 1,
 );
 
 # override to push a template var giving easy access to our plugin conf
