@@ -208,9 +208,9 @@ sub helloworld : Chained('base') Args(0) {
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{site_conf}->{frontend};
+    my $frontend = $c->stash->{site_conf}->{frontend} || 'full-fat';
     $c->stash->{additional_template_paths} =
-            ["$directory../templates/$frontend"];
+        ["$directory../templates/$frontend"];
 }
 
 1;
