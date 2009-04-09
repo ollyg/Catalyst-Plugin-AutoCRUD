@@ -7,6 +7,7 @@ use base 'Catalyst::Controller';
 
 sub testpage : Chained('/') Args(0) {
     my ($self, $c) = @_;
+    $c->stash->{current_view} = 'TT';
     $c->stash->{template} = 'testpage.tt';
 }
 
