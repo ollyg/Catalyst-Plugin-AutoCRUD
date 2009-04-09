@@ -41,7 +41,8 @@ sub setup_components {
             );
 
             eval q{
-                package AutoCRUD::Loader::Schema;
+                package # hide from the PAUSE
+                    AutoCRUD::Loader::Schema;
                 use base 'DBIx::Class::Schema';
                 AutoCRUD::Loader::Schema->load_classes();
                 1;
@@ -356,8 +357,9 @@ application, and all generated links in AutoCRUD will also make use of that path
 Remember this is added to the C<base> of your Cataylst application which,
 depending on your web server configuration, might also have a leading path.
 
-To have the links based at the root of your application, set this variable to
-an empty string in your configuration:
+To have the links based at the root of your application (which was the default
+behaviour of C<CatalystX::ListFramework::Builder>, set this variable to an
+empty string in your configuration:
 
  <Catalyst::Plugin::AutoCRUD>
     basepath ""
@@ -446,27 +448,29 @@ and source names I<as they appear in the URL path>:
 
 =item update_allowed [ yes* | no ]
 
-This can be applied to either a schema or source; if applied to a schema it
+This can be applied to either a schema or a source; if applied to a schema it
 percolates to all the sources, unless the source has a different setting.
 
-The default is to allow updates to be made to records in the sources. Set this
-to a value of C<no> to prevent updates from being allowed. Widgets will also
-be removed from the user interface so as not to confuse users.
+The default is to allow new records to be created, and also updates to be
+made to existing records. Set this to a value of C<no> to prevent these
+operations from being allowed.  Widgets will also be removed from the user
+interface so as not to confuse users.
 
  <Catalyst::Plugin::AutoCRUD>
     <sites>
         <default>
-            update_alowed no
+            update_allowed no
         </default>
     </sites>
  </Catalyst::Plugin::AutoCRUD>
 
 B<Important note:> this setting applies to both the creation of new records in
-your source, as well as the updating of existing records.
+your source, as well as the updating of existing records. There's no separate
+C<create_allowed> option.
 
 =item delete_allowed [ yes* | no ]
 
-This can be applied to either a schema or source; if applied to a schema it
+This can be applied to either a schema or a source; if applied to a schema it
 percolates to all the sources, unless the source has a different setting.
 
 The default is to allow deletions of records in the sources. Set this to a
@@ -633,7 +637,7 @@ voila!
 To use your own database rather than the SQLite demo, edit
 C<examples/demo/demo.conf> so that it contains the correct C<dsn>, username,
 and password for your database. Upon restarting the application you should see
-your own data source instaed.
+your own data source instead.
 
 =head1 LIMITATIONS
 
@@ -717,7 +721,7 @@ This distribution ships with the Ext.ux.form.DateTime Extension Class for Ext
 2.x Library, Copyright (c) 2008, Ing. Jozef Sakalos, and released under the
 LGPL 3.0 license (library version 289, 2008-06-12 21:08:08).
 
-The rest is Copyright (c) Oliver Gorwits 200999999999.
+The rest is Copyright (c) Oliver Gorwits 2009.
 
 This library is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.

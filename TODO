@@ -1,6 +1,5 @@
 TODO
  - add tests for all the new site features
- - make PAUSE ignore AutoCRUD::Loader::Schema
 
 IF TUITS ARRIVE IN THE POST
  - support for multiple FK referencing the same table (see _build_table_data
@@ -38,6 +37,7 @@ DONE
  - Auto generate Master/Site
  - Catalyst Component base class
  - Make TT files use configurable URL paths (e.g. css)
+ - make PAUSE ignore AutoCRUD::Loader::Schema
 
 NOT FIXABLE?
  - "tablename as checkboxname is bad, cause i have 'view' classes which have an
