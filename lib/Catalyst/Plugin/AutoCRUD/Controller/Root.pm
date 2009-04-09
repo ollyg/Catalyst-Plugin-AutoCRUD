@@ -158,7 +158,7 @@ sub build_site_config : Private {
 
     # load whatever the user set in their site config
     $site = Catalyst::Utils::merge_hashes(
-        ($c->config->{'Catalyst::Plugin::AutoCRUD'}->{sites}->{$c->stash->{site}} || {}),
+        ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{site}} || {}),
         $site);
 
     my %defaults = (

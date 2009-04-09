@@ -55,10 +55,11 @@ sub setup_components {
 
     # bodge the config for chained PathPart so the user can use our basepath
     # shortcut in their config, which is less verbose than Cat's alternative
-    if (exists $class->config->{$this_package}
-        and exists $class->config->{$this_package}->{basepath}) {
+    (my $config_key = $this_package) =~ s/^Catalyst:://;
+    if (exists $class->config->{$config_key}
+        and exists $class->config->{$config_key}->{basepath}) {
         $class->config->{'Controller::AutoCRUD::Root'}->{action}->{base}->{PathPart}
-            = $class->config->{$this_package}->{basepath};
+            = $class->config->{$config_key}->{basepath};
     }
 
     foreach my $orig (@packages) {
@@ -348,9 +349,9 @@ path on your web site. To that end, the plugin by default places its pages
 under a path part of C<...E<sol>autocrudE<sol>>. You can change this by adding
 the following option to your configuration file:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     basepath admin
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 In the above example, the path C<...E<sol>adminE<sol>> will contain the AutoCRUD
 application, and all generated links in AutoCRUD will also make use of that path.
@@ -361,9 +362,9 @@ To have the links based at the root of your application (which was the default
 behaviour of C<CatalystX::ListFramework::Builder>, set this variable to an
 empty string in your configuration:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     basepath ""
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 =head2 Using your own ExtJS libraries
 
@@ -380,9 +381,9 @@ Install it to your web server in a location that it is able to serve as static
 content. Make a note of the path used in a URL to retrieve this content, as it
 will be needed in the application configuration file, like so:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     extjs2  /static/javascript/extjs-2
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 Use the C<extjs2> option as shown above to specify the URL path to the
 libraries. This will be used in the templates in some way like this:
@@ -403,13 +404,13 @@ default site, which unsurprisingly is called C<default>. To override settings
 in this, create the following configuration stub, and fill it in with any of
 the options listed below:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             # override settings here
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 =head2 Configuration Options for Sites
 
@@ -428,7 +429,7 @@ Some of the options are I<global> for a site, others apply to the schema or
 sources within it. To specify an option for one or the other, use the schema
 and source names I<as they appear in the URL path>:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             # global settings for the site, here
@@ -440,7 +441,7 @@ and source names I<as they appear in the URL path>:
             </myschema>
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 =head3 Options
 
@@ -456,13 +457,13 @@ made to existing records. Set this to a value of C<no> to prevent these
 operations from being allowed.  Widgets will also be removed from the user
 interface so as not to confuse users.
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             update_allowed no
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 B<Important note:> this setting applies to both the creation of new records in
 your source, as well as the updating of existing records. There's no separate
@@ -477,13 +478,13 @@ The default is to allow deletions of records in the sources. Set this to a
 value of C<no> to prevent deletions from being allowed. Widgets will also be
 removed from the user interface so as not to confuse users.
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             delete_allowed no
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 =item list_returns [ \@columns | { col => title, ... } ]
 
@@ -491,7 +492,7 @@ To restrict the set of columns displayed, provide a list of the column names
 (as the data source knows them) to this setting. In C<Config::General> format,
 this would look something like:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             list_returns    id
@@ -499,7 +500,7 @@ this would look something like:
             list_returns    length
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 So any columns existing in the source, but not mentioned there, will not be
 displayed in the main table. They'll still appear in the record edit form, but
@@ -510,7 +511,7 @@ users' sanity.
 At the same time, you can alter the titles given to some columns in the user
 interface, by changing this option from a list to a hash form:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             <list_returns>
@@ -520,7 +521,7 @@ interface, by changing this option from a list to a hash form:
             </list_returns>
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 Here, the columns are still restricted, and their titles are changed to the
 values on the right hand side. To use the default value for a column (i.e.
@@ -533,7 +534,7 @@ If you don't want a schema to be offered to the user, or likewise a particular
 source, then set this option to C<yes>. By default, all schema and sources are
 shown in the user interface.
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <default>
             <myschema>
@@ -543,7 +544,7 @@ shown in the user interface.
             </myschema>
         </default>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 This can be applied to either a schema or source; if applied to a schema it
 overrides all child sources, B<even if> a source has a different setting.
@@ -566,13 +567,13 @@ JQuery or YUI, and submit that.
 You can create a new site by adding it to the C<sites> section of your
 configuration:
 
- <Catalyst::Plugin::AutoCRUD>
+ <Plugin::AutoCRUD>
     <sites>
         <mysite>
             # local settings here
         </mysite>
     </sites>
- </Catalyst::Plugin::AutoCRUD>
+ </Plugin::AutoCRUD>
 
 You'll notice that a non-default site is active because the path in your URLs
 changes to a more RPC-like verbose form, mentioning the site, schema and

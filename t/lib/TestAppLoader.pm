@@ -27,7 +27,7 @@ $dbh->disconnect;
 __PACKAGE__->__dbfile($dbfile);
 
 __PACKAGE__->config(
-    'Catalyst::Plugin::AutoCRUD' => {
+    'Plugin::AutoCRUD' => {
         extjs2 => '/javascript/extjs-2',
         basepath => '',
     },

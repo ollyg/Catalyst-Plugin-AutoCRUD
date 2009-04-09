@@ -25,7 +25,7 @@ sub template_vars {
     my ($self, $c) = (shift, $_[0]);
 
     my @vars = $self->next::method(@_);
-    return @vars, ( cpac => $c->config->{'Catalyst::Plugin::AutoCRUD'} );
+    return @vars, ( cpac => $c->config->{'Plugin::AutoCRUD'} );
 }
 
 sub process {

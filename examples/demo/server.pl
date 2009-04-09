@@ -25,7 +25,7 @@ package DemoApp;
 package main;
 
 my $debug             = 0;
-my $fork              = 0;
+my $fork              = 1;
 my $help              = 0;
 my $host              = undef;
 my $port              = $ENV{CATALYST_PORT} || 3000;
