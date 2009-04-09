@@ -56,9 +56,35 @@ sub _sfy {
     );
 }
 
+# we're going to check that calls to this RPC operation are allowed
+sub acl : Private {
+    my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $db = $c->stash->{db};
+    my $table = $c->stash->{table};
+
+    my $acl_for = {
+        # create   => 'create_allowed',
+        update   => 'update_allowed',
+        'delete' => 'delete_allowed',
+    };
+    my $action = [split m{/}, $c->action]->[-1];
+    my $acl = $acl_for->{ $action } or return;
+
+    if ($c->stash->{site_conf}->{$db}->{$table}->{$acl} ne 'yes') {
+        my $msg = "Access forbidden by configuration to [$site]->[$db]->[$table]->[$action]";
+        $c->log->debug($msg) if $c->debug;
+
+        $c->response->content_type('text/plain; charset=utf-8');
+        $c->response->body($msg);
+        $c->response->status('403');
+        $c->detach();
+    }
+}
 
 sub base : Chained('/autocrud/root/ajax') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
+    $c->forward('acl');
     $c->stash->{current_view} = 'AutoCRUD::JSON';
 }
 
@@ -72,6 +98,10 @@ sub dumpmeta : Chained('base') Args(0) {
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
+    my $site = $c->stash->{site};
+    my $db = $c->stash->{db};
+    my $table = $c->stash->{table};
+
     my $lf = $c->stash->{lf};
     my $info = $lf->{main};
     my $response = $c->stash->{json_data} = {};
@@ -106,6 +136,14 @@ sub list : Chained('base') Args(0) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
+    # aide memoire, according to pg manual:
+    # "It is also possible to use arbitrary expressions in the ORDER BY
+    # clause, including columns that do not appear in the SELECT result list."
+    if (my $list_returns = $c->stash->{site_conf}->{$db}->{$table}->{list_returns}) {
+        $search_opts->{columns} =
+            [(ref $list_returns eq 'HASH' ? keys %$list_returns : @$list_returns)];
+    }
+
     # XXX FIXME mst, avert your eyes NOW!
     my $convert =
         $c->model($lf->{model})->result_source->storage->sql_maker->{convert};
@@ -113,9 +151,9 @@ sub list : Chained('base') Args(0) {
         = 'lower';
     # okay, you can look again.
 
-    my @columns = keys %{ $info->{cols} };
     my $rs = $c->model($lf->{model})->search($filter, $search_opts);
-
+    my @columns = (exists $search_opts->{columns} ? @{$search_opts->{columns}}
+                                                  : keys %{ $info->{cols} });
     # make data structure for JSON output
     while (my $row = $rs->next) {
         my $data = {};

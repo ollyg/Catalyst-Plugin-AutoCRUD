@@ -90,25 +90,30 @@ sub do_meta : Private {
     # ACLs on the schema and source from site config
     if ($c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
         if ($site eq 'default') {
-            $c->res->redirect( $c->uri_for( $self->action_for('no_db') ), 303 );
+            $c->detach('verboden', [$c->uri_for( $self->action_for('no_db') )]);
         }
         else {
-            $c->res->redirect( $c->uri_for( $self->action_for('no_schema'), [$site] ), 303 );
+            $c->detach('verboden', [$c->uri_for( $self->action_for('no_schema'), [$site] )]);
         }
-        $c->detach();
     }
     if ($c->stash->{site_conf}->{$db}->{$table}->{hidden} eq 'yes') {
         if ($site eq 'default') {
-            $c->res->redirect( $c->uri_for( $self->action_for('no_table'), [$db] ), 303 );
+            $c->detach('verboden', [$c->uri_for( $self->action_for('no_table'), [$db] )]);
         }
         else {
-            $c->res->redirect( $c->uri_for( $self->action_for('no_source'), [$site, $db] ), 303 );
+            $c->detach('verboden', [$c->uri_for( $self->action_for('no_source'), [$site, $db] )]);
         }
-        $c->detach();
     }
 
     $c->forward('AutoCRUD::Metadata');
     $c->detach('err_message') if !defined $c->stash->{lf}->{model};
+}
+
+sub verboden : Private {
+    my ($self, $c, $target, $code) = @_;
+    $code ||= 303; # 3xx so RenderView skips template
+    $c->response->redirect( $target, $code );
+    # detaches -> end
 }
 
 sub err_message : Private {
