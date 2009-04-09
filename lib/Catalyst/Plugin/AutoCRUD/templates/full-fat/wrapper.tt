@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>[% title %][% ' - Powered by ' IF title %][% version %]</title>
 
-[% IF NOT cpac.exists(extjs2) %]
+[% IF NOT cpac.extjs2 %]
 <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />
 [% ELSE %]
 <link rel="stylesheet" type="text/css" href="[% cpac.extjs2 %]/resources/css/ext-all.css" />
@@ -15,7 +15,7 @@
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "iefix.css" ) %]" />
 [% END %]
 
-[% IF NOT cpac.exists(extjs2) %]
+[% IF NOT cpac.extjs2 %]
 <script type="text/javascript" src="http://extjs.cachefly.net/ext-2.2/adapter/ext/ext-base.js"></script>
 <script type="text/javascript" src="http://extjs.cachefly.net/ext-2.2/ext-all.js"></script>
 [% ELSE %]
