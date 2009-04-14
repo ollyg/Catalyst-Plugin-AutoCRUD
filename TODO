@@ -1,6 +1,7 @@
 TODO
  - add tests for all the new site features
  - move metadata generation into setup()
+ - use DBIx::Class::RDBOHelpers to help with multi-key PK ?
 
 IF TUITS ARRIVE IN THE POST
  - support for multiple FK referencing the same table (see _build_table_data
