@@ -22,6 +22,7 @@ lib/Catalyst/Plugin/AutoCRUD/Model/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/Metadata.pm
 lib/Catalyst/Plugin/AutoCRUD/static/add.png
 lib/Catalyst/Plugin/AutoCRUD/static/bin_closed.png
+lib/Catalyst/Plugin/AutoCRUD/static/body.css
 lib/Catalyst/Plugin/AutoCRUD/static/bullet_green.png
 lib/Catalyst/Plugin/AutoCRUD/static/bullet_red.png
 lib/Catalyst/Plugin/AutoCRUD/static/find.png
