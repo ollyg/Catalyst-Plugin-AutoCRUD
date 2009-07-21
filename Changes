@@ -1,6 +1,10 @@
 libcatalyst-plugin-autocrud-perl (0.45) UNRELEASED; urgency=low
 
   * tooltips now no longer line wrap, nor time out on display
+  * fix bug in list_returns col name override use
+  * rename all html ids and classes to be app specific names so as not to clash
+  * allow inclusion of extra TT paths at start for local overrides
+  * add (cosmetic only) create_allowed functionality
 
  -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Tue, 21 Jul 2009 20:01:48 +0100
 

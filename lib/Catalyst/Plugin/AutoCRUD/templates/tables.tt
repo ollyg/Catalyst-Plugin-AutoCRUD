@@ -19,7 +19,7 @@
         <p>The schema for database &quot;[% dbtitle %]&quot; has been loaded, so please select a table by clicking on its label, below.</p>
         <br />
 
-        <div id="navcontainer">
+        <div id="cpac_navcontainer">
         <ul>
         [% FOREACH t IN lf.table2path.keys.sort %]
             [% SET tpath = lf.table2path.item(t) %]
@@ -48,7 +48,7 @@
         <p>The following database schemas have been loaded. Please select one by clicking on its label, below.</p>
         <br />
 
-        <div id="navcontainer">
+        <div id="cpac_navcontainer">
         <ul>
         [% FOREACH d IN lf.db2path.keys.sort %]
             [% SET dpath = lf.db2path.item(d) %]

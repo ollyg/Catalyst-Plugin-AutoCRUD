@@ -64,7 +64,7 @@ sub acl : Private {
     my $table = $c->stash->{table};
 
     my $acl_for = {
-        # create   => 'create_allowed',
+        create   => 'create_allowed',
         update   => 'update_allowed',
         'delete' => 'delete_allowed',
     };
@@ -94,6 +94,21 @@ sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
     $c->stash->{json_data} = $c->stash->{lf};
     return $self;
+}
+
+# used just so we can construct paths from the javascript templates
+sub noop : Chained('base') PathPart('') Args(0) {
+    my ($self, $c) = @_;
+    $c->response->content_type('text/plain; charset=utf-8');
+    $c->response->body("Unrecognized call");
+    $c->response->status('403');
+    $c->detach();
+}
+
+# allows us to pseudo-acl the create call separately from update
+sub create : Chained('base') Args(0) {
+    my ($self, $c) = @_; 
+    $c->forward('update');
 }
 
 sub list : Chained('base') Args(0) {

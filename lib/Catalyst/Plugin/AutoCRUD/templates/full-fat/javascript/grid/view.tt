@@ -25,9 +25,9 @@
                 if (bb > 20) {
                     var vph = ((Ext.isIE) ? document.documentElement.clientHeight : window.innerHeight);
                     var hdHeight = this.mainHd.getHeight();
-                    var bnr = document.getElementById('banner').scrollHeight;
-                    var hdr = document.getElementById('header').scrollHeight;
-                    var ftr = document.getElementById('footer').scrollHeight;
+                    var bnr = document.getElementById('cpac_banner').scrollHeight;
+                    var hdr = document.getElementById('cpac_header').scrollHeight;
+                    var ftr = document.getElementById('cpac_footer').scrollHeight;
                     var pad = 85; // padding between divs aka "fudge factor"
 
                     var avail = vph - ftr - pad - hdHeight; // viewport height minus footer height

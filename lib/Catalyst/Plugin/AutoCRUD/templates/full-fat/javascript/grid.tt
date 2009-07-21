@@ -14,7 +14,7 @@
 
     var grid = new Ext.grid.EditorGridPanel({
         id: 'search-grid'
-        ,renderTo: 'content'
+        ,renderTo: 'cpac_content'
         ,autoHeight: true
         ,autoScroll: true
         ,stripeRows: true
@@ -104,7 +104,7 @@
               [% IF site_conf.$db.$table.update_allowed == 'yes' %]
                 else {
                     // draw the window!
-                    var win = generate_win();
+                    var win = generate_win('update');
                     win.show(this);
 
                     // handle for the form

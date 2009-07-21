@@ -32,14 +32,14 @@
                     pagebar.doLoad(pagebar.cursor);
                 }
             }
-          [% IF site_conf.$db.$table.update_allowed == 'yes' %]
+          [% IF site_conf.$db.$table.create_allowed == 'yes' %]
             ,'->' ,{
                 text: 'Add New [% lf.main.title %]'
                 ,cls: 'x-btn-text-icon'
                 ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "add.png" ) %]'
                 ,handler: function(){
                     // draw the window!
-                    var win = generate_win();
+                    var win = generate_win('create');
                     win.show(this);
                 }
             }

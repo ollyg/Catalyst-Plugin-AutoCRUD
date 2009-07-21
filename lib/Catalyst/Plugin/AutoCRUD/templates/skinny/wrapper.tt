@@ -7,6 +7,7 @@
 <!-- hack, until some good person comes along with proper html/css for me -->
 <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />
 
+<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "body.css" ) %]" />
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "lfb.css" ) %]" />
 [% IF c.req.user_agent.match('\.NET CLR') %]
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "iefix.css" ) %]" />
@@ -15,11 +16,11 @@
 </head>
 <body>
 
-<div id="banner">Catalyst AutoCRUD</div>
+<div id="cpac_banner">Catalyst AutoCRUD</div>
 
-<div id="outer" class="box">
+<div id="cpac_outer" class="cpac_box">
     <noscript>
-        <div id="warning">
+        <div id="cpac_warning">
             <h3>Javascript disabled ?</h3>
             <br />
             <p>It seems your web browser has not started the Javascript components which are required to view this site.</p>
@@ -29,10 +30,10 @@
         </div>
     </noscript>
 
-    <div id="header">
+    <div id="cpac_header">
         [% IF title %]
-        <div class="top">
-            <div class="left">
+        <div class="cpac_top">
+            <div class="cpac_left">
                 [% IF site == 'default' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> &gt;
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db] ) %]">[% dbtitle %]</a> &gt;
@@ -43,7 +44,7 @@
                 [% IF lf.table2path.keys.size == 1 %]
                     [% lf.main.title %]
                 [% ELSE %]
-                    <select id="picker" onchange="window.location = document.getElementById(this.id).value">
+                    <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
                       [% FOREACH table IN lf.table2path.keys.sort %]
                         [% SET tpath = lf.table2path.item(table) %]
                         [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
@@ -57,7 +58,7 @@
                     </select>
                 [% END %]
             </div>
-            <div class="right">&nbsp;</div>
+            <div class="cpac_right">&nbsp;</div>
         </div>
 
         [% ELSE %]
@@ -65,13 +66,13 @@
         [% END %]
     </div>
     
-    <div id="content">
+    <div id="cpac_content">
         [% IF title %]
             [% content %]
         [% END %]
     </div>
     
-    <div id="footer">
+    <div id="cpac_footer">
         Powered by [% version %]
     </div>
 </div> <!-- box -->

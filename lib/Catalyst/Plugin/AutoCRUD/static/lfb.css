@@ -46,14 +46,7 @@
  *
  */
 
-body {
-    font-family: "Bitstream Vera Sans", "Trebuchet MS",
-                  Verdana, Tahoma, Arial, helvetica,
-                  sans-serif;
-    background-color: #EEEEEE;
-}
-
-#banner {
+#cpac_banner {
     background-color: #E8CECC;
     border: 1px solid #C9AFAF;
     text-align: center;
@@ -61,14 +54,14 @@ body {
     margin: 4px 4px 2px 4px;
 }
 
-div.box {
+div.cpac_box {
     position: relative;
     border: 0px;
     padding: 0px;
     margin: 0px 2px 0px 2px;
 }
 
-#warning {
+#cpac_warning {
     background-color: #FFF2C1;
     border: 1px solid #FFE68C;
     font-size: small;
@@ -76,7 +69,7 @@ div.box {
     margin: 4px 4px 2px 4px;
 }
 
-#header {
+#cpac_header {
     background-color: #E2F0FF;
     border: 1px solid #BED3DD;
     font-size: small;
@@ -87,29 +80,29 @@ div.box {
 /* stuff for left-right magic, see
  * http://www.spartanicus.utvinternet.ie/left_and_right_alignment_using_css.htm
  */
-div.top { text-align: right }
-div.top div { display: inline }
-div.top div.left { float: left }
-#outer>div.top { display: table; width: 100% }
-#outer>div.top div { display: table-cell }
-#outer>div.top div.left { float: none; text-align: left }
-#outer>div.top div.right { text-align: right }
+div.cpac_top { text-align: right }
+div.cpac_top div { display: inline }
+div.cpac_top div.cpac_left { float: left }
+#cpac_outer>div.cpac_top { display: table; width: 100% }
+#cpac_outer>div.cpac_top div { display: table-cell }
+#cpac_outer>div.cpac_top div.cpac_left { float: none; text-align: left }
+#cpac_outer>div.cpac_top div.cpac_right { text-align: right }
 
-#navcontainer {
+#cpac_navcontainer {
     margin-left: 20px;
 }
 
-#navcontainer ul {
+#cpac_navcontainer ul {
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
 
-#navcontainer li {
+#cpac_navcontainer li {
     margin: 0 0 .2em 0;
 }
 
-#navcontainer a {
+#cpac_navcontainer a {
     display: block;
     background-color: #369;
     color: #FFF;
@@ -118,16 +111,16 @@ div.top div.left { float: left }
     text-decoration: none;
 }
 
-#navcontainer a:hover {
+#cpac_navcontainer a:hover {
     background-color: #036;
     color: #FFF;
 }
 
-#content {
+#cpac_content {
     clear: both;
 }
 
-#footer {
+#cpac_footer {
     background-color: #E2F0FF;
     border: 1px solid #BED3DD;
     font-size: xx-small;

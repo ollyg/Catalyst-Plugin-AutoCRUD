@@ -2,7 +2,7 @@
     // existing record. bit of a hack to make sure all tabs are treated as
     // being in the same form wrt ajax submission.
 
-    var generate_win = function() {
+    var generate_win = function(method) {
         return new Ext.Window({
             title: 'Edit [% lf.main.title %]'
             ,id: 'main-win'
@@ -18,7 +18,7 @@
                 xtype: 'form'
                 ,id: 'form-panel'
                 ,border: false
-                ,url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('update'), [site,db,lf.main.path] ) %]'
+                ,url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('noop'), [site,db,lf.main.path] ) %]/' + method
                 ,autoHeight: true
                 ,layout: 'fit'
     

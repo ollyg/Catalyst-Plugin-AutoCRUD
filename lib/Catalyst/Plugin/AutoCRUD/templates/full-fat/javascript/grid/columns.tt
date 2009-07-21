@@ -8,9 +8,9 @@
     var cm = new Ext.grid.ColumnModel([
       [% SET colcount = 0 %]
       [% FOREACH col IN lf.main.col_order %]
-        [% NEXT IF site_conf.$db.$table.list_returns.defined AND NOT site_conf.$db.$table.list_returns.$col.defined %]
+        [% NEXT IF site_conf.$db.$table.list_returns AND NOT site_conf.$db.$table.list_returns.$col %]
         [% ',' IF lf.main.col_order.size > 1 AND colcount != 0 %]{
-          [% IF site_conf.$db.$table.list_returns.defined AND site_conf.$db.$table.list_returns.$col.defined AND site_conf.$db.$table.list_returns.$col != '' %]
+          [% IF site_conf.$db.$table.list_returns AND site_conf.$db.$table.list_returns.$col AND site_conf.$db.$table.list_returns.$col != '' %]
             header:     '[% site_conf.$db.$table.list_returns.$col %]'
           [% ELSIF lf.main.cols.$col.is_fk %]
             header:     '[% lf.main.cols.$col.heading %] (FK)'
