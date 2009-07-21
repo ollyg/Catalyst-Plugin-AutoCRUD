@@ -48,9 +48,9 @@
                 else {
                     metadata.css += 'half-grey';
                     metadata.attr += 'ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
-                        + record.get('[% col %]').join(',<br />') + '"';
+                        + record.get('[% col %]').join('<br />') + '"';
                     return '<img ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
-                        + record.get('[% col %]').join(',<br />')
+                        + record.get('[% col %]').join('<br />')
                         + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
                         + ' Show';
                 }

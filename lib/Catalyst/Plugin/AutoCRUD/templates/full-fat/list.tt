@@ -19,6 +19,8 @@ Ext.onReady(function(){
         showDelay: 0
         ,trackMouse: true
         ,mouseOffset: [-60,20] // otherwise Delete tt overruns browser win
+        ,autoWidth: true
+        ,dismissDelay: 0
     });
 
     // utility functions
