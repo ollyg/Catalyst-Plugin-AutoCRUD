@@ -96,15 +96,6 @@ sub dumpmeta : Chained('base') Args(0) {
     return $self;
 }
 
-# used just so we can construct paths from the javascript templates
-sub noop : Chained('base') PathPart('') Args(0) {
-    my ($self, $c) = @_;
-    $c->response->content_type('text/plain; charset=utf-8');
-    $c->response->body("Unrecognized call");
-    $c->response->status('403');
-    $c->detach();
-}
-
 # allows us to pseudo-acl the create call separately from update
 sub create : Chained('base') Args(0) {
     my ($self, $c) = @_; 
