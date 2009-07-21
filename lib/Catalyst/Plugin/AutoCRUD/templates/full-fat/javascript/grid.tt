@@ -4,7 +4,7 @@
 
     [% PROCESS javascript/grid/pagebar.tt %]
 
-    [% PROCESS javascript/grid/view.tt %]
+    [%# PROCESS javascript/grid/view.tt %]
 
     // most of the work in the grid itself is making the filter row work
     // we want clickable filter fields for cols which can be filtered
