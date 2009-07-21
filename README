@@ -2,7 +2,7 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    This document refers to version 0.44 of Catalyst::Plugin::AutoCRUD
+    This document refers to version 0.45 of Catalyst::Plugin::AutoCRUD
 
 WARNING
     This is an *ALPHA RELEASE*. I'd really appreciate any bug reports; you
@@ -74,8 +74,8 @@ USAGE
 
      package AutoCRUDUser;
      use Catalyst qw(AutoCRUD);
-     
- __PACKAGE__->setup;
+ 
+     __PACKAGE__->setup;
      1;
 
     Adding "Catalyst::Plugin::AutoCRUD" as a plugin to your Catalyst
@@ -99,8 +99,8 @@ USAGE
 
      package AutoCRUDUser;
      use Catalyst qw(ConfigLoader AutoCRUD);
-     
- __PACKAGE__->setup;
+ 
+     __PACKAGE__->setup;
      1;
 
     For the configuration, you need to tell AutoCRUD which package contains
@@ -158,8 +158,8 @@ USAGE
 
      package AutoCRUDUser;
      use Catalyst qw(ConfigLoader AutoCRUD);
-     
- __PACKAGE__->setup;
+ 
+     __PACKAGE__->setup;
      1;
 
      <Model::AutoCRUD::DBIC>
@@ -278,6 +278,26 @@ TIPS AND TRICKS
 
      <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
+  Overriding built-in Templates
+    The whole site is built from Perl Template Toolkit templates, and it is
+    possible to override these shipped templates with your own files. This
+    goes for both general files (CSS, top-level TT wrapper) as well as the
+    site files mentioned in the next section.
+
+    To add these override paths, include the following directive in your
+    configuration file:
+
+     <Plugin::AutoCRUD>
+        tt_path /path/to/my/local/templates
+     </Plugin::AutoCRUD>
+
+    This "tt_path" directive can be included multiple times to set a list of
+    override paths, which will be processed in the order given.
+
+    If you want to override any of the CSS used in the app, copy the
+    "wrapper.tt" template from whichever "site" you are using, edit, and
+    install in a local "tt_path" set with this directive.
+
 SITES CONFIGURATION
     Another feature borrowed from the original CatalystX::ListFramework is
     the ability to have multiple views of your data, tailored in various
@@ -334,10 +354,10 @@ SITES CONFIGURATION
         schema it percolates to all the sources, unless the source has a
         different setting.
 
-        The default is to allow new records to be created, and also updates
-        to be made to existing records. Set this to a value of "no" to
-        prevent these operations from being allowed. Widgets will also be
-        removed from the user interface so as not to confuse users.
+        The default is to allow updates to be made to existing records. Set
+        this to a value of "no" to prevent this operation from being
+        permitted. Widgets will also be removed from the user interface so
+        as not to confuse users.
 
          <Plugin::AutoCRUD>
             <sites>
@@ -347,9 +367,34 @@ SITES CONFIGURATION
             </sites>
          </Plugin::AutoCRUD>
 
-        Important note: this setting applies to both the creation of new
-        records in your source, as well as the updating of existing records.
-        There's no separate "create_allowed" option.
+        Although this is a separate option from "create_allowed", below, *be
+        warned!* Both creation and editing of records are in fact "update"
+        actions, so the *only* way to secure the application from creation
+        and editing of records is to set this option to "no".
+
+    create_allowed [ yes* | no ]
+        This can be applied to either a schema or a source; if applied to a
+        schema it percolates to all the sources, unless the source has a
+        different setting.
+
+        The default is to allow new records to be created. Set this to a
+        value of "no" to prevent this operation from being allowed. Widgets
+        will also be removed from the user interface so as not to confuse
+        users.
+
+         <Plugin::AutoCRUD>
+            <sites>
+                <default>
+                    create_allowed no
+                </default>
+            </sites>
+         </Plugin::AutoCRUD>
+
+        *Important Note:* this is purely a cosmetic action, and it is still
+        possible for a user to call the AJAX API published by this
+        application in order to create a new record. The only way truely to
+        prevent record creation is also to set the "update_allowed" option
+        to "no", as shown above.
 
     delete_allowed [ yes* | no ]
         This can be applied to either a schema or a source; if applied to a
@@ -460,8 +505,8 @@ SITES CONFIGURATION
 
      from this:
      .../autocrud/myschema/thesource    # (i.e. site == default)
-      
- to this:
+  
+     to this:
      .../autocrud/site/mysite/schema/myschema/source/thesource
 
     So let's say you've created a dumbed down site for your users which is

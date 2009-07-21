@@ -390,6 +390,27 @@ libraries. This will be used in the templates in some way like this:
 
  <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
+=head2 Overriding built-in Templates
+
+The whole site is built from Perl Template Toolkit templates, and it is
+possible to override these shipped templates with your own files. This goes
+for both general files (CSS, top-level TT wrapper) as well as the site files
+mentioned in the next section.
+
+To add these override paths, include the following directive in your
+configuration file:
+
+ <Plugin::AutoCRUD>
+    tt_path /path/to/my/local/templates
+ </Plugin::AutoCRUD>
+
+This C<tt_path> directive can be included multiple times to set a list of
+override paths, which will be processed in the order given.
+
+If you want to override any of the CSS used in the app, copy the C<wrapper.tt>
+template from whichever C<site> you are using, edit, and install in a local
+C<tt_path> set with this directive.
+
 =head1 SITES CONFIGURATION
 
 Another feature borrowed from the original L<CatalystX::ListFramework> is the
@@ -452,10 +473,9 @@ and source names I<as they appear in the URL path>:
 This can be applied to either a schema or a source; if applied to a schema it
 percolates to all the sources, unless the source has a different setting.
 
-The default is to allow new records to be created, and also updates to be
-made to existing records. Set this to a value of C<no> to prevent these
-operations from being allowed.  Widgets will also be removed from the user
-interface so as not to confuse users.
+The default is to allow updates to be made to existing records. Set this to a
+value of C<no> to prevent this operation from being permitted.  Widgets will
+also be removed from the user interface so as not to confuse users.
 
  <Plugin::AutoCRUD>
     <sites>
@@ -465,9 +485,32 @@ interface so as not to confuse users.
     </sites>
  </Plugin::AutoCRUD>
 
-B<Important note:> this setting applies to both the creation of new records in
-your source, as well as the updating of existing records. There's no separate
-C<create_allowed> option.
+Although this is a separate option from C<create_allowed>, below, I<be warned!>
+Both creation and editing of records are in fact C<update> actions, so the
+I<only> way to secure the application from creation and editing of records is
+to set this option to C<no>.
+
+=item create_allowed [ yes* | no ]
+
+This can be applied to either a schema or a source; if applied to a schema it
+percolates to all the sources, unless the source has a different setting.
+
+The default is to allow new records to be created. Set this to a value of
+C<no> to prevent this operation from being allowed.  Widgets will also be
+removed from the user interface so as not to confuse users.
+
+ <Plugin::AutoCRUD>
+    <sites>
+        <default>
+            create_allowed no
+        </default>
+    </sites>
+ </Plugin::AutoCRUD>
+
+I<Important Note:> this is purely a cosmetic action, and it is still possible
+for a user to call the AJAX API published by this application in order to
+create a new record. The only way truely to prevent record creation is also
+to set the C<update_allowed> option to C<no>, as shown above.
 
 =item delete_allowed [ yes* | no ]
 
