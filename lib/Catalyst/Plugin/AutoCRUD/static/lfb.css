@@ -116,9 +116,11 @@ div.cpac_top div.cpac_left { float: left }
     color: #FFF;
 }
 
+/*
 #cpac_content {
     clear: both;
 }
+*/
 
 #cpac_footer {
     background-color: #E2F0FF;
