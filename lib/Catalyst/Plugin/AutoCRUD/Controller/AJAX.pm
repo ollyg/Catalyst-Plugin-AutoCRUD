@@ -43,8 +43,17 @@ my %filter_for = (
             return 0;
         },
     },
+    numberfield => {
+        from_db => sub { shift },
+        to_db   => sub {
+            my $val = shift;
+            return undef if !defined $val or $val eq '';
+            return $val;
+        },
+    },
 );
 
+# stringify a row of fields according to rules described in our POD
 sub _sfy {
     my $row = shift;
     return '' if !defined $row or !blessed $row;
@@ -54,6 +63,16 @@ sub _sfy {
             : ( $row->result_source->source_name
                 .": ". join(', ', map { "$_(${\$row->get_column($_)})" } $row->primary_columns) ))
     );
+}
+
+# find whether this DMBS supports ILIKE or just LIKE
+sub _likeop_for {
+    my $model = shift;
+    my $sqlt_type = $model->result_source->storage->sqlt_type;
+    my %ops = (
+        SQLite => '-like',
+    );
+    return $ops{$sqlt_type} || '-ilike';
 }
 
 # we're going to check that calls to this RPC operation are allowed
@@ -132,8 +151,19 @@ sub list : Chained('base') Args(0) {
         next unless exists $info->{cols}->{$col};
         next if $info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr};
 
+        # for numberish types the case insensitive functions may not work
+        if (exists $info->{cols}->{$col}->{extjs_xtype}
+            and $info->{cols}->{$col}->{extjs_xtype} eq 'numberfield') {
+            $filter->{$col} = $c->req->params->{"search.$col"};
+            next;
+        }
+
         # construct search clause if any of the filter fields were filled in UI
-        $filter->{$col} = { -like => '%'. $c->req->params->{"search.$col"} .'%' };
+        $filter->{$col} = {
+            # find whether this DMBS supports ILIKE or just LIKE
+            _likeop_for($c->model($lf->{model}))
+                => '%'. $c->req->params->{"search.$col"} .'%'
+        };
     }
 
     # sort col which can be passed to the db
@@ -142,38 +172,37 @@ sub list : Chained('base') Args(0) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
-    # aide memoire, according to pg manual:
-    # "It is also possible to use arbitrary expressions in the ORDER BY
-    # clause, including columns that do not appear in the SELECT result list."
-    if (my $list_returns = $c->stash->{site_conf}->{$db}->{$table}->{list_returns}) {
-        $search_opts->{columns} =
-            [(ref $list_returns eq 'HASH' ? keys %$list_returns : @$list_returns)];
-    }
-
-    # XXX FIXME mst, avert your eyes NOW!
-    my $convert =
-        $c->model($lf->{model})->result_source->storage->sql_maker->{convert};
-    $c->model($lf->{model})->result_source->storage->sql_maker->{convert}
-        = 'lower';
-    # okay, you can look again.
+# do not restrict columns - will cause data errors
+#
+#    # aide memoire, according to pg manual:
+#    # "It is also possible to use arbitrary expressions in the ORDER BY
+#    # clause, including columns that do not appear in the SELECT result list."
+#    if (my $list_returns = $c->stash->{site_conf}->{$db}->{$table}->{list_returns}) {
+#        $search_opts->{columns} =
+#            [(ref $list_returns eq 'HASH' ? keys %$list_returns : @$list_returns)];
+#    }
 
     my $rs = $c->model($lf->{model})->search($filter, $search_opts);
     my @columns = (exists $search_opts->{columns} ? @{$search_opts->{columns}}
                                                   : keys %{ $info->{cols} });
+
+    $c->model($lf->{model})->result_source->storage->debug(1)
+        if $c->debug;
+
     # make data structure for JSON output
     while (my $row = $rs->next) {
         my $data = {};
         foreach my $col (@columns) {
-            if (!defined $row->$col) {
+            if (!defined $row->get_column($col)) {
                 $data->{$col} = '';
                 next;
             }
 
             if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
-                $data->{$col} = _sfy($row->$col);
+                $data->{$col} = _sfy($row->get_column($col));
             }
             else {
-                $data->{$col} = $row->$col;
+                $data->{$col} = $row->get_column($col);
             }
 
             if (exists $info->{cols}->{$col}->{extjs_xtype}
@@ -207,11 +236,6 @@ sub list : Chained('base') Args(0) {
     $response->{total} =
         eval {$rs->pager->total_entries} || scalar @{$response->{rows}};
 
-    # XXX FIXME mst, avert your eyes NOW!
-    $c->model($lf->{model})->result_source->storage->sql_maker->{convert}
-        = $convert;
-    # okay, you can look again.
-
     # sneak in a 'top' row for applying the filters
     my %searchrow = ();
     foreach my $col (keys %{$info->{cols}}) {
@@ -234,6 +258,9 @@ sub list : Chained('base') Args(0) {
     }
     unshift @{$response->{rows}}, \%searchrow;
 
+    $c->model($lf->{model})->result_source->storage->debug(0)
+        if $c->debug;
+
     return $self;
 }
 
@@ -247,21 +274,30 @@ sub update : Chained('base') Args(0) {
     my $response = $c->stash->{json_data} = {};
 
     my $stack = _build_table_data($c, [], $lf->{model});
-    #use Data::Dumper;
-    #print STDERR Dumper $stack;
+    if ($c->debug) {
+        use Data::Dumper;
+        $c->log->debug(Dumper {table_stack => $stack});
+    }
 
     # stack is processed in one transaction, so either all rows are
     # updated, or none, and an error thrown.
 
-    #$c->model($lf->{model})->result_source->storage->debug(1);
+    $c->model($lf->{model})->result_source->storage->debug(1)
+        if $c->debug;
     my $success = eval {
         $c->model($lf->{model})->result_source->schema->txn_do(
             \&_process_row_stack, $c, $stack
         );
     };
-    #$c->model($lf->{model})->result_source->storage->debug(0);
+    if ($c->debug) {
+        use Data::Dumper;
+        $c->log->debug(Dumper {success => $success, exception => $@});
+    }
+    $response->{'success'} = (($success && !$@) ? 1 : 0);
 
-    $response->{'success'} = ($success ? 'true' : 'false');
+    $c->model($lf->{model})->result_source->storage->debug(0)
+        if $c->debug;
+
     return $self;
 }
 
@@ -307,7 +343,7 @@ sub _build_table_data {
 
                     # skip where the FK val isn't really an update
                     next if (blessed $this_row)
-                        and (_sfy($this_row->$col) eq $params->{ "combobox.$col" });
+                        and (_sfy($this_row->get_column($col)) eq $params->{ "combobox.$col" });
                 }
             }
 
@@ -406,10 +442,10 @@ sub delete : Chained('base') Args(0) {
 
     if (blessed $row) {
         $row->delete;
-        $response->{'success'} = 'true';
+        $response->{'success'} = 1;
     }
     else {
-        $response->{'success'} = 'false';
+        $response->{'success'} = 0;
     }
 
     return $self;
