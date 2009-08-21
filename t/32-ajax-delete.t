@@ -30,21 +30,21 @@ my $default_album_page = {
                     ]
 };
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {}, {success => 'false'}, 'no args');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {}, {success => '0'}, 'no args');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check no delete');
 exit;
-$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => ''}, {success => 'false'}, 'empty key');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => ''}, {success => '0'}, 'empty key');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {foobar => ''}, {success => 'false'}, 'no key');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {foobar => ''}, {success => '0'}, 'no key');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => 'foobar'}, {success => 'false'}, 'no key match');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => 'foobar'}, {success => '0'}, 'no key match');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => '5'}, {success => 'true'}, 'delete success');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => '5'}, {success => '1'}, 'delete success');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, {total => 0, rows => []}, 'check deleted');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => '5'}, {success => 'false'}, 'delete again fails');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => '5'}, {success => '0'}, 'delete again fails');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, {total => 0, rows => []}, 'check deleted');
 

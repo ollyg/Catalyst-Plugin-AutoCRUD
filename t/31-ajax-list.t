@@ -286,9 +286,11 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => 'tracks',
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => '', dir => 'foobar'}, $default_album_page, 'empty sort, nonsense dir');
 
-# filter fields : build a WHERE LIKE clause
+# filter fields : build a WHERE LIKE clause but should not work on numerics
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => ''}, $default_album_page, 'filter none');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => ''}, {total => 0, rows => []}, 'filter none');
+
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => ''}, $default_album_page, 'filter none');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search. ' => ''}, $default_album_page, 'filter col space');
 
@@ -296,7 +298,9 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.' => ''},
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.foobar' => ''}, $default_album_page, 'filter col nonexistent');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => '%'}, $default_album_page, 'filter id by %');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => '%'}, {total => 0, rows => []}, 'filter id by %');
+
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => '%'}, $default_album_page, 'filter none');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => '!'}, {total => 0, rows => []}, 'filter to none');
 

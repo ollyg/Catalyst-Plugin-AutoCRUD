@@ -99,7 +99,7 @@ my $new_sleeve_page = {
                     ]
 };
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {}, {success => 'false'}, 'add row, no data');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {}, {success => '0'}, 'add row, no data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
@@ -107,25 +107,25 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 3,
     title     => 'Greatest Hits',
     recorded  => '2002-05-21',
-}, {success => 'true'}, 'add row, dupe data');
+}, {success => '1'}, 'add row, dupe data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 1,
     recorded  => '2002-05-21',
-}, {success => 'false'}, 'add row, duff data');
+}, {success => '0'}, 'add row, duff data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 1,
     title     => 'Testing Hits',
-}, {success => 'true'}, 'add minimal row');
+}, {success => '1'}, 'add minimal row');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Testing Hits'}, $testing_album_page, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     id => 5,
     'combobox.artist_id' => 3,
     foobar  => '2002-05-21',
-}, {success => 'true'}, 'edit row cols, extra data ignored');
+}, {success => '1'}, 'edit row cols, extra data ignored');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
@@ -133,7 +133,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 3,
     title     => 'Greatest Hits 2',
     recorded  => '2002-05-21',
-}, {success => 'true'}, 'edit row cols');
+}, {success => '1'}, 'edit row cols');
 
 $default_album_page->{rows}->[0]->{title} = 'Greatest Hits 2';
 $default_album_page->{rows}->[0]->{artist_id} = 'Adam Smith';
@@ -148,13 +148,13 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 9,
     title     => 'Greatest Hits 2',
     recorded  => '2002-05-21',
-}, {success => 'false'}, 'edit row fks, duff data');
+}, {success => '0'}, 'edit row fks, duff data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 1,
     title     => 'Greatest Hits 2',
     recorded  => '2002-05-21',
-}, {success => 'true'}, 'edit row fks');
+}, {success => '1'}, 'edit row fks');
 
 } # SKIP
 
@@ -164,7 +164,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 3,
     title     => 'Greatest Hits 2',
     recorded  => '2002-05-21',
-}, {success => 'false'}, 'edit row add fwd related, duff data');
+}, {success => '0'}, 'edit row add fwd related, duff data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits 2'}, $default_album_page, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
@@ -175,7 +175,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 3,
     title     => 'Greatest Hits 2',
     recorded  => '2002-05-21',
-}, {success => 'true'}, 'edit row add fwd related');
+}, {success => '1'}, 'edit row add fwd related');
 
 $default_album_page->{rows}->[0]->{artist_id} = 'Bob Thornton';
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits 2'}, $default_album_page, 'check data');
@@ -187,7 +187,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     title     => 'Greatest Hits 2',
     recorded  => '2002-05-21',
     'checkbox.sleeve_notes' => 'on',
-}, {success => 'false'}, 'edit row add rev related, duff data');
+}, {success => '0'}, 'edit row add rev related, duff data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits 2'}, $default_album_page, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
@@ -197,7 +197,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     recorded  => '2002-05-21',
     'checkbox.sleeve_notes' => 'on',
     'sleeve_notes.text' => 'Very cool album indeed!',
-}, {success => 'true'}, 'edit row add rev related');
+}, {success => '1'}, 'edit row add rev related');
 $default_album_page->{rows}->[0]->{sleeve_notes} = 'SleeveNotes: id(2)';
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits 2'}, $default_album_page, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'Very cool album indeed'}, $new_sleeve_page, 'check data');
@@ -207,7 +207,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'artist.surname' => 'Thornton',
     'checkbox.artist' => 'on',
     'combobox.artist_id' => 3,
-}, {success => 'false'}, 'add row, duff data, with related');
+}, {success => '0'}, 'add row, duff data, with related');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'search.forename' => 'Charlie'}, {total => 0, rows => []}, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
@@ -216,7 +216,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'combobox.artist_id' => 1,
     title     => 'Testing Hits 2',
     recorded  => '2002-05-21',
-}, {success => 'false'}, 'add row, with related, duff data');
+}, {success => '0'}, 'add row, with related, duff data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Testing Hits 2'}, {total => 0, rows => []}, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'search.surname' => 'Thornton'}, $new_artist_page, 'check data');
 
@@ -226,7 +226,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
     'artist.surname' => 'Thornton',
     'combobox.artist_id' => 1,
     title     => 'Testing Hits 2',
-}, {success => 'true'}, 'add row, with related');
+}, {success => '1'}, 'add row, with related');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Testing Hits 2'}, $new_album_page, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'search.forename' => 'Charlie'}, $second_artist_page, 'check data');
 
@@ -238,7 +238,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
     'combobox.copyright_id' => '',
     'checkbox.copyright_id' => 'on',
     rights_owner => 'Label D',
-}, {success => 'false'}, 'add row, with 2x related, one duff');
+}, {success => '0'}, 'add row, with 2x related, one duff');
 $mech->ajax_ok('/site/default/schema/dbic/source/track/list', {'search.title' => 'Track Title'}, {total => 0, rows => []}, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/copyright/list', {'search.rights_owner' => 'Label D'}, {total => 0, rows => []}, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.recorded' => '1999-05-21'}, {total => 0, rows => []}, 'check data');
@@ -250,7 +250,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
     'combobox.artist_id' => 3,
     'copyright.rights_owner' => 'Label D',
     title => 'Track Title',
-}, {success => 'true'}, 'add row, with 2x related');
+}, {success => '1'}, 'add row, with 2x related');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/track/list', {'search.title' => 'Track Title'}, {
     'total' => 1,
