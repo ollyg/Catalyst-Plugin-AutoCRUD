@@ -8,6 +8,7 @@
     var tabs = [
       [% FOREACH tname IN lf.tab_order.nsort %]
         [% SET info = lf.table_info.$tname %]
+        [% SET tbl = info.path %]
         [% ',' IF lf.tab_order.keys.size > 1 AND NOT loop.first %]{
             [% IF lf.tab_order.item(tname) == 1 %]
               title: '[% lf.main.title %]'
@@ -33,7 +34,11 @@
                     ,id: '[% info.path %].[% field %]'
                   [% END %]
 
+                  [% IF site_conf.$db.$tbl.list_returns AND site_conf.$db.$tbl.list_returns.$field AND site_conf.$db.$tbl.list_returns.$field != '' %]
+                    ,fieldLabel: '[% site_conf.$db.$tbl.list_returns.$field %]'
+                  [% ELSE %]
                     ,fieldLabel: '[% info.cols.$field.heading %]'
+                  [% END %]
                     ,anchor: '-20'
                     ,autoHeight: true
                   
