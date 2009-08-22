@@ -183,16 +183,18 @@ sub list : Chained('base') Args(0) {
     while (my $row = $rs->next) {
         my $data = {};
         foreach my $col (@columns) {
-            if (!defined eval{$row->$col}) {
-                $data->{$col} = '';
-                next;
-            }
-
             if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
+                # here assume table names are sane perl identifiers
                 $data->{$col} = _sfy($row->$col);
             }
             else {
-                $data->{$col} = $row->$col;
+                if (!defined eval{$row->get_column($col)}) {
+                    $data->{$col} = '';
+                    next;
+                }
+                else {
+                    $data->{$col} = $row->get_column($col);
+                }
             }
 
             if (exists $info->{cols}->{$col}->{extjs_xtype}

@@ -16,7 +16,7 @@ __PACKAGE__->add_columns(
     size => undef,
   },
   "title",
-  { data_type => "varchar", is_nullable => 0, size => 255 },
+  { data_type => "varchar", is_nullable => 0, size => 255, accessor => 'custom_title' },
   "recorded",
   { data_type => "date", is_nullable => 0, size => undef },
   "deleted",
@@ -39,7 +39,7 @@ __PACKAGE__->has_many(
 
 sub display_name {
      my $self = shift;
-     return $self->title || '';
+     return $self->custom_title || '';
 }
 
 # You can replace this text with custom content, and it will be preserved on regeneration

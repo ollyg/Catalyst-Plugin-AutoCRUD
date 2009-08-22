@@ -16,7 +16,7 @@ __PACKAGE__->add_columns(
     size => undef,
   },
   "text",
-  { data_type => "varchar", is_nullable => 0, size => 255 },
+  { data_type => "varchar", is_nullable => 0, size => 255, accessor => 'custom_text' },
   "album_id",
   { data_type => "int", is_foreign_key => 1, is_nullable => 0, size => undef },
 );
