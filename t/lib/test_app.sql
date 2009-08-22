@@ -40,15 +40,15 @@ INSERT INTO album (id,title,recorded,deleted,artist_id) VALUES (5, 'Greatest Hit
 
 CREATE TABLE copyright (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  rights_owner varchar(255) NOT NULL,
+  'rights owner' varchar(255) NOT NULL,
   copyright_year integer
 );
 
-INSERT INTO copyright (id, rights_owner, copyright_year) VALUES (1, 'Label A', '1987');
+INSERT INTO copyright (id, 'rights owner', copyright_year) VALUES (1, 'Label A', '1987');
 
-INSERT INTO copyright (id, rights_owner, copyright_year) VALUES (2, 'Label B', '1991');
+INSERT INTO copyright (id, 'rights owner', copyright_year) VALUES (2, 'Label B', '1991');
 
-INSERT INTO copyright (id, rights_owner, copyright_year) VALUES (3, 'Label C', '2001');
+INSERT INTO copyright (id, 'rights owner', copyright_year) VALUES (3, 'Label C', '2001');
 
 CREATE TABLE track (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

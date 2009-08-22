@@ -32,7 +32,7 @@ my $default_album_page = {
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {}, {success => '0'}, 'no args');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check no delete');
-exit;
+
 $mech->ajax_ok('/site/default/schema/dbic/source/album/delete', {key => ''}, {success => '0'}, 'empty key');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Greatest Hits'}, $default_album_page, 'check no delete');
 

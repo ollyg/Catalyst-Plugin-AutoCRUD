@@ -237,10 +237,10 @@ $mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
     'album.recorded' => '1999-05-21',
     'combobox.copyright_id' => '',
     'checkbox.copyright_id' => 'on',
-    rights_owner => 'Label D',
+    'rights owner' => 'Label D',
 }, {success => '0'}, 'add row, with 2x related, one duff');
 $mech->ajax_ok('/site/default/schema/dbic/source/track/list', {'search.title' => 'Track Title'}, {total => 0, rows => []}, 'check data');
-$mech->ajax_ok('/site/default/schema/dbic/source/copyright/list', {'search.rights_owner' => 'Label D'}, {total => 0, rows => []}, 'check data');
+$mech->ajax_ok('/site/default/schema/dbic/source/copyright/list', {'search.rights owner' => 'Label D'}, {total => 0, rows => []}, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.recorded' => '1999-05-21'}, {total => 0, rows => []}, 'check data');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
@@ -248,7 +248,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
     'checkbox.album' => 'on',
     'checkbox.copyright' => 'on',
     'combobox.artist_id' => 3,
-    'copyright.rights_owner' => 'Label D',
+    'copyright.rights owner' => 'Label D',
     title => 'Track Title',
 }, {success => '1'}, 'add row, with 2x related');
 

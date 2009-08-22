@@ -33,7 +33,7 @@ __PACKAGE__->config(
     },
     'Model::AutoCRUD::DBIC' => {
         schema_class => 'TestApp::Schema',
-        connect_info => ["dbi:SQLite:dbname=$dbfile", '', ''],
+        connect_info => ["dbi:SQLite:dbname=$dbfile", '', '', {}, { quote_char => q{`}, name_sep => q{.} }],
     },
 );
    

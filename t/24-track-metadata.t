@@ -82,11 +82,11 @@ my $expected = {
             'mfks'    => { 'tracks' => 'Tracks' },
             'pk'      => 'id',
             'moniker' => 'Copyright',
-            'col_order' => [ 'id', 'rights_owner', 'copyright_year' ],
+            'col_order' => [ 'id', 'rights owner', 'copyright_year' ],
             'path'      => 'copyright',
             'title'     => 'Copyright',
             'cols'      => {
-                'rights_owner' => {
+                'rights owner' => {
                     'required' => 1,
                     'editable' => 1,
                     'heading'  => 'Rights Owner'

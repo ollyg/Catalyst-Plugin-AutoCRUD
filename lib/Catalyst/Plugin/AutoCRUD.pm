@@ -333,16 +333,6 @@ C<< is_auto_increment => 1, >> option to the relevant hash in add_columns().
 This will let the plugin know you don't need to supply a value for new or
 updated records. The interface will look much better as a result.
 
-=head2 Column names containing spaces
-
-If your column names contain characters which foul the rendering within the
-plugin, it's reccomended that you configure the C<accessor> attribute for
-those columns. Setting that in your DBIC Result Source allows you to change
-the name to a valid Perl identifier (letters, numbers, underscore).
-
-If this then makes the column titles hard to understand, override them in the
-Site Configuration with the C<list_returns> parameter.
-
 =head2 Database IO filters
 
 Buried within one of the modules in this application are some filters which

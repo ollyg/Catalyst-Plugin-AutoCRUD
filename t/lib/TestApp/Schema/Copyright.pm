@@ -15,7 +15,7 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     size => undef,
   },
-  "rights_owner",
+  "rights owner",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "copyright_year",
   { data_type => "integer", is_nullable => 0, size => undef },
@@ -33,7 +33,7 @@ __PACKAGE__->has_many(
 
 use overload '""' => sub {
     my $self = shift;
-    return $self->rights_owner || '';
+    return $self->get_column('rights owner') || '';
 }, fallback => 1;
 
 # You can replace this text with custom content, and it will be preserved on regeneration

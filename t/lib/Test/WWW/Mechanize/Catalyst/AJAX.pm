@@ -14,11 +14,9 @@ sub ajax_ok {
     shift @{ $response->{rows} } if $path =~ m#/list$#;
 
     if ($dump) {
-        use Data::Dumper; # yeah, I know
-        print STDERR Dumper $response;
-        return ($post && $ct);
+        use Data::Dumper;
+        print STDERR Dumper [$response, $expected];
     }
-
     my $id = is_deeply( $response, $expected, 'AJAX JSON data compare'. $message );
 
     return ($post && $ct && $id);

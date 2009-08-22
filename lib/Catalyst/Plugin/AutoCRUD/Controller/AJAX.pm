@@ -137,7 +137,7 @@ sub list : Chained('base') Args(0) {
     (my $dir  = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
 
     # sanity check the sort param
-    $sort = $info->{pk} if $sort !~ m/^\w+$/ or !exists $info->{cols}->{$sort};
+    $sort = $info->{pk} if $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
 
     # set up pager, if needed
     my $search_opts = (($page =~ m/^\d+$/ and $limit =~ m/^\d+$/)
@@ -146,7 +146,7 @@ sub list : Chained('base') Args(0) {
     # find filter fields in UI form
     my $filter = {};
     foreach my $p (keys %{$c->req->params}) {
-        next unless $p =~ m/^search\.(\w+)/;
+        next unless $p =~ m/^search\.([\w ]+)/;
         my $col = $1;
         next unless exists $info->{cols}->{$col};
         next if $info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr};
@@ -159,7 +159,7 @@ sub list : Chained('base') Args(0) {
         }
 
         # construct search clause if any of the filter fields were filled in UI
-        $filter->{$col} = {
+        $filter->{"me.$col"} = {
             # find whether this DMBS supports ILIKE or just LIKE
             _likeop_for($c->model($lf->{model}))
                 => '%'. $c->req->params->{"search.$col"} .'%'
