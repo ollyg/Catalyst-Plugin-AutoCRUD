@@ -3,7 +3,7 @@ libcatalyst-plugin-autocrud-perl (0.46) UNRELEASED; urgency=low
   * fix lower case search to use ILIKE instead of lower() [rt.cpan #46121]
   * search on numeric fields is exact instead of ILIKE
   * fixes to list_returns use so that DB updates actually work [rt.cpan #48836]
-  * check for use of {accessor} attr on column to override accessor name [rt.cpan #48530 #46207]
+  * work around use of {accessor} attr on column [rt.cpan #48530 #46207]
   * search should reset the pager page [rt.cpan #48083]
   * make sure list_returns overridden column headings are used in edit form as well
   * fixes to extjs code to correct true/false return values in AJAX
