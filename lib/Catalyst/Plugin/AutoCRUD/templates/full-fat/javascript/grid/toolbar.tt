@@ -29,7 +29,7 @@
                         params['search.' + key] = searchrow[key];
                     }
                     store.baseParams = params;
-                    pagebar.doLoad(pagebar.cursor);
+                    pagebar.doLoad(0); // reset to first page
                 }
             }
           [% IF site_conf.$db.$table.create_allowed == 'yes' %]
