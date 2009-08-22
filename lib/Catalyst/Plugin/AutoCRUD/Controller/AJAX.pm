@@ -172,16 +172,6 @@ sub list : Chained('base') Args(0) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
-# do not restrict columns - will cause data errors
-#
-#    # aide memoire, according to pg manual:
-#    # "It is also possible to use arbitrary expressions in the ORDER BY
-#    # clause, including columns that do not appear in the SELECT result list."
-#    if (my $list_returns = $c->stash->{site_conf}->{$db}->{$table}->{list_returns}) {
-#        $search_opts->{columns} =
-#            [(ref $list_returns eq 'HASH' ? keys %$list_returns : @$list_returns)];
-#    }
-
     my $rs = $c->model($lf->{model})->search($filter, $search_opts);
     my @columns = (exists $search_opts->{columns} ? @{$search_opts->{columns}}
                                                   : keys %{ $info->{cols} });
@@ -193,16 +183,16 @@ sub list : Chained('base') Args(0) {
     while (my $row = $rs->next) {
         my $data = {};
         foreach my $col (@columns) {
-            if (!defined $row->get_column($col)) {
+            if (!defined eval{$row->$col}) {
                 $data->{$col} = '';
                 next;
             }
 
             if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
-                $data->{$col} = _sfy($row->get_column($col));
+                $data->{$col} = _sfy($row->$col);
             }
             else {
-                $data->{$col} = $row->get_column($col);
+                $data->{$col} = $row->$col;
             }
 
             if (exists $info->{cols}->{$col}->{extjs_xtype}
@@ -343,7 +333,7 @@ sub _build_table_data {
 
                     # skip where the FK val isn't really an update
                     next if (blessed $this_row)
-                        and (_sfy($this_row->get_column($col)) eq $params->{ "combobox.$col" });
+                        and (_sfy($this_row->$col) eq $params->{ "combobox.$col" });
                 }
             }
 

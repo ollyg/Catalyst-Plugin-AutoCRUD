@@ -74,8 +74,8 @@ USAGE
 
      package AutoCRUDUser;
      use Catalyst qw(AutoCRUD);
- 
-     __PACKAGE__->setup;
+     
+ __PACKAGE__->setup;
      1;
 
     Adding "Catalyst::Plugin::AutoCRUD" as a plugin to your Catalyst
@@ -99,8 +99,8 @@ USAGE
 
      package AutoCRUDUser;
      use Catalyst qw(ConfigLoader AutoCRUD);
- 
-     __PACKAGE__->setup;
+     
+ __PACKAGE__->setup;
      1;
 
     For the configuration, you need to tell AutoCRUD which package contains
@@ -158,8 +158,8 @@ USAGE
 
      package AutoCRUDUser;
      use Catalyst qw(ConfigLoader AutoCRUD);
- 
-     __PACKAGE__->setup;
+     
+ __PACKAGE__->setup;
      1;
 
      <Model::AutoCRUD::DBIC>
@@ -220,6 +220,16 @@ TIPS AND TRICKS
     add_columns(). This will let the plugin know you don't need to supply a
     value for new or updated records. The interface will look much better as
     a result.
+
+  Column names containing spaces
+    If your column names contain characters which foul the rendering within
+    the plugin, it's reccomended that you configure the "accessor" attribute
+    for those columns. Setting that in your DBIC Result Source allows you to
+    change the name to a valid Perl identifier (letters, numbers,
+    underscore).
+
+    If this then makes the column titles hard to understand, override them
+    in the Site Configuration with the "list_returns" parameter.
 
   Database IO filters
     Buried within one of the modules in this application are some filters
@@ -505,8 +515,8 @@ SITES CONFIGURATION
 
      from this:
      .../autocrud/myschema/thesource    # (i.e. site == default)
-  
-     to this:
+      
+ to this:
      .../autocrud/site/mysite/schema/myschema/source/thesource
 
     So let's say you've created a dumbed down site for your users which is
