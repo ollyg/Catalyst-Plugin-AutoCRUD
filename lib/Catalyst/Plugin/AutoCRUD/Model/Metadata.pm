@@ -162,7 +162,7 @@ sub _build_table_info {
 
     # column and relation info for this table
     my (%mfks, %sfks, %fks);
-    my @orig_cols = $source->columns;
+    my @cols = $source->columns;
 
     my @rels = $source->relationships;
     foreach my $r (@rels) {
@@ -196,20 +196,22 @@ sub _build_table_info {
         }
     }
 
+    $ti->{pk} = ($source->primary_columns)[0];
+    $ti->{col_order} = [
+        $ti->{pk},                                           # primary key
+        (grep {!exists $fks{$_} and $_ ne $ti->{pk}} @cols), # ordinary cols
+    ];
+
     # consider table columns
-    my @cols = (); # rebuild, in case accessor name is customized
-    while (my $col = shift @orig_cols) {
+    foreach my $col (@cols) {
         my $info = $source->column_info($col);
         next unless defined $info;
-        $col = $info->{accessor}
-            if exists $info->{accessor} and defined $info->{accessor};
-        push @cols, $col; # preserve DBIC's ordering
 
         $ti->{cols}->{$col} = {
-            heading  => _2title($col),
-            editable => ($info->{is_auto_increment} ? 0 : 1),
-            required => ((exists $info->{is_nullable}
-                             and $info->{is_nullable} == 0) ? 1 : 0),
+            heading      => _2title($col),
+            editable     => ($info->{is_auto_increment} ? 0 : 1),
+            required     => ((exists $info->{is_nullable}
+                                 and $info->{is_nullable} == 0) ? 1 : 0),
         };
 
         $ti->{cols}->{$col}->{default_value} = $info->{default_value}
@@ -218,12 +220,6 @@ sub _build_table_info {
         $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
             if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
     }
-
-    $ti->{pk} = ($source->primary_columns)[0];
-    $ti->{col_order} = [
-        $ti->{pk},                                           # primary key
-        (grep {!exists $fks{$_} and $_ ne $ti->{pk}} @cols), # ordinary cols
-    ];
 
     # extra data for foreign key columns
     foreach my $col (keys %fks, keys %sfks) {
