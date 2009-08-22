@@ -333,6 +333,21 @@ C<< is_auto_increment => 1, >> option to the relevant hash in add_columns().
 This will let the plugin know you don't need to supply a value for new or
 updated records. The interface will look much better as a result.
 
+=head2 Column names with spaces
+
+The plugin will handle most tricky names, but you should remember to pass some
+required extra quoting hints to DBIx::Class when it makes a connection to your
+database:
+
+ # most databases:
+ { quote_char => q{`}, name_sep => q{.} }
+  
+ # SQL Server:
+ { quote_char => [qw/[ ]/], name_sep => q{.} }
+
+For more information see the L<DBIx::Class::Storage::DBI> manual page or ask
+on the DBIx::Class mail list.
+
 =head2 Database IO filters
 
 Buried within one of the modules in this application are some filters which

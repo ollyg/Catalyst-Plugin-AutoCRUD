@@ -221,6 +221,20 @@ TIPS AND TRICKS
     value for new or updated records. The interface will look much better as
     a result.
 
+  Column names with spaces
+    The plugin will handle most tricky names, but you should remember to
+    pass some required extra quoting hints to DBIx::Class when it makes a
+    connection to your database:
+
+     # most databases:
+     { quote_char => q{`}, name_sep => q{.} }
+      
+ # SQL Server:
+     { quote_char => [qw/[ ]/], name_sep => q{.} }
+
+    For more information see the DBIx::Class::Storage::DBI manual page or
+    ask on the DBIx::Class mail list.
+
   Database IO filters
     Buried within one of the modules in this application are some filters
     which are applied to data of certain types as it enters or leaves the
