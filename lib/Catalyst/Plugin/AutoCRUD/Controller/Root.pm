@@ -187,7 +187,7 @@ sub build_site_config : Private {
             # promote arrayref into hashref
             if (exists $site->{$sc}->{$so}->{list_returns}
                 and ref $site->{$sc}->{$so}->{list_returns} eq 'ARRAY') {
-                $site->{$sc}->{$so}->{list_returns} = {map {($_ => '')
+                $site->{$sc}->{$so}->{list_returns} = {map {($_ => join ' ', map ucfirst, split /[\W_]+/, lc $_)
                     } @{$site->{$sc}->{$so}->{list_returns}}};
             }
         }
