@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.46';
+our $VERSION = '0.47';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
@@ -95,6 +95,31 @@ sub setup_components {
     return 1;
 }
 
+# monkey patch Catalyst::View::JSON until it is fixed, or users will get scared
+# by the warning currently emitted by Catalyst
+
+use Catalyst::View::JSON;
+my $json_new = _get_subref('new', 'Catalyst::View::JSON');
+{
+    no warnings 'redefine';
+    *Catalyst::View::JSON::new = sub {
+        delete $_[2]->{catalyst_component_name};
+        goto $json_new;
+    };
+}
+
+sub _get_subref {
+    my $sub = shift;
+    my $pkg = shift || scalar caller(0);
+
+    my $symtbl = \%{main::};
+    foreach my $part(split /::/, $pkg) {
+        $symtbl = $symtbl->{"${part}::"};
+    }
+
+    return eval{ \&{ $symtbl->{$sub} } };
+}
+
 1;
 
 __END__
@@ -105,7 +130,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.46 of Catalyst::Plugin::AutoCRUD
+This document refers to version 0.47 of Catalyst::Plugin::AutoCRUD
 
 =head1 WARNING
 
