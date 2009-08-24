@@ -71,6 +71,7 @@ sub _likeop_for {
     my $sqlt_type = $model->result_source->storage->sqlt_type;
     my %ops = (
         SQLite => '-like',
+        MySQL  => '-like',
     );
     return $ops{$sqlt_type} || '-ilike';
 }
@@ -176,8 +177,8 @@ sub list : Chained('base') Args(0) {
     my @columns = (exists $search_opts->{columns} ? @{$search_opts->{columns}}
                                                   : keys %{ $info->{cols} });
 
-    $c->model($lf->{model})->result_source->storage->debug(1)
-        if $c->debug;
+    #$c->model($lf->{model})->result_source->storage->debug(1)
+    #    if $c->debug;
 
     # make data structure for JSON output
     while (my $row = $rs->next) {
@@ -250,8 +251,8 @@ sub list : Chained('base') Args(0) {
     }
     unshift @{$response->{rows}}, \%searchrow;
 
-    $c->model($lf->{model})->result_source->storage->debug(0)
-        if $c->debug;
+    #$c->model($lf->{model})->result_source->storage->debug(0)
+    #    if $c->debug;
 
     return $self;
 }
@@ -266,29 +267,29 @@ sub update : Chained('base') Args(0) {
     my $response = $c->stash->{json_data} = {};
 
     my $stack = _build_table_data($c, [], $lf->{model});
-    if ($c->debug) {
-        use Data::Dumper;
-        $c->log->debug(Dumper {table_stack => $stack});
-    }
+    #if ($c->debug) {
+    #    use Data::Dumper;
+    #    $c->log->debug(Dumper {table_stack => $stack});
+    #}
 
     # stack is processed in one transaction, so either all rows are
     # updated, or none, and an error thrown.
 
-    $c->model($lf->{model})->result_source->storage->debug(1)
-        if $c->debug;
+    #$c->model($lf->{model})->result_source->storage->debug(1)
+    #    if $c->debug;
     my $success = eval {
         $c->model($lf->{model})->result_source->schema->txn_do(
             \&_process_row_stack, $c, $stack
         );
     };
-    if ($c->debug) {
-        use Data::Dumper;
-        $c->log->debug(Dumper {success => $success, exception => $@});
-    }
+    #if ($c->debug) {
+    #    use Data::Dumper;
+    #    $c->log->debug(Dumper {success => $success, exception => $@});
+    #}
     $response->{'success'} = (($success && !$@) ? 1 : 0);
 
-    $c->model($lf->{model})->result_source->storage->debug(0)
-        if $c->debug;
+    #$c->model($lf->{model})->result_source->storage->debug(0)
+    #    if $c->debug;
 
     return $self;
 }

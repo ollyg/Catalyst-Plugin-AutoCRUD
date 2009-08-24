@@ -1,3 +1,10 @@
+libcatalyst-plugin-autocrud-perl (0.48) UNRELEASED; urgency=low
+
+  * Comment out some debugging lines
+  * Add LIKE hint for MySQL (thanks to H. Frayman)
+
+ -- oliver <oliver@discodev.oucs.ox.ac.uk>  Mon, 24 Aug 2009 12:23:57 +0100
+
 libcatalyst-plugin-autocrud-perl (0.47) UNRELEASED; urgency=low
 
   * short term release (?) until Catalyst::View::JSON is fixed
