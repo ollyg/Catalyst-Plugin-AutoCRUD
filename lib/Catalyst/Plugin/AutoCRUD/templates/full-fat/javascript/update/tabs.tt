@@ -80,9 +80,10 @@
                         }
                     })
                   [% ELSE %]
-                    ,xtype: '[% info.cols.$field.extjs_xtype OR "textfield" %]'
+                    [% SET localxtype = info.cols.$field.extjs_xtype OR "textarea" %]
+                    ,xtype: '[% localxtype %]'
 
-                    [% SWITCH info.cols.$field.extjs_xtype %]
+                    [% SWITCH localxtype %]
                     [% CASE 'timefield' %]
                     ,format: 'H:i:s'
                     [% CASE 'datefield' %]
@@ -91,6 +92,11 @@
                     ,otherToNow: false
                     ,dateFormat: 'Y-m-d'
                     ,timeFormat: 'H:i:s'
+                    [% CASE 'textarea' %]
+                    ,grow: true
+                    ,growMin: 0
+                    ,growMax: 200
+                    ,autoHeight: true
                     [% END %]
                   [% END %]
                 }

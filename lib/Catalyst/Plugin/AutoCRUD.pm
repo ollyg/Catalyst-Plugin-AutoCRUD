@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.48';
+our $VERSION = '0.49';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
@@ -130,14 +130,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.48 of Catalyst::Plugin::AutoCRUD
-
-=head1 WARNING
-
-This is an I<ALPHA RELEASE>. I'd really appreciate any bug reports; you can
-use the CPAN RT bug tracking system, or email me (Oliver) directly at the
-address at the bottom of this page. Please also be aware that the
-configuration file content has changed from previous releases of the module.
+This document refers to version 0.49 of Catalyst::Plugin::AutoCRUD
 
 =head1 PURPOSE
 

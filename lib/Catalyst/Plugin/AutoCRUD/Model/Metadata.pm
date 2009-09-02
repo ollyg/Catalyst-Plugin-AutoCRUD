@@ -219,6 +219,10 @@ sub _build_table_info {
 
         $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
             if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
+
+        $ti->{cols}->{$col}->{extjs_xtype} = 'textfield'
+            if !exists $ti->{cols}->{$col}->{extjs_xtype}
+                and defined $info->{size} and $info->{size} <= 40;
     }
 
     # extra data for foreign key columns

@@ -34,7 +34,7 @@
                     ,defaults: {
                         layout: 'form'
                         ,bodyStyle: 'padding: 5px;'
-                        ,defaultType: 'textfield'
+                        ,defaultType: 'textarea'
                         ,buttonAlign: 'right'
                         ,autoHeight: true
                         ,hideMode: 'offsets'
