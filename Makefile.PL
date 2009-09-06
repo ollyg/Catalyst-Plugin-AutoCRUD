@@ -15,5 +15,7 @@ test_requires  'Test::More' => 0;
 test_requires  'Test::WWW::Mechanize' => '1.16';
 test_requires  'Test::WWW::Mechanize::Catalyst' => '0.42';
 
+resources 'MailingList' => 'http://groups.google.com/group/catalyst-plugin-autocrud';
+
 WriteAll;
 
