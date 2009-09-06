@@ -732,6 +732,13 @@ If you have two columns which both have foreign key constraints to the same
 table, it's very likely AutoCRUD will not work. Again this is a simplification
 which speeded the initial development.
 
+=item Time Zone settings are lost during SELECT/UPDATE
+
+Database fields of types such as (PostgreSQL) C<timestamp with time zone> will
+be displayed with a date and time picker, but you'll lose the time zone's UTC
+offset value, sorry. This could be fixed and retained through an improved UI
+widget, for example.
+
 =back
 
 For the issues above, if you're desperate that the feature be implemented

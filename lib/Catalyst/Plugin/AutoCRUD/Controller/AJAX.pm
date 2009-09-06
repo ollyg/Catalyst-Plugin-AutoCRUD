@@ -17,7 +17,7 @@ sub _filter_datetime {
         return $iso;
     }
     else {
-        $val =~ s/[+-]\d\d$//;
+        $val =~ s/(\.\d+)?[+-]\d\d$//;
         return $val;
     }
 }

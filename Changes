@@ -1,6 +1,7 @@
 libcatalyst-plugin-autocrud-perl (0.49) UNRELEASED; urgency=low
 
   * [rt.cpan #49262] Editing text columns should result in textarea
+  * Small tweak to the iso8601 processing to handle float seconds.
 
  -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Thu, 03 Sep 2009 00:32:11 +0100
 
