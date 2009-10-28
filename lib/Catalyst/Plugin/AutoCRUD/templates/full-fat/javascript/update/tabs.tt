@@ -9,6 +9,7 @@
       [% FOREACH tname IN lf.tab_order.nsort %]
         [% SET info = lf.table_info.$tname %]
         [% SET tbl = info.path %]
+        [% NEXT IF NOT loop.first AND site_conf.$db.$tbl.create_allowed == 'no' %]
         [% ',' IF lf.tab_order.keys.size > 1 AND NOT loop.first %]{
             [% IF lf.tab_order.item(tname) == 1 %]
               title: '[% lf.main.title %]'

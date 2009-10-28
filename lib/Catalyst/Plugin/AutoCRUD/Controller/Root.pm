@@ -187,9 +187,11 @@ sub build_site_config : Private {
             # promote arrayref into hashref
             if (exists $site->{$sc}->{$so}->{list_returns}
                 and ref $site->{$sc}->{$so}->{list_returns} eq 'ARRAY') {
-                $site->{$sc}->{$so}->{list_returns} = {map {($_ => join ' ', map ucfirst, split /[\W_]+/, lc $_)
-                    } @{$site->{$sc}->{$so}->{list_returns}}};
+                $site->{$sc}->{$so}->{list_returns} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{list_returns}} };
             }
+            # prettify the column headings 
+            $site->{$sc}->{$so}->{list_returns}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
+                for keys %{ $site->{$sc}->{$so}->{list_returns} };
         }
     }
 
