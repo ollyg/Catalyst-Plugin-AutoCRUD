@@ -743,7 +743,8 @@ widget, for example.
 
 When you create a C<belongs_to> relation, the default is that the accessor is
 named after the local table's foreign key column. This behaviour is supported,
-and custom accessor names are unfortunately not.
+and custom accessor names are unfortunately not. This will be fixable when
+L<DBIx::Class> supports a formal introspection API.
 
 =back
 
