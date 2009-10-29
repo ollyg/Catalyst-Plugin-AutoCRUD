@@ -1,6 +1,42 @@
     // this is the paging toolbar below the grid
 
-    var pagebar = new Ext.PagingToolbar({
+    // need to extend Ext.PagingToolbar to display correct numbers even though
+    // the store itself has one too many records in (because of teh
+    // filter/search row). Cannot do this via Ext.override as it knobbles
+    // Ext.PagingToolbar globally and it is used elsewhere in the app.
+
+    Ext.ux.PagingToolbarForFilterGrid = Ext.extend(Ext.PagingToolbar, {
+        initComponent : function() {
+            Ext.ux.PagingToolbarForFilterGrid.superclass.initComponent.call(this);
+        }
+
+        ,updateInfo : function() {
+            if (this.displayEl) {
+                var count = this.store.getCount() - 1;
+                var msg = count == 0 ? 
+                    this.emptyMsg :
+                    String.format(
+                        this.displayMsg,
+                        this.cursor+1, this.cursor+count, this.store.getTotalCount()
+                    );  
+                this.displayEl.update(msg);
+            }
+        }
+
+        // make the "Page x of y" work when we choose to show all rows
+        ,getPageData : function() {
+            var total = this.store.getTotalCount();
+            var pgsz = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
+            if (isNaN(pgsz)) { pgsz = total }
+            return {
+                total : total
+                ,activePage : Math.ceil((this.cursor + pgsz) / pgsz)
+                ,pages :  total < pgsz ? 1 : Math.ceil(total / pgsz)
+            };
+        }
+    });
+
+    var pagebar = new Ext.ux.PagingToolbarForFilterGrid({
         id: 'pagebar'
         ,pageSize: 10
         ,store: store
@@ -36,35 +72,4 @@
                 }
             }
         ]
-    });
-
-    // allow the pager to display the correct numbers even though the
-    // store itself has one too many records in (because of the
-    // filter/search row)
-
-    Ext.override(Ext.PagingToolbar, {
-        updateInfo : function(){
-            if(this.displayEl){
-                var count = this.store.getCount() - 1;
-                var msg = count == 0 ? 
-                    this.emptyMsg :
-                    String.format(
-                        this.displayMsg,
-                        this.cursor+1, this.cursor+count, this.store.getTotalCount()
-                    );  
-                this.displayEl.update(msg);
-            }
-        }
-
-        // make the "Page x of y" work when we choose to show all rows
-        ,getPageData : function(){
-            var total = this.store.getTotalCount();
-            var pgsz = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
-            if (isNaN(pgsz)) { pgsz = total }
-            return {
-                total : total
-                ,activePage : Math.ceil((this.cursor + pgsz) / pgsz)
-                ,pages :  total < pgsz ? 1 : Math.ceil(total / pgsz)
-            };
-        }
     });
