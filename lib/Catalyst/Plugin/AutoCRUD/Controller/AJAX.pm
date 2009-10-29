@@ -229,7 +229,7 @@ sub list : Chained('base') Args(0) {
         next unless $p =~ m/^search\.([\w ]+)/;
         my $col = $1;
         next unless exists $info->{cols}->{$col};
-        next unless $info->{cols}->{$col}->{is_fk};
+        next unless ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr});
 
         my $p_val = $c->req->params->{"search.$col"};
         my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
@@ -254,7 +254,9 @@ sub list : Chained('base') Args(0) {
 
     # user sorted by FK so do the paging now (will be S-L-O-W)
     if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/
-        and ($delayed_paging or $info->{cols}->{$sort}->{is_fk})) {
+        and ($delayed_paging
+             or $info->{cols}->{$sort}->{is_fk}
+             or $info->{cols}->{$col}->{is_rr})) {
 
         my $pg = Data::Page->new;
         $pg->total_entries(scalar @{$response->{rows}});
@@ -269,8 +271,7 @@ sub list : Chained('base') Args(0) {
     foreach my $col (keys %{$info->{cols}}) {
         my $ci = $info->{cols}->{$col};
 
-        if (exists $ci->{is_rr}
-            or (exists $ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox')) {
+        if (exists $ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox') {
 
             $searchrow{$col} = '';
         }
