@@ -8,7 +8,6 @@
     var cm = new Ext.grid.ColumnModel([
       [% SET colcount = 0 %]
       [% FOREACH col IN lf.main.col_order %]
-        [%# NEXT IF site_conf.$db.$table.list_returns AND NOT site_conf.$db.$table.list_returns.$col %]
         [% ',' IF lf.main.col_order.size > 1 AND colcount != 0 %]{
           [% IF site_conf.$db.$table.list_returns AND site_conf.$db.$table.list_returns.$col AND site_conf.$db.$table.list_returns.$col != '' %]
             header:     '[% site_conf.$db.$table.list_returns.$col %]'

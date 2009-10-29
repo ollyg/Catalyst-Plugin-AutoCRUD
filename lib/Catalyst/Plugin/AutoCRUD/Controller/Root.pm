@@ -184,14 +184,17 @@ sub build_site_config : Private {
             $site->{$sc}->{$so} = Catalyst::Utils::merge_hashes ({
                     map {($_ => $site->{$sc}->{$_})} keys %defaults
                 }, $site->{$sc}->{$so});
-            # promote arrayref into hashref
-            if (exists $site->{$sc}->{$so}->{list_returns}
-                and ref $site->{$sc}->{$so}->{list_returns} eq 'ARRAY') {
-                $site->{$sc}->{$so}->{list_returns} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{list_returns}} };
+
+            if (exists $site->{$sc}->{$so}->{list_returns}) {
+                # promote arrayref into hashref
+                if (ref $site->{$sc}->{$so}->{list_returns} eq 'ARRAY') {
+                    $site->{$sc}->{$so}->{list_returns} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{list_returns}} };
+                }
+
+                # prettify the column headings 
+                $site->{$sc}->{$so}->{list_returns}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
+                    for keys %{ $site->{$sc}->{$so}->{list_returns} };
             }
-            # prettify the column headings 
-            $site->{$sc}->{$so}->{list_returns}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
-                for keys %{ $site->{$sc}->{$so}->{list_returns} };
         }
     }
 
