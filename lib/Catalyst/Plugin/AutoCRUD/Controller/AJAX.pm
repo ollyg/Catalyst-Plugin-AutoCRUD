@@ -256,7 +256,7 @@ sub list : Chained('base') Args(0) {
     if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/
         and ($delayed_paging
              or $info->{cols}->{$sort}->{is_fk}
-             or $info->{cols}->{$col}->{is_rr})) {
+             or $info->{cols}->{$sort}->{is_rr})) {
 
         my $pg = Data::Page->new;
         $pg->total_entries(scalar @{$response->{rows}});
