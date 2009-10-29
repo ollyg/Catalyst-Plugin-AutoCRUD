@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.49';
+our $VERSION = '0.51';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
@@ -130,7 +130,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.49 of Catalyst::Plugin::AutoCRUD
+This document refers to version 0.51 of Catalyst::Plugin::AutoCRUD
 
 =head1 PURPOSE
 
@@ -738,6 +738,12 @@ Database fields of types such as (PostgreSQL) C<timestamp with time zone> will
 be displayed with a date and time picker, but you'll lose the time zone's UTC
 offset value, sorry. This could be fixed and retained through an improved UI
 widget, for example.
+
+=item Relation accessors must be filters
+
+When you create a C<belongs_to> relation, the default is that the accessor is
+named after the local table's foreign key column. This behaviour is supported,
+and custom accessor names are unfortunately not.
 
 =back
 
