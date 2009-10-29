@@ -136,6 +136,7 @@ sub list : Chained('base') Args(0) {
     my $limit = $c->req->params->{'limit'} || 10;
     my $sort  = $c->req->params->{'sort'}  || $info->{pk};
     (my $dir  = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
+    my $delayed_paging = 0; # in case we filter/sort on FK
 
     # sanity check the sort param
     $sort = $info->{pk} if $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
@@ -151,7 +152,12 @@ sub list : Chained('base') Args(0) {
         next unless $p =~ m/^search\.([\w ]+)/;
         my $col = $1;
         next unless exists $info->{cols}->{$col};
-        next if $info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr};
+        if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
+            # sorry, have to kill the paging here because it breaks filtering on FK
+            $search_opts = {};
+            $delayed_paging = 1;
+            next;
+        }
 
         # for numberish types the case insensitive functions may not work
         if (exists $info->{cols}->{$col}->{extjs_xtype}
@@ -218,6 +224,22 @@ sub list : Chained('base') Args(0) {
         push @{$response->{rows}}, $data;
     }
 
+    # apply any filters on FK
+    foreach my $p (keys %{$c->req->params}) {
+        next unless $p =~ m/^search\.([\w ]+)/;
+        my $col = $1;
+        next unless exists $info->{cols}->{$col};
+        next unless $info->{cols}->{$col}->{is_fk};
+
+        my $p_val = $c->req->params->{"search.$col"};
+        my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
+
+        # reduce to matching rows
+        $response->{rows} = [
+            grep { $_->{$col} =~ m/$fk_match/ } @{$response->{rows}}
+        ];
+    }
+
     # sort col which cannot be passed to the DB
     if ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr}) {
         @{$response->{rows}} = sort {
@@ -231,7 +253,9 @@ sub list : Chained('base') Args(0) {
         eval {$rs->pager->total_entries} || scalar @{$response->{rows}};
 
     # user sorted by FK so do the paging now (will be S-L-O-W)
-    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and $info->{cols}->{$sort}->{is_fk}) {
+    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/
+        and ($delayed_paging or $info->{cols}->{$sort}->{is_fk})) {
+
         my $pg = Data::Page->new;
         $pg->total_entries(scalar @{$response->{rows}});
         $pg->entries_per_page($limit);
@@ -245,8 +269,7 @@ sub list : Chained('base') Args(0) {
     foreach my $col (keys %{$info->{cols}}) {
         my $ci = $info->{cols}->{$col};
 
-        if (exists $ci->{is_fk}
-            or exists $ci->{is_rr}
+        if (exists $ci->{is_rr}
             or (exists $ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox')) {
 
             $searchrow{$col} = '';
