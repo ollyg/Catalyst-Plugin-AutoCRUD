@@ -93,7 +93,7 @@
               [% END %]
 
                 if (row === 0) {
-                    if (isFK(fieldName) || isCheck(fieldName)) {
+                    if (isCheck(fieldName)) {
                         return false;
                     }
 
@@ -133,7 +133,7 @@
             ,beforeedit: function(e) {
                 // cancel ENTER key driven edits from the filter row
                 // also cancel on the filter row itself if a FK
-                if ((e.row !== 0) || isFK(e.field) || isCheck(e.field)) { return false }
+                if ((e.row !== 0) || isCheck(e.field)) { return false }
             }
             ,columnmove: function(oldidx, newidx) {
                 // XXX private parts of pagingtoolbar
