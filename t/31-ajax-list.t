@@ -80,6 +80,102 @@ my $default_album_page = {
                     ]
 };
 
+my $sorted_track_page = {
+          'total' => 13,
+            'rows' => [
+                        {
+                          'length' => '1:01',
+                          'album_id' => 'Pop Songs',
+                          'sales' => 2685000,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Pop Song One',
+                          'id' => 10,
+                          'releasedate' => '1995-01-04'
+                        },
+                        {
+                          'length' => '2:02',
+                          'album_id' => 'Greatest Hits',
+                          'sales' => 1536000,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Hit Tune',
+                          'id' => 11,
+                          'releasedate' => '1990-11-06'
+                        },
+                        {
+                          'length' => '3:03',
+                          'album_id' => 'Greatest Hits',
+                          'sales' => 195300,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Hit Tune II',
+                          'id' => 12,
+                          'releasedate' => '1990-11-06'
+                        },
+                        {
+                          'length' => '4:04',
+                          'album_id' => 'Greatest Hits',
+                          'sales' => 1623000,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Hit Tune 3',
+                          'id' => 13,
+                          'releasedate' => '1990-11-06'
+                        },
+                        {
+                          'length' => '3:30',
+                          'album_id' => 'DJ Mix 3',
+                          'sales' => 1953540,
+                          'copyright_id' => 'Label A',
+                          'title' => 'Track 3.1',
+                          'id' => 7,
+                          'releasedate' => '1998-06-12'
+                        },
+                        {
+                          'length' => '3:40',
+                          'album_id' => 'DJ Mix 3',
+                          'sales' => 2668000,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Track 3.2',
+                          'id' => 8,
+                          'releasedate' => '1998-01-04'
+                        },
+                        {
+                          'length' => '3:50',
+                          'album_id' => 'DJ Mix 3',
+                          'sales' => 20000,
+                          'copyright_id' => 'Label A',
+                          'title' => 'Track 3.3',
+                          'id' => 9,
+                          'releasedate' => '1999-11-14'
+                        },
+                        {
+                          'length' => '2:30',
+                          'album_id' => 'DJ Mix 2',
+                          'sales' => 153000,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Track 2.1',
+                          'id' => 4,
+                          'releasedate' => '1990-01-04'
+                        },
+                        {
+                          'length' => '2:40',
+                          'album_id' => 'DJ Mix 2',
+                          'sales' => 1020480,
+                          'copyright_id' => 'Label A',
+                          'title' => 'Track 2.2',
+                          'id' => 5,
+                          'releasedate' => '1991-11-11'
+                        },
+                        {
+                          'length' => '2:50',
+                          'album_id' => 'DJ Mix 2',
+                          'sales' => 9625543,
+                          'copyright_id' => 'Label B',
+                          'title' => 'Track 2.3',
+                          'id' => 6,
+                          'releasedate' => '1980-07-21'
+                        }
+                    ]
+};
+
 my $default_track_page = {
           'total' => 13,
           'rows' => [
@@ -176,6 +272,65 @@ my $default_track_page = {
                     ]
 };
 
+my $filtered_album_page =
+          {
+            'rows' => [
+                        {
+                          'sleeve_notes' => 'SleeveNotes: id(1)',
+                          'tracks' => [
+                                        'Track 1.1',
+                                        'Track 1.2',
+                                        'Track 1.3'
+                                      ],
+                          'artist_id' => 'Mike Smith',
+                          'deleted' => 1,
+                          'recorded' => '1989-01-02',
+                          'title' => 'DJ Mix 1',
+                          'id' => 1
+                        },
+                        {
+                          'sleeve_notes' => '',
+                          'tracks' => [
+                                        'Track 2.1',
+                                        'Track 2.2',
+                                        'Track 2.3'
+                                      ],
+                          'artist_id' => 'Mike Smith',
+                          'deleted' => 1,
+                          'recorded' => '1989-02-02',
+                          'title' => 'DJ Mix 2',
+                          'id' => 2
+                        },
+                        {
+                          'sleeve_notes' => '',
+                          'tracks' => [
+                                        'Track 3.1',
+                                        'Track 3.2',
+                                        'Track 3.3'
+                                      ],
+                          'artist_id' => 'Mike Smith',
+                          'deleted' => 1,
+                          'recorded' => '1989-03-02',
+                          'title' => 'DJ Mix 3',
+                          'id' => 3
+                        },
+                        {
+                          'sleeve_notes' => '',
+                          'tracks' => [
+                                        'Hit Tune',
+                                        'Hit Tune II',
+                                        'Hit Tune 3'
+                                      ],
+                          'artist_id' => 'Adam Smith',
+                          'deleted' => 0,
+                          'recorded' => '2002-05-21',
+                          'title' => 'Greatest Hits',
+                          'id' => 5
+                        }
+                      ],
+            'total' => 4
+};
+
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {}, $default_album_page, 'no args');
 
 # page : the pager page number : defaults to 1
@@ -264,9 +419,7 @@ my $sort_rec_desc = Storable::dclone($default_album_page);
 $sort_rec_desc->{rows} = [ @{$sort_rec_desc->{rows}}[3,4,2,1,0] ];
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => 'recorded', dir => 'DESC'}, $sort_rec_desc, 'sort by recorded DESC');
 
-my $track_album_desc = Storable::dclone($default_track_page);
-$track_album_desc->{rows} = [ @{$track_album_desc->{rows}}[9,6,7,8,3,4,5,0,1,2] ];
-$mech->ajax_ok('/site/default/schema/dbic/source/track/list', {sort => 'album_id', dir => 'DESC'}, $track_album_desc, 'sort by FK DESC');
+$mech->ajax_ok('/site/default/schema/dbic/source/track/list', {sort => 'album_id', dir => 'DESC'}, $sorted_track_page, 'sort by FK DESC');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => 'foobar', dir => 'DESC'}, $sort_desc, 'sort by nonexistent DESC');
 
@@ -311,6 +464,8 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' =>
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'mix'}, $case_correct, 'filter case insensitive');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.artist_id' => '%'}, $default_album_page, 'filter fk ignored');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.artist_id' => '%'}, {total => 0, rows => []}, 'emtpy filter by fk');
+
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.artist_id' => 'Smith'}, $filtered_album_page, 'filter by fk');
 
 __END__
