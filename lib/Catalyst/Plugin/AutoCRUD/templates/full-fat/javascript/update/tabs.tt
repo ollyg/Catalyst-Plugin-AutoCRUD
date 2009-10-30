@@ -66,7 +66,7 @@
                     ,typeAhead: false
                     ,pageSize: 5
                     ,triggerAction: 'all'
-                    ,store: new Ext.data.JsonStore({
+                    ,store: new Ext.data.JsonStore ({
                         url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [site,db,info.path] ) %]'
                         ,root: 'rows' ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]
@@ -80,6 +80,14 @@
                             }
                         }
                     })
+                    // allow clearing of value
+                    ,listeners: {
+                        blur : function() {
+                            if (this.allowBlank && this.getRawValue() === '') {
+                                this.clearValue();
+                            }
+                        }
+                    }
                   [% ELSE %]
                     [% SET localxtype = info.cols.$field.extjs_xtype OR "textarea" %]
                     ,xtype: '[% localxtype %]'
