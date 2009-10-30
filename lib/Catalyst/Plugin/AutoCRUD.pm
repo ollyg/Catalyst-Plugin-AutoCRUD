@@ -739,13 +739,6 @@ be displayed with a date and time picker, but you'll lose the time zone's UTC
 offset value, sorry. This could be fixed and retained through an improved UI
 widget, for example.
 
-=item Relation accessors must be filters
-
-When you create a C<belongs_to> relation, the default is that the accessor is
-named after the local table's foreign key column. This behaviour is supported,
-and custom accessor names are unfortunately not. This will be fixable when
-L<DBIx::Class> supports a formal introspection API.
-
 =back
 
 For the issues above, if you're desperate that the feature be implemented

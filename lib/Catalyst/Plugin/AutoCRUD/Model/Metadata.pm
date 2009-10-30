@@ -170,11 +170,18 @@ sub _build_table_info {
         if ($type eq 'multi') {
             $mfks{$r} = $source->relationship_info($r);
         }
-        elsif ($type eq 'single') {
+        # the join_type is a bit heuristic but it's difficult to differentiate
+        # the belongs_to with a custom accessor name, from the has_one/might_have
+        elsif ($type eq 'single'
+                and exists $source->relationship_info($r)->{attrs}->{join_type}) {
             $sfks{$r} = $source->relationship_info($r);
         }
         else { # filter
             $fks{$r} = $source->relationship_info($r);
+            # if this is a belongs_to with custom accessor, hide the orig col
+            (my $src_col = (values %{$source->relationship_info($r)->{cond}})[0]) =~ s/^self\.//;
+            @cols = grep {$_ !~ m/^$src_col$/} @cols;
+            $ti->{cols}->{$r}->{masked_col} = $src_col;
         }
     }
 

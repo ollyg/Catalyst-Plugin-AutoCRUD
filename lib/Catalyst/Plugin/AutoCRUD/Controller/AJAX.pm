@@ -378,6 +378,11 @@ sub _build_table_data {
             # FK val is an update, so set the value
             $data->{$col} = $params->{ 'combobox.' . $col } || undef
                 if exists $params->{ 'combobox.' . $col };
+
+            # rename col to real name, now we have data for it
+            # (custom relation accessor name)
+            $data->{ $ci->{masked_col} } = delete $data->{$col}
+                if defined $data->{$col} and exists $ci->{masked_col};
         }
         else {
         # not a foreign key, so just update the row data
@@ -441,6 +446,7 @@ sub _process_row_stack {
             my $ci = $info->{cols}->{$col};
             next unless exists $ci->{is_fk}
                 and exists $stashed_keys{$ci->{fk_model}};
+            $col = $ci->{masked_col} if exists $ci->{masked_col};
             $data->{$col} = $stashed_keys{$ci->{fk_model}};
         }
 
