@@ -2,14 +2,7 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    This document refers to version 0.48 of Catalyst::Plugin::AutoCRUD
-
-WARNING
-    This is an *ALPHA RELEASE*. I'd really appreciate any bug reports; you
-    can use the CPAN RT bug tracking system, or email me (Oliver) directly
-    at the address at the bottom of this page. Please also be aware that the
-    configuration file content has changed from previous releases of the
-    module.
+    This document refers to version 0.51 of Catalyst::Plugin::AutoCRUD
 
 PURPOSE
     You have a database, and wish to have a basic web interface supporting
@@ -220,6 +213,14 @@ TIPS AND TRICKS
     add_columns(). This will let the plugin know you don't need to supply a
     value for new or updated records. The interface will look much better as
     a result.
+
+  Textfields and Textareas
+    When the application creates a web form for adding or editing, it has to
+    choose whether to show a Textfield or Textarea for text-type fields. If
+    you have set a "size" option in add_columns() within the Schema, and
+    this is less than or equal to 40, a Textfield is used. Otherwise, if the
+    "size" option is larger than 40 or not set, then an auto-expanding,
+    scrollable Textarea is used.
 
   Column names with spaces
     The plugin will handle most tricky names, but you should remember to
@@ -580,6 +581,12 @@ LIMITATIONS
         If you have two columns which both have foreign key constraints to
         the same table, it's very likely AutoCRUD will not work. Again this
         is a simplification which speeded the initial development.
+
+    Time Zone settings are lost during SELECT/UPDATE
+        Database fields of types such as (PostgreSQL) "timestamp with time
+        zone" will be displayed with a date and time picker, but you'll lose
+        the time zone's UTC offset value, sorry. This could be fixed and
+        retained through an improved UI widget, for example.
 
     For the issues above, if you're desperate that the feature be
     implemented soon, please drop me a line at the address below, because

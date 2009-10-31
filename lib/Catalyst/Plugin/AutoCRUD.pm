@@ -351,6 +351,15 @@ C<< is_auto_increment => 1, >> option to the relevant hash in add_columns().
 This will let the plugin know you don't need to supply a value for new or
 updated records. The interface will look much better as a result.
 
+=head2 Textfields and Textareas
+
+When the application creates a web form for adding or editing, it has to
+choose whether to show a Textfield or Textarea for text-type fields. If you
+have set a C<size> option in add_columns() within the Schema, and this is less
+than or equal to 40, a Textfield is used. Otherwise, if the C<size> option is
+larger than 40 or not set, then an auto-expanding, scrollable Textarea is
+used.
+
 =head2 Column names with spaces
 
 The plugin will handle most tricky names, but you should remember to pass some
