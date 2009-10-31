@@ -35,7 +35,8 @@ my $expected = {
                     'fk_model'    => 'AutoCRUD::DBIC::Album',
                     'editable'    => 0,
                     'heading'     => 'Album',
-                    'is_fk'       => 1
+                    'is_fk'       => 1,
+                    'masked_col'  => 'album_id'
                 },
                 'text' => {
                     'required' => 1,
@@ -110,7 +111,8 @@ my $expected = {
                     'fk_model'    => 'AutoCRUD::DBIC::Artist',
                     'editable'    => 1,
                     'heading'     => 'Artist',
-                    'is_fk'       => 1
+                    'is_fk'       => 1,
+                    'masked_col'  => 'artist_id'
                 },
                 'deleted' => {
                     'required'    => 1,
@@ -172,7 +174,8 @@ my $expected = {
                 'fk_model'    => 'AutoCRUD::DBIC::Artist',
                 'editable'    => 1,
                 'heading'     => 'Artist',
-                'is_fk'       => 1
+                'is_fk'       => 1,
+                'masked_col'  => 'artist_id'
             },
             'deleted' => {
                 'required'    => 1,
@@ -214,6 +217,7 @@ my $expected = {
 };
 
 is_deeply( $response, $expected, 'Metadata is as we expect' );
-
+#use Data::Dumper;
+#print STDERR Dumper [$response, $expected];
 #warn $mech->content;
 __END__

@@ -232,6 +232,31 @@ sub _build_table_info {
                 and defined $info->{size} and $info->{size} <= 40;
     }
 
+    # and FIXME do the same for the FKs which are masking hidden cols
+    foreach my $col (keys %fks) {
+        next unless exists $ti->{cols}->{$col}->{masked_col};
+        my $info = $source->column_info($ti->{cols}->{$col}->{masked_col});
+        next unless defined $info;
+
+        $ti->{cols}->{$col} = {
+            %{$ti->{cols}->{$col}},
+            heading      => _2title($col),
+            editable     => ($info->{is_auto_increment} ? 0 : 1),
+            required     => ((exists $info->{is_nullable}
+                                 and $info->{is_nullable} == 0) ? 1 : 0),
+        };
+
+        $ti->{cols}->{$col}->{default_value} = $info->{default_value}
+            if ($info->{default_value} and $ti->{cols}->{$col}->{editable});
+
+        $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
+            if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
+
+        $ti->{cols}->{$col}->{extjs_xtype} = 'textfield'
+            if !exists $ti->{cols}->{$col}->{extjs_xtype}
+                and defined $info->{size} and $info->{size} <= 40;
+    }
+
     # extra data for foreign key columns
     foreach my $col (keys %fks, keys %sfks) {
 

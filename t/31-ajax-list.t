@@ -85,7 +85,7 @@ my $sorted_track_page = {
             'rows' => [
                         {
                           'length' => '1:01',
-                          'album_id' => 'Pop Songs',
+                          'parent_album' => 'Pop Songs',
                           'sales' => 2685000,
                           'copyright_id' => 'Label B',
                           'title' => 'Pop Song One',
@@ -94,7 +94,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '2:02',
-                          'album_id' => 'Greatest Hits',
+                          'parent_album' => 'Greatest Hits',
                           'sales' => 1536000,
                           'copyright_id' => 'Label B',
                           'title' => 'Hit Tune',
@@ -103,7 +103,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '3:03',
-                          'album_id' => 'Greatest Hits',
+                          'parent_album' => 'Greatest Hits',
                           'sales' => 195300,
                           'copyright_id' => 'Label B',
                           'title' => 'Hit Tune II',
@@ -112,7 +112,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '4:04',
-                          'album_id' => 'Greatest Hits',
+                          'parent_album' => 'Greatest Hits',
                           'sales' => 1623000,
                           'copyright_id' => 'Label B',
                           'title' => 'Hit Tune 3',
@@ -121,7 +121,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '3:30',
-                          'album_id' => 'DJ Mix 3',
+                          'parent_album' => 'DJ Mix 3',
                           'sales' => 1953540,
                           'copyright_id' => 'Label A',
                           'title' => 'Track 3.1',
@@ -130,7 +130,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '3:40',
-                          'album_id' => 'DJ Mix 3',
+                          'parent_album' => 'DJ Mix 3',
                           'sales' => 2668000,
                           'copyright_id' => 'Label B',
                           'title' => 'Track 3.2',
@@ -139,7 +139,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '3:50',
-                          'album_id' => 'DJ Mix 3',
+                          'parent_album' => 'DJ Mix 3',
                           'sales' => 20000,
                           'copyright_id' => 'Label A',
                           'title' => 'Track 3.3',
@@ -148,7 +148,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '2:30',
-                          'album_id' => 'DJ Mix 2',
+                          'parent_album' => 'DJ Mix 2',
                           'sales' => 153000,
                           'copyright_id' => 'Label B',
                           'title' => 'Track 2.1',
@@ -157,7 +157,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '2:40',
-                          'album_id' => 'DJ Mix 2',
+                          'parent_album' => 'DJ Mix 2',
                           'sales' => 1020480,
                           'copyright_id' => 'Label A',
                           'title' => 'Track 2.2',
@@ -166,7 +166,7 @@ my $sorted_track_page = {
                         },
                         {
                           'length' => '2:50',
-                          'album_id' => 'DJ Mix 2',
+                          'parent_album' => 'DJ Mix 2',
                           'sales' => 9625543,
                           'copyright_id' => 'Label B',
                           'title' => 'Track 2.3',
@@ -419,7 +419,7 @@ my $sort_rec_desc = Storable::dclone($default_album_page);
 $sort_rec_desc->{rows} = [ @{$sort_rec_desc->{rows}}[3,4,2,1,0] ];
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => 'recorded', dir => 'DESC'}, $sort_rec_desc, 'sort by recorded DESC');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/track/list', {sort => 'album_id', dir => 'DESC'}, $sorted_track_page, 'sort by FK DESC');
+$mech->ajax_ok('/site/default/schema/dbic/source/track/list', {sort => 'parent_album', dir => 'DESC'}, $sorted_track_page, 'sort by FK DESC');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => 'foobar', dir => 'DESC'}, $sort_desc, 'sort by nonexistent DESC');
 

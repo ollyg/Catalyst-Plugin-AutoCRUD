@@ -257,7 +257,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/track/list', {'search.title' =>
     'rows' => [
                 {
                   'length' => '',
-                  'album_id' => 'Testing Hits 3',
+                  'parent_album' => 'Testing Hits 3',
                   'sales' => '',
                   'id' => 14,
                   'title' => 'Track Title',

@@ -27,7 +27,7 @@ my $expected = {
             'moniker'   => 'Track',
             'col_order' => [
                 'id',          'title',    'length', 'sales',
-                'releasedate', 'album_id', 'copyright_id'
+                'releasedate', 'parent_album', 'copyright_id'
             ],
             'path'  => 'track',
             'title' => 'Track',
@@ -37,13 +37,14 @@ my $expected = {
                     'editable' => 1,
                     'heading'  => 'Length'
                 },
-                'album_id' => {
+                'parent_album' => {
                     'required'    => 1,
                     'extjs_xtype' => 'numberfield',
                     'fk_model'    => 'AutoCRUD::DBIC::Album',
                     'editable'    => 1,
                     'heading'     => 'Album',
-                    'is_fk'       => 1
+                    'is_fk'       => 1,
+                    'masked_col' => 'album_id'
                 },
                 'sales' => {
                     'required'    => 1,
@@ -57,7 +58,8 @@ my $expected = {
                     'fk_model'    => 'AutoCRUD::DBIC::Copyright',
                     'editable'    => 1,
                     'heading'     => 'Copyright',
-                    'is_fk'       => 1
+                    'is_fk'       => 1,
+                    'masked_col' => 'copyright_id'
                 },
                 'title' => {
                     'required' => 1,
@@ -128,7 +130,8 @@ my $expected = {
                     'fk_model'    => 'AutoCRUD::DBIC::Artist',
                     'editable'    => 1,
                     'heading'     => 'Artist',
-                    'is_fk'       => 1
+                    'is_fk'       => 1,
+                    'masked_col' => 'artist_id'
                 },
                 'deleted' => {
                     'required'    => 1,
@@ -174,7 +177,7 @@ my $expected = {
         'moniker'   => 'Track',
         'col_order' => [
             'id',          'title',    'length', 'sales',
-            'releasedate', 'album_id', 'copyright_id'
+            'releasedate', 'parent_album', 'copyright_id'
         ],
         'path'  => 'track',
         'title' => 'Track',
@@ -184,13 +187,14 @@ my $expected = {
                 'editable' => 1,
                 'heading'  => 'Length'
             },
-            'album_id' => {
+            'parent_album' => {
                 'required'    => 1,
                 'extjs_xtype' => 'numberfield',
                 'fk_model'    => 'AutoCRUD::DBIC::Album',
                 'editable'    => 1,
                 'heading'     => 'Album',
-                'is_fk'       => 1
+                'is_fk'       => 1,
+                'masked_col' => 'album_id'
             },
             'sales' => {
                 'required'    => 1,
@@ -204,7 +208,8 @@ my $expected = {
                 'fk_model'    => 'AutoCRUD::DBIC::Copyright',
                 'editable'    => 1,
                 'heading'     => 'Copyright',
-                'is_fk'       => 1
+                'is_fk'       => 1,
+                'masked_col'  => 'copyright_id'
             },
             'title' => {
                 'required' => 1,
@@ -239,6 +244,7 @@ my $expected = {
 };
 
 is_deeply( $response, $expected, 'Metadata is as we expect' );
-
+#use Data::Dumper;
+#print STDERR Dumper [$response, $expected];
 #warn $mech->content;
 __END__

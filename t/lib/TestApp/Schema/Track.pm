@@ -29,9 +29,13 @@ __PACKAGE__->add_columns(
   { data_type => "date", is_nullable => 0, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
-__PACKAGE__->belongs_to("album_id", "TestApp::Schema::Album", { id => "album_id" });
 __PACKAGE__->belongs_to(
-  "copyright_id",
+  "parent_album" =>
+  "TestApp::Schema::Album",
+  { id => "album_id" }
+);
+__PACKAGE__->belongs_to(
+  "copyright_id" =>
   "TestApp::Schema::Copyright",
   { id => "copyright_id" },
 );
