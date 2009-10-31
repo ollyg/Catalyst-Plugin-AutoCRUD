@@ -57,6 +57,7 @@ sub process {
         and exists $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}}) {
 
         # we have a cache!
+        $c->stash->{dbtitle} = _2title( $c->stash->{db} );
         $c->stash->{lf} = $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}};
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
             $c->stash->{db}, $c->stash->{table}) if $c->debug;
