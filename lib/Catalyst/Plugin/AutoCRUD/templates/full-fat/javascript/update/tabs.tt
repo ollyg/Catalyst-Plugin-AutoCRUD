@@ -68,7 +68,8 @@
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
                         url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [site,db,info.path] ) %]'
-                        ,root: 'rows' ,totalProperty: 'total'
+                        ,root: 'rows'
+                        ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]
                         ,listeners: {
                             beforeload: function(store, options) {

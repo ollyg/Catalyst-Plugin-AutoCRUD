@@ -136,26 +136,41 @@ sub list : Chained('base') Args(0) {
     my $limit = $c->req->params->{'limit'} || 10;
     my $sort  = $c->req->params->{'sort'}  || $info->{pk};
     (my $dir  = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
-    my $delayed_paging = 0; # in case we filter/sort on FK
 
     # sanity check the sort param
     $sort = $info->{pk} if $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
 
-    # set up pager, if needed (if user sorting by FK then delay paging)
+    # before setting up the paging and sorting, we need to check whether
+    # the FK params are legit PK vals in the related schema
+    my %delay_page_sort = ();
+    foreach my $p (keys %{$c->req->params}) {
+        next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
+        next unless exists $info->{cols}->{$col}
+            and ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr});
+        my $rs = $c->model($lf->{model})
+                    ->result_source->related_source($col)->resultset;
+        # cannot page or sort this col in the DB if it's not a legit PK val
+        $delay_page_sort{$col} += 1
+            if !defined $rs->find( $c->req->params->{"search.$col"} );
+    }
+
+    # set up pager, if needed (if user filtering by FK then delay paging)
     my $search_opts = (
-        ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and ! $info->{cols}->{$sort}->{is_fk})
+        ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and not scalar keys %delay_page_sort)
         ? { 'page' => $page, 'rows' => $limit, } : {});
 
-    # find filter fields in UI form
+    # find filter fields in UI form that can be passed to DB
     my $filter = {};
     foreach my $p (keys %{$c->req->params}) {
-        next unless $p =~ m/^search\.([\w ]+)/;
-        my $col = $1;
+        next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
         next unless exists $info->{cols}->{$col};
+        next if exists $delay_page_sort{$col};
+
+        # search for exact match on FK value (checked above)
         if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
-            # sorry, have to kill the paging here because it breaks filtering on FK
-            $search_opts = {};
-            $delayed_paging = 1;
+            my $masked_col = (exists $info->{cols}->{$col}->{masked_col}
+                ? $info->{cols}->{$col}->{masked_col} : $col);
+            $filter->{$masked_col} = $c->req->params->{"search.$col"};
             next;
         }
 
@@ -175,8 +190,8 @@ sub list : Chained('base') Args(0) {
     }
 
     # sort col which can be passed to the db
-    if ($dir =~ m/^(?:ASC|DESC)$/ and ! $info->{cols}->{$sort}->{is_fk}
-                                  and ! $info->{cols}->{$sort}->{is_rr}) {
+    if ($dir =~ m/^(?:ASC|DESC)$/
+            and not ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
@@ -224,13 +239,11 @@ sub list : Chained('base') Args(0) {
         push @{$response->{rows}}, $data;
     }
 
-    # apply any filters on FK
-    foreach my $p (keys %{$c->req->params}) {
-        next unless $p =~ m/^search\.([\w ]+)/;
-        my $col = $1;
-        next unless exists $info->{cols}->{$col};
-        next unless ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr});
+    #$c->model($lf->{model})->result_source->storage->debug(0)
+    #    if $c->debug;
 
+    # apply any filters on FK
+    foreach my $col (keys %delay_page_sort) {
         my $p_val = $c->req->params->{"search.$col"};
         my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
 
@@ -241,7 +254,7 @@ sub list : Chained('base') Args(0) {
     }
 
     # sort col which cannot be passed to the DB
-    if ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr}) {
+    if (exists $delay_page_sort{$sort}) {
         @{$response->{rows}} = sort {
             $dir eq 'ASC' ? ($a->{$sort} cmp $b->{$sort})
                           : ($b->{$sort} cmp $a->{$sort})
@@ -251,20 +264,6 @@ sub list : Chained('base') Args(0) {
     $response->{rows} ||= [];
     $response->{total} =
         eval {$rs->pager->total_entries} || scalar @{$response->{rows}};
-
-    # user sorted by FK so do the paging now (will be S-L-O-W)
-    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/
-        and ($delayed_paging
-             or $info->{cols}->{$sort}->{is_fk}
-             or $info->{cols}->{$sort}->{is_rr})) {
-
-        my $pg = Data::Page->new;
-        $pg->total_entries(scalar @{$response->{rows}});
-        $pg->entries_per_page($limit);
-        $pg->current_page($page);
-        $response->{rows} = [ $pg->splice($response->{rows}) ];
-        $response->{total} = $pg->total_entries;
-    }
 
     # sneak in a 'top' row for applying the filters
     my %searchrow = ();
@@ -286,8 +285,15 @@ sub list : Chained('base') Args(0) {
     }
     unshift @{$response->{rows}}, \%searchrow;
 
-    #$c->model($lf->{model})->result_source->storage->debug(0)
-    #    if $c->debug;
+    # user filtered by FK so do the paging now (will be S-L-O-W)
+    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and scalar keys %delay_page_sort) {
+        my $pg = Data::Page->new;
+        $pg->total_entries(scalar @{$response->{rows}});
+        $pg->entries_per_page($limit);
+        $pg->current_page($page);
+        $response->{rows} = [ $pg->splice($response->{rows}) ];
+        $response->{total} = $pg->total_entries;
+    }
 
     return $self;
 }
@@ -444,8 +450,7 @@ sub _process_row_stack {
         my $info = $lf->{table_info}->{$model};
         foreach my $col (keys %{$info->{cols}}) {
             my $ci = $info->{cols}->{$col};
-            next unless exists $ci->{is_fk}
-                and exists $stashed_keys{$ci->{fk_model}};
+            next unless $ci->{is_fk} and exists $stashed_keys{$ci->{fk_model}};
             $col = $ci->{masked_col} if exists $ci->{masked_col};
             $data->{$col} = $stashed_keys{$ci->{fk_model}};
         }
@@ -497,12 +502,12 @@ sub list_stringified : Chained('base') Args(0) {
 
     # sanity check foreign key, and set up string part search
     $fk =~ s/\s//g; $fk =~ s/^[^.]*\.//;
-    $query = ($query ? qr/\Q$query\E/i : qr/./);
+    my $query_re = ($query ? qr/\Q$query\E/i : qr/./);
 
     if (!$fk
         or !exists $lf->{main}->{cols}->{$fk}
-        or not (exists $lf->{main}->{cols}->{$fk}->{is_fk}
-            or exists $lf->{main}->{cols}->{$fk}->{is_rr})) {
+        or not ($lf->{main}->{cols}->{$fk}->{is_fk}
+            or $lf->{main}->{cols}->{$fk}->{is_rr})) {
 
         $c->stash->{json_data} = {total => 0, rows => []};
         return $self;
@@ -510,10 +515,21 @@ sub list_stringified : Chained('base') Args(0) {
     
     my $rs = $c->model($lf->{model})
                 ->result_source->related_source($fk)->resultset;
+    my @data = ();
 
-    my @data =  map  { { dbid => $_->id, stringified => _sfy($_) } }
-                grep { _sfy($_) =~ m/$query/ } $rs->all;
-    @data = sort { $a->{stringified} cmp $b->{stringified} } @data;
+    # first try a simple and quick primary key search
+    if (my $single_result = $rs->find($query)) {
+        @data = ({
+            dbid => $single_result->id,
+            stringified => _sfy($single_result),
+        });
+    }
+    else {
+        # do the full text search
+        my @results =  map  { { dbid => $_->id, stringified => _sfy($_) } }
+                       grep { _sfy($_) =~ m/$query_re/ } $rs->all;
+        @data = sort { $a->{stringified} cmp $b->{stringified} } @results;
+    }
 
     my $pg = Data::Page->new;
     $pg->total_entries(scalar @data);
