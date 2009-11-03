@@ -154,6 +154,12 @@ sub list : Chained('base') Args(0) {
             if !defined $rs->find( $c->req->params->{"search.$col"} );
     }
 
+    # sort on FK but not filter on it, then need to trigger delayed paging
+    if ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr}
+        and !exists $delay_page_sort{$sort} and !exists $c->req->params->{"search.$sort"}) {
+        $delay_page_sort{$sort} += 1;
+    }
+
     # set up pager, if needed (if user filtering by FK then delay paging)
     my $search_opts = (
         ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and not scalar keys %delay_page_sort)
@@ -190,8 +196,7 @@ sub list : Chained('base') Args(0) {
     }
 
     # sort col which can be passed to the db
-    if ($dir =~ m/^(?:ASC|DESC)$/
-            and not ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})) {
+    if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
