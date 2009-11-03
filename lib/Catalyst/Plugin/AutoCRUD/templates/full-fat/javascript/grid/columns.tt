@@ -79,6 +79,11 @@
                 beforequery: function(qe) {
                     delete qe.combo.lastQuery;
                 }
+                ,blur : function() {
+                    if (this.allowBlank && this.getRawValue() === '') {
+                        this.clearValue();
+                    }
+                }
             }
         });
       [% END %]
