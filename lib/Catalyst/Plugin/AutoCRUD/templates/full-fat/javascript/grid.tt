@@ -98,7 +98,9 @@
                     }
 
                     g.stopEditing;
-                    rec.set(fieldName, '');
+                    if (rec.get(fieldName) === '(click to add filter)') {
+                        rec.set(fieldName, '');
+                    }
                     g.startEditing(row,col);
                 }
               [% IF site_conf.$db.$table.update_allowed == 'yes' %]

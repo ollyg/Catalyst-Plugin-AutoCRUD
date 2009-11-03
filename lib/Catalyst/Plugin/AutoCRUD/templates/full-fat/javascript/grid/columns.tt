@@ -2,12 +2,17 @@
     // dataIndex maps the column to the specific data field in
     // the data store
 
+    // text added to FK combo list to hint for the full-text-search option
+    var fk_combo_comment = ' (all matches)';
+
     // create reusable renderer
     Ext.util.Format.comboRenderer = function(combo) {
         return function(value,metadata,record,rowindex,colindex,store) {
+            // choose what to render from the combobox store's data
             if (rowindex === 0) {
                 var rec = combo.findRecord(combo.valueField, value);
-                return rec ? rec.get(combo.displayField) : value;
+                var retval = rec ? rec.get(combo.displayField) : value;
+                return (retval.indexOf(fk_combo_comment) !== -1) ? value : retval;
             }
             return value;
         }
@@ -20,13 +25,14 @@
 
     // create the combo instances
     [% FOREACH col IN lf.main.col_order %]
-      [% IF lf.main.cols.$col.is_fk %]
+      [% IF lf.main.cols.$col.is_fk OR lf.main.cols.$col.is_rr %]
         var fk_combo_[% col %] = new Ext.form.ComboBox ({
             valueField: 'dbid'
             ,displayField: 'stringified'
             ,hiddenName: 'combobox.[% col %]'
+            ,hiddenId: 'fk_combo_[% col %]'
             ,loadingText: 'Searching...'
-            ,forceSelection: false
+            ,forceSelection: true
             ,selectOnFocus: true
             ,typeAhead: false
             ,pageSize: 10
@@ -53,13 +59,15 @@
                     }
                     ,load: function(store, records, options) {
                         var queryText = fk_combo_[% col %].getRawValue();
-
                         if (queryText.length && (options.params.page === 1)) {
-                            var commentText = (queryText.indexOf(' (all results)') == -1) ? ' (all results)' : '';
-
+                            // be sure not to accidentally add a 2nd copy of fk_combo_comment
+                            if (queryText.indexOf(fk_combo_comment) !== -1) {
+                                queryText = queryText.replace(fk_combo_comment,'');
+                            }
+                            // insert an extra row with full-text-search option
                             store.insert(0, new sfyRecord({
                                 dbid: queryText
-                                ,stringified: queryText + commentText
+                                ,stringified: queryText + fk_combo_comment
                             }));
                         }
                     }
@@ -91,7 +99,7 @@
             header:     '[% lf.main.cols.$col.heading %]'
           [% END %]
             ,dataIndex: '[% col %]'
-          [% IF lf.main.cols.$col.is_fk %]
+          [% IF lf.main.cols.$col.is_fk OR lf.main.cols.$col.is_rr %]
             ,editor: fk_combo_[% col %] //reference to combo instance
             ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %]) // pass combo instance to reusable renderer
           [% ELSE %]

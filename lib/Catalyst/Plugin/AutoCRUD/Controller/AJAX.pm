@@ -265,6 +265,16 @@ sub list : Chained('base') Args(0) {
     $response->{total} =
         eval {$rs->pager->total_entries} || scalar @{$response->{rows}};
 
+    # user filtered by FK so do the paging now (will be S-L-O-W)
+    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and scalar keys %delay_page_sort) {
+        my $pg = Data::Page->new;
+        $pg->total_entries(scalar @{$response->{rows}});
+        $pg->entries_per_page($limit);
+        $pg->current_page($page);
+        $response->{rows} = [ $pg->splice($response->{rows}) ];
+        $response->{total} = $pg->total_entries;
+    }
+
     # sneak in a 'top' row for applying the filters
     my %searchrow = ();
     foreach my $col (keys %{$info->{cols}}) {
@@ -284,16 +294,6 @@ sub list : Chained('base') Args(0) {
         }
     }
     unshift @{$response->{rows}}, \%searchrow;
-
-    # user filtered by FK so do the paging now (will be S-L-O-W)
-    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and scalar keys %delay_page_sort) {
-        my $pg = Data::Page->new;
-        $pg->total_entries(scalar @{$response->{rows}});
-        $pg->entries_per_page($limit);
-        $pg->current_page($page);
-        $response->{rows} = [ $pg->splice($response->{rows}) ];
-        $response->{total} = $pg->total_entries;
-    }
 
     return $self;
 }
