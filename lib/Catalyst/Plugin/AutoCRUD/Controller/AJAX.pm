@@ -154,17 +154,6 @@ sub list : Chained('base') Args(0) {
             if !defined $rs->find( $c->req->params->{"search.$col"} );
     }
 
-    # sort on FK but not filter on it, then need to trigger delayed paging
-    if ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr}
-        and !exists $delay_page_sort{$sort} and !exists $c->req->params->{"search.$sort"}) {
-        $delay_page_sort{$sort} += 1;
-    }
-
-    # set up pager, if needed (if user filtering by FK then delay paging)
-    my $search_opts = (
-        ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and not scalar keys %delay_page_sort)
-        ? { 'page' => $page, 'rows' => $limit, } : {});
-
     # find filter fields in UI form that can be passed to DB
     my $filter = {};
     foreach my $p (keys %{$c->req->params}) {
@@ -194,6 +183,18 @@ sub list : Chained('base') Args(0) {
                 => '%'. $c->req->params->{"search.$col"} .'%'
         };
     }
+
+    # any sort on FK -must- disable DB-side paging, unless we already know the
+    # supplied filter is a legitimate PK of the related table
+    if (($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})
+            and not (exists $c->req->params->{"search.$sort"} and not exists $delay_page_sort{$sort})) {
+        $delay_page_sort{$sort} += 1;
+    }
+
+    # set up pager, if needed (if user filtering by FK then delay paging)
+    my $search_opts = (
+        ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and not scalar keys %delay_page_sort)
+        ? { 'page' => $page, 'rows' => $limit, } : {});
 
     # sort col which can be passed to the db
     if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}) {
