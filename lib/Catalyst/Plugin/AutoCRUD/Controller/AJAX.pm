@@ -197,7 +197,8 @@ sub list : Chained('base') Args(0) {
         ? { 'page' => $page, 'rows' => $limit, } : {});
 
     # sort col which can be passed to the db
-    if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}) {
+    if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}
+        and not ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
