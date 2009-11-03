@@ -249,6 +249,7 @@ sub list : Chained('base') Args(0) {
 
     # apply any filters on FK
     foreach my $col (keys %delay_page_sort) {
+        next unless exists $c->req->params->{"search.$col"};
         my $p_val = $c->req->params->{"search.$col"};
         my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
 
