@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.52';
+our $VERSION = '0.53';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
@@ -130,7 +130,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.52 of Catalyst::Plugin::AutoCRUD
+This document refers to version 0.53 of Catalyst::Plugin::AutoCRUD
 
 =head1 PURPOSE
 
@@ -221,7 +221,7 @@ be offered a Home screen to select the database, and then another menu to
 select the table within that.
 
 Remember that the pages available from this plugin will be located under the
-C</autocrud> path if your application. Use the C<basepath> option if you want
+C</autocrud> path of your application. Use the C<basepath> option if you want
 to override this.
 
 =head2 Scenario 2: Frontend for an existing C<DBIx::Class::Schema> based class
@@ -304,7 +304,8 @@ existing one from disk).
 
 When AutoCRUD loads it will connect to the database and use the
 L<DBIx::Class::Schema::Loader> module to reverse engineer its schema. To work
-properly you'll need the very latest version of that module (0.05 or greater).
+properly you'll need the very latest version of that module (at least 0.05,
+or the most recent development release from CPAN).
 
 The other drawback to this scenario (other than the slower operation) is that
 you have no ability to customize how foreign, related records are shown.  A
@@ -313,6 +314,39 @@ of the foreign table, the names of the primary keys, and associated values
 (e.g. C<id(5)>).
 
 =head1 TIPS AND TRICKS
+
+=head2 Foreign keys should be configured with C<join_type>
+
+If you have any C<belongs_to> type relations where the column containing the
+foreign key can be NULL, it's I<strongly recommended> that you add a
+C<join_type> option to the relevant hash in C<add_columns()>, like so:
+
+ # in a Book class (where Author has_many Books)
+ __PACKAGE__->belongs_to(
+     author => 
+     'My::DBIC::Schema::Author',
+     'author', 
+     { join_type => 'LEFT OUTER' }
+ );
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
+
+If you don't do this, some database records will be missing! In Debug mode, a
+warning will be logged when the plugin notices you have not set this up.
+
+=head2 Columns with auto-increment data types
+
+For those columns where your database uses an auto-incremented value, add the
+C<< is_auto_increment => 1, >> option to the relevant hash in
+C<add_columns()>.  This will let the plugin know you don't need to supply a
+value for new or updated records. The interface will look much better as a
+result.
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
 
 =head2 Representing related records
 
@@ -344,21 +378,13 @@ foreign row. This is something approximating the name of the foreign table,
 the names of the primary keys, and associated values. It's better than
 stringifying the object the way Perl does, anyway.
 
-=head2 Columns with auto-increment data types
-
-For those columns where your database uses an auto-incremented value, add the
-C<< is_auto_increment => 1, >> option to the relevant hash in add_columns().
-This will let the plugin know you don't need to supply a value for new or
-updated records. The interface will look much better as a result.
-
 =head2 Textfields and Textareas
 
-When the application creates a web form for adding or editing, it has to
-choose whether to show a Textfield or Textarea for text-type fields. If you
-have set a C<size> option in add_columns() within the Schema, and this is less
-than or equal to 40, a Textfield is used. Otherwise, if the C<size> option is
-larger than 40 or not set, then an auto-expanding, scrollable Textarea is
-used.
+When the plugin creates a web form for adding or editing, it has to choose
+whether to show a Textfield or Textarea for text-type fields. If you have set
+a C<size> option in add_columns() within the Schema, and this is less than or
+equal to 40, a Textfield is used. Otherwise, if the C<size> option is larger
+than 40 or not set, then an auto-expanding, scrollable Textarea is used.
 
 =head2 Column names with spaces
 
@@ -610,7 +636,7 @@ interface, by changing this option from a list to a hash form:
 
 Here, the columns are still restricted, and their titles are changed to the
 values on the right hand side. To use the default value for a column (i.e.
-what the Plugin works out for itself), just omit the value on the right hand
+what the plugin works out for itself), just omit the value on the right hand
 side.
 
 =item hidden [ yes | no* ]
@@ -698,7 +724,7 @@ to work, you must have:
 =item *
 
 The very latest version of L<DBIx::Class::Schema::Loader> installed on your
-system (> 0.04005).
+system (at least 0.05, or the most recent developemnt release from CPAN).
 
 =item *
 
