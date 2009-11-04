@@ -100,6 +100,8 @@
             header:     '[% site_conf.$db.$table.list_returns.$col %]'
           [% ELSIF lf.main.cols.$col.is_fk %]
             header:     '[% lf.main.cols.$col.heading %] (FK)'
+          [% ELSIF lf.main.cols.$col.is_rr %]
+            header:     '[% lf.main.cols.$col.heading %] (REF)'
           [% ELSE %]
             header:     '[% lf.main.cols.$col.heading %]'
           [% END %]

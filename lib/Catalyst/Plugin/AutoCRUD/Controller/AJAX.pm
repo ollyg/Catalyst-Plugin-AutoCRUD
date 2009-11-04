@@ -136,6 +136,26 @@ sub list : Chained('base') Args(0) {
     my $limit = $c->req->params->{'limit'} || 10;
     my $sort  = $c->req->params->{'sort'}  || $info->{pk};
     (my $dir  = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
+    my $filter = {}; my $search_opts = {};
+
+    # we want to prefetch all related data for _sfy
+    foreach my $rel (keys %{$info->{cols}}) {
+        next unless ($info->{cols}->{$rel}->{is_fk} or $info->{cols}->{$rel}->{is_rr});
+        #my $join_to = $lf->{table_info}->{$info->{cols}->{$rel}->{fk_model}}->{path};
+        push @{$search_opts->{prefetch}}, $rel;
+    }
+
+    # FIXME until subquery support is used, must not prefetch _many relations
+    # FIXME must also add DBIx::Class dependency of 0.08109
+    #foreach my $rel (keys %{$info->{mfks}}) {
+    #    if (exists $info->{m2m}->{$rel}) {
+    #        my $target = $info->{m2m}->{$rel};
+    #        push @{$search_opts->{prefetch}}, { $rel => $target };
+    #    }
+    #    else {
+    #        push @{$search_opts->{prefetch}}, $rel;
+    #    }
+    #}
 
     # sanity check the sort param
     $sort = $info->{pk} if $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
@@ -155,24 +175,31 @@ sub list : Chained('base') Args(0) {
     }
 
     # find filter fields in UI form that can be passed to DB
-    my $filter = {};
     foreach my $p (keys %{$c->req->params}) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
         next unless exists $info->{cols}->{$col};
         next if exists $delay_page_sort{$col};
 
         # search for exact match on FK value (checked above)
-        if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
+        if ($info->{cols}->{$col}->{is_fk}) {
             my $masked_col = (exists $info->{cols}->{$col}->{masked_col}
                 ? $info->{cols}->{$col}->{masked_col} : $col);
-            $filter->{$masked_col} = $c->req->params->{"search.$col"};
+            $filter->{"me.$masked_col"} = $c->req->params->{"search.$col"};
+            next;
+        }
+
+        if ($info->{cols}->{$col}->{is_rr}) {
+            next if !exists $info->{cols}->{$col}->{foreign_col};
+            my $foreign_col = $info->{cols}->{$col}->{foreign_col};
+            push @{$search_opts->{join}}, $col;
+            $filter->{"$col.$foreign_col"} = $c->req->params->{"search.$col"};
             next;
         }
 
         # for numberish types the case insensitive functions may not work
         if (exists $info->{cols}->{$col}->{extjs_xtype}
             and $info->{cols}->{$col}->{extjs_xtype} eq 'numberfield') {
-            $filter->{$col} = $c->req->params->{"search.$col"};
+            $filter->{"me.$col"} = $c->req->params->{"search.$col"};
             next;
         }
 
@@ -191,20 +218,20 @@ sub list : Chained('base') Args(0) {
         $delay_page_sort{$sort} += 1;
     }
 
-    # set up pager, if needed (if user filtering by FK then delay paging)
-    my $search_opts = (
-        ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and not scalar keys %delay_page_sort)
-        ? { 'page' => $page, 'rows' => $limit, } : {});
-
     # sort col which can be passed to the db
     if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}
         and not ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
+    # set up pager, if needed (if user filtering by FK then delay paging)
+    if ($page =~ m/^\d+$/ and $limit =~ m/^\d+$/ and not scalar keys %delay_page_sort) {
+        $search_opts->{page} = $page;
+        $search_opts->{rows} = $limit;
+    }
+
     my $rs = $c->model($lf->{model})->search($filter, $search_opts);
-    my @columns = (exists $search_opts->{columns} ? @{$search_opts->{columns}}
-                                                  : keys %{ $info->{cols} });
+    my @columns = keys %{ $info->{cols} };
 
     #$c->model($lf->{model})->result_source->storage->debug(1)
     #    if $c->debug;

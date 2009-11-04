@@ -176,11 +176,13 @@ sub _build_table_info {
         elsif ($type eq 'single'
                 and exists $source->relationship_info($r)->{attrs}->{join_type}) {
             $sfks{$r} = $source->relationship_info($r);
+            (my $foreign = (keys %{$source->relationship_info($r)->{cond}})[0]) =~ s/^foreign\.//;
+            $ti->{cols}->{$r}->{foreign_col} = $foreign;
         }
         else { # filter
             $fks{$r} = $source->relationship_info($r);
             # if this is a belongs_to with custom accessor, hide the orig col
-            (my $src_col = (values %{$source->relationship_info($r)->{cond}})[0]) =~ s/^self\.//;
+            (my $src_col = (values %{$fks{$r}->{cond}})[0]) =~ s/^self\.//;
             @cols = grep {$_ !~ m/^$src_col$/} @cols;
             $ti->{cols}->{$r}->{masked_col} = $src_col;
         }
