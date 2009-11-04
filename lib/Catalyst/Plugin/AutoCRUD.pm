@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.53';
+our $VERSION = '0.54';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
@@ -130,7 +130,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.53 of Catalyst::Plugin::AutoCRUD
+This document refers to version 0.54 of Catalyst::Plugin::AutoCRUD
 
 =head1 PURPOSE
 
@@ -315,26 +315,39 @@ of the foreign table, the names of the primary keys, and associated values
 
 =head1 TIPS AND TRICKS
 
-=head2 Foreign keys should be configured with C<join_type>
+=head2 Foreign keys should be configured with C<is_foreign_key>
 
-If you have any C<belongs_to> type relations where the column containing the
-foreign key can be NULL, it's I<strongly recommended> that you add a
-C<join_type> option to the relevant hash in C<add_columns()>, like so:
+If you have any C<belongs_to> type relations which do not also specify
+C<< is_foreign_key => 1 >> then you will not see the correct column display
+from the plugin.
 
- # in a Book class (where Author has_many Books)
- __PACKAGE__->belongs_to(
-     author => 
-     'My::DBIC::Schema::Author',
-     'author', 
-     { join_type => 'LEFT OUTER' }
- );
+This manifests itself as seeing the problem column twice in your table, with
+the C<(REF)> suffix, rather than once with a C<(FK)> suffix.
 
 If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
 version 0.05 or the most recent development release from CPAN to have this
 configured for you.
 
+=head2 Optional C<belongs_to> relations must have a C<join_type>
+
+If you have any C<belongs_to> type relations where the column containing the
+foreign key can be NULL, it's I<strongly recommended> that you add a
+C<join_type> option to the relevant hash in C<add_columns()>, like so:
+
+ # in a Book class, the book optionally has an Owner
+ __PACKAGE__->belongs_to(
+     'my_owner',                      # accessor name
+     'My::DBIC::Schema::Owner',       # related class
+     'owner_id',                      # our FK column
+     { join_type => 'LEFT OUTER' }    # attributes
+ );
+
 If you don't do this, some database records will be missing! The plugin will
 emit an error level log message if it detects this problem.
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
 
 =head2 Columns with auto-increment data types
 

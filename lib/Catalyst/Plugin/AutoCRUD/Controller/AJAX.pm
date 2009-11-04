@@ -145,8 +145,7 @@ sub list : Chained('base') Args(0) {
         push @{$search_opts->{prefetch}}, $rel;
     }
 
-    # FIXME until subquery support is used, must not prefetch _many relations
-    # FIXME must also add DBIx::Class dependency of 0.08109
+    # FIXME waiting on multiple *_many support from DBIx::Class
     #foreach my $rel (keys %{$info->{mfks}}) {
     #    if (exists $info->{m2m}->{$rel}) {
     #        my $target = $info->{m2m}->{$rel};
@@ -229,6 +228,9 @@ sub list : Chained('base') Args(0) {
         $search_opts->{page} = $page;
         $search_opts->{rows} = $limit;
     }
+
+    #use Data::Dumper;
+    #$c->log->debug( Dumper [$filter, $search_opts] );
 
     my $rs = $c->model($lf->{model})->search($filter, $search_opts);
     my @columns = keys %{ $info->{cols} };

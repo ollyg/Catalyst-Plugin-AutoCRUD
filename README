@@ -2,7 +2,7 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    This document refers to version 0.53 of Catalyst::Plugin::AutoCRUD
+    This document refers to version 0.54 of Catalyst::Plugin::AutoCRUD
 
 PURPOSE
     You have a database, and wish to have a basic web interface supporting
@@ -176,25 +176,37 @@ USAGE
     keys, and associated values (e.g. id(5)).
 
 TIPS AND TRICKS
-  Foreign keys should be configured with "join_type"
-    If you have any "belongs_to" type relations where the column containing
-    the foreign key can be NULL, it's *strongly recommended* that you add a
-    "join_type" option to the relevant hash in "add_columns()", like so:
+  Foreign keys should be configured with "is_foreign_key"
+    If you have any "belongs_to" type relations which do not also specify
+    "is_foreign_key => 1" then you will not see the correct column display
+    from the plugin.
 
-     # in a Book class (where Author has_many Books)
-     __PACKAGE__->belongs_to(
-         author => 
-         'My::DBIC::Schema::Author',
-         'author', 
-         { join_type => 'LEFT OUTER' }
-     );
+    This manifests itself as seeing the problem column twice in your table,
+    with the "(REF)" suffix, rather than once with a "(FK)" suffix.
 
     If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
     least version 0.05 or the most recent development release from CPAN to
     have this configured for you.
 
+  Optional "belongs_to" relations must have a "join_type"
+    If you have any "belongs_to" type relations where the column containing
+    the foreign key can be NULL, it's *strongly recommended* that you add a
+    "join_type" option to the relevant hash in "add_columns()", like so:
+
+     # in a Book class, the book optionally has an Owner
+     __PACKAGE__->belongs_to(
+         'my_owner',                      # accessor name
+         'My::DBIC::Schema::Owner',       # related class
+         'owner_id',                      # our FK column
+         { join_type => 'LEFT OUTER' }    # attributes
+     );
+
     If you don't do this, some database records will be missing! The plugin
     will emit an error level log message if it detects this problem.
+
+    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
+    least version 0.05 or the most recent development release from CPAN to
+    have this configured for you.
 
   Columns with auto-increment data types
     For those columns where your database uses an auto-incremented value,
