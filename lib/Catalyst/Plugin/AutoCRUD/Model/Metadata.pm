@@ -186,6 +186,17 @@ sub _build_table_info {
             $fks{$r} = $rel_info;
             @cols = grep {$_ ne $self_col} @cols;
             $ti->{cols}->{$r}->{masked_col} = $self_col;
+
+            # emit warning about belongs_to relations which are is_nullable
+            # but that do not have a join_type set
+            if (exists $col_info->{is_nullable} and $col_info->{is_nullable} == 1
+                and !exists $rel_info->{attrs}->{join_type}) {
+                $c->log->error( sprintf(
+                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
+                    'and is_nullable, but has no join_type set. You will not see '.
+                    'all your data!', $source->source_name, $r
+                ));
+            }
         }
         else {
             # is has_one or might_have type relation

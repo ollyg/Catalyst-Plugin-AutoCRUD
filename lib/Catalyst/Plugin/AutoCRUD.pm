@@ -333,8 +333,8 @@ If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
 version 0.05 or the most recent development release from CPAN to have this
 configured for you.
 
-If you don't do this, some database records will be missing! In Debug mode, a
-warning will be logged when the plugin notices you have not set this up.
+If you don't do this, some database records will be missing! The plugin will
+emit an error level log message if it detects this problem.
 
 =head2 Columns with auto-increment data types
 
