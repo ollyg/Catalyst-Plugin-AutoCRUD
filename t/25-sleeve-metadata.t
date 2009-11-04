@@ -64,10 +64,11 @@ my $expected = {
             'title' => 'Album',
             'cols'  => {
                 'sleeve_notes' => {
-                    'editable' => 0,
-                    'heading'  => 'Sleeve Notes',
-                    'fk_model' => 'AutoCRUD::DBIC::SleeveNotes',
-                    'is_rr'    => 1
+                    'editable'    => 0,
+                    'heading'     => 'Sleeve Notes',
+                    'fk_model'    => 'AutoCRUD::DBIC::SleeveNotes',
+                    'is_rr'       => 1,
+                    'foreign_col' => 'album_id'
                 },
                 'artist_id' => {
                     'required'    => 1,
