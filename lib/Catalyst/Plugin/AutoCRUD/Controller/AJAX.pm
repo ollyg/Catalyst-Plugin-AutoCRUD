@@ -239,12 +239,23 @@ sub list : Chained('base') Args(0) {
     #    if $c->debug;
 
     # make data structure for JSON output
+    DBIC_ROW:
     while (my $row = $rs->next) {
         my $data = {};
+        # process regular cols + one-to-one relations
         foreach my $col (@columns) {
             if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
                 # here assume table names are sane perl identifiers
                 $data->{$col} = _sfy($row->$col);
+
+                # check filter on FK, might want to skip further processing/storage
+                # woo-hoo, *massive* optimization here :-)
+                if (exists $c->req->params->{"search.$col"}) {
+                    my $p_val = $c->req->params->{"search.$col"};
+                    my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
+
+                    next DBIC_ROW if $data->{$col} !~ m/$fk_match/;
+                }
             }
             else {
                 if (!defined eval{$row->get_column($col)}) {
@@ -263,6 +274,8 @@ sub list : Chained('base') Args(0) {
                         $data->{$col});
             }
         }
+
+        # process *_many columns
         foreach my $m (keys %{ $info->{mfks} }) {
             if (exists $info->{m2m}->{$m}) {
                 my $target = $info->{m2m}->{$m};
@@ -276,21 +289,8 @@ sub list : Chained('base') Args(0) {
     }
 
     #$c->log->debug( Dumper $response->{rows} );
-
     #$c->model($lf->{model})->result_source->storage->debug(0)
     #    if $c->debug;
-
-    # apply any filters on FK
-    foreach my $col (keys %delay_page_sort) {
-        next unless exists $c->req->params->{"search.$col"};
-        my $p_val = $c->req->params->{"search.$col"};
-        my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
-
-        # reduce to matching rows
-        $response->{rows} = [
-            grep { $_->{$col} =~ m/$fk_match/ } @{$response->{rows}}
-        ];
-    }
 
     # sort col which cannot be passed to the DB
     if (exists $delay_page_sort{$sort}) {
