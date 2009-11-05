@@ -315,51 +315,23 @@ of the foreign table, the names of the primary keys, and associated values
 
 =head1 TIPS AND TRICKS
 
-=head2 Foreign keys should be configured with C<is_foreign_key>
+=head2 Update your C<DBIx::Class> Result Classes
 
-If you have any C<belongs_to> type relations which do not also specify
-C<< is_foreign_key => 1 >> then you will not see the correct column display
-from the plugin.
+If you created your C<DBIx::Class> Schema some time ago, perhaps using an
+older version of C<DBIx::Class::Schema::Loader>, then it might well be lacking
+some configuration which is important to get the best results from this
+plugin.
 
-This manifests itself as seeing the problem column twice in your table, with
-the C<(REF)> suffix, rather than once with a C<(FK)> suffix.
+Common omissions in column configurations include C<is_foreign_key>,
+C<join_type>, C<is_nullable>, and C<is_auto_increment>. Of course it's also
+good practice to have your C<DBIx::Class> Schema closely reflect the database
+schema anyway.
 
-If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent development release from CPAN to have this
-configured for you.
+To automatically bring things up to date, download the latest version of
+L<DBIx::Class::Schema::Loader> from CPAN (which may be 0.05 or a pre-release),
+and use the output from that.
 
-=head2 Optional C<belongs_to> relations must have a C<join_type>
-
-If you have any C<belongs_to> type relations where the column containing the
-foreign key can be NULL, it's I<strongly recommended> that you add a
-C<join_type> option to the relevant hash in C<add_columns()>, like so:
-
- # in a Book class, the book optionally has an Owner
- __PACKAGE__->belongs_to(
-     'my_owner',                      # accessor name
-     'My::DBIC::Schema::Owner',       # related class
-     'owner_id',                      # our FK column
-     { join_type => 'LEFT OUTER' }    # attributes
- );
-
-If you don't do this, some database records will be missing! The plugin will
-emit an error level log message if it detects this problem.
-
-If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent development release from CPAN to have this
-configured for you.
-
-=head2 Columns with auto-increment data types
-
-For those columns where your database uses an auto-incremented value, add the
-C<< is_auto_increment => 1, >> option to the relevant hash in
-C<add_columns()>.  This will let the plugin know you don't need to supply a
-value for new or updated records. The interface will look much better as a
-result.
-
-If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent development release from CPAN to have this
-configured for you.
+More detail is given in the L</TROUBLESHOOTING> section, below.
 
 =head2 Representing related records
 
@@ -718,6 +690,71 @@ to users:
 
 You could also then place an access control on this path part in your web
 server (e.g. Apache) which is different from the default site itself.
+
+=head1 TROUBLESHOOTING
+
+=head2 Foreign keys should be configured with C<is_foreign_key>
+
+Any column in your Result Classes that contains the primary key of another
+table should have the C<< is_foreign_key => 1 >> option added to its
+configuration.
+
+Not doing this will cause the affected column to appear twice in your table,
+with a C<(REF)> suffix on the heading, rather than once with a C<(FK)> suffix.
+The technical reason for this, if you are interested, is that
+C<is_foreign_key> is used by C<DBIx::Class> to differentiate between
+C<has_one> and C<belongs_to> type relations.
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
+
+=head2 Make sure C<belongs_to> follows C<add_columns>
+
+Again, because C<DBIx::Class> looks for the C<is_foreign_key> option on
+the column when setting up the relation accessor, make sure you issue the
+C<belongs_to> call B<after> you have issued C<add_columns>.
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
+
+=head2 Optional C<belongs_to> relations must have a C<join_type>
+
+If you have any C<belongs_to> type relations where the column containing the
+foreign key can be NULL, it's I<strongly recommended> that you add a
+C<join_type> parameter to the end of the relevant options to C<add_columns()>,
+like so:
+
+ # in a Book class, the book optionally has an Owner
+ __PACKAGE__->belongs_to(
+     'my_owner',                      # accessor name
+     'My::DBIC::Schema::Owner',       # related class
+     'owner_id',                      # our FK column (or join condition)
+     { join_type => 'LEFT OUTER' }    # attributes
+ );
+
+If you don't do this, some database records will be missing! The plugin will
+emit an error level log message if it detects this problem. The technical
+reason for this, if you are interested, is that C<DBIx::Class> defaults to an
+INNER join for the C<belongs_to> relation, but if the column can be null (that
+is, C<is_nullable>) then you instead want a LEFT OUTER join.
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
+
+=head2 Columns with auto-increment data types
+
+For those columns where your database uses an auto-incremented value, add the
+C<< is_auto_increment => 1, >> parameter to the options list in
+C<add_columns()>.  This will let the plugin know you don't need to supply a
+value for new or updated records. The interface will look much better as a
+result.
+
+If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
+version 0.05 or the most recent development release from CPAN to have this
+configured for you.
 
 =head1 EXAMPLES
 
