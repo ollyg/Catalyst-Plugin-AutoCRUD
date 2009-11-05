@@ -703,7 +703,8 @@ Not doing this will cause the affected column to appear twice in your table,
 with a C<(REF)> suffix on the heading, rather than once with a C<(FK)> suffix.
 The technical reason for this, if you are interested, is that
 C<is_foreign_key> is used by C<DBIx::Class> to differentiate between
-C<has_one> and C<belongs_to> type relations.
+C<has_one> and C<belongs_to> type relations. The plugin will emit an error
+level log message if it detects this problem.
 
 If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
 version 0.05 or the most recent development release from CPAN to have this
@@ -713,7 +714,8 @@ configured for you.
 
 Again, because C<DBIx::Class> looks for the C<is_foreign_key> option on
 the column when setting up the relation accessor, make sure you issue the
-C<belongs_to> call B<after> you have issued C<add_columns>.
+C<belongs_to> call B<after> you have issued C<add_columns>. The plugin will
+emit an error level log message if it detects this problem.
 
 If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
 version 0.05 or the most recent development release from CPAN to have this

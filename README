@@ -176,48 +176,22 @@ USAGE
     keys, and associated values (e.g. id(5)).
 
 TIPS AND TRICKS
-  Foreign keys should be configured with "is_foreign_key"
-    If you have any "belongs_to" type relations which do not also specify
-    "is_foreign_key => 1" then you will not see the correct column display
-    from the plugin.
+  Update your "DBIx::Class" Result Classes
+    If you created your "DBIx::Class" Schema some time ago, perhaps using an
+    older version of "DBIx::Class::Schema::Loader", then it might well be
+    lacking some configuration which is important to get the best results
+    from this plugin.
 
-    This manifests itself as seeing the problem column twice in your table,
-    with the "(REF)" suffix, rather than once with a "(FK)" suffix.
+    Common omissions in column configurations include "is_foreign_key",
+    "join_type", "is_nullable", and "is_auto_increment". Of course it's also
+    good practice to have your "DBIx::Class" Schema closely reflect the
+    database schema anyway.
 
-    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
-    least version 0.05 or the most recent development release from CPAN to
-    have this configured for you.
+    To automatically bring things up to date, download the latest version of
+    DBIx::Class::Schema::Loader from CPAN (which may be 0.05 or a
+    pre-release), and use the output from that.
 
-  Optional "belongs_to" relations must have a "join_type"
-    If you have any "belongs_to" type relations where the column containing
-    the foreign key can be NULL, it's *strongly recommended* that you add a
-    "join_type" option to the relevant hash in "add_columns()", like so:
-
-     # in a Book class, the book optionally has an Owner
-     __PACKAGE__->belongs_to(
-         'my_owner',                      # accessor name
-         'My::DBIC::Schema::Owner',       # related class
-         'owner_id',                      # our FK column
-         { join_type => 'LEFT OUTER' }    # attributes
-     );
-
-    If you don't do this, some database records will be missing! The plugin
-    will emit an error level log message if it detects this problem.
-
-    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
-    least version 0.05 or the most recent development release from CPAN to
-    have this configured for you.
-
-  Columns with auto-increment data types
-    For those columns where your database uses an auto-incremented value,
-    add the "is_auto_increment => 1," option to the relevant hash in
-    "add_columns()". This will let the plugin know you don't need to supply
-    a value for new or updated records. The interface will look much better
-    as a result.
-
-    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
-    least version 0.05 or the most recent development release from CPAN to
-    have this configured for you.
+    More detail is given in the "TROUBLESHOOTING" section, below.
 
   Representing related records
     When the web interface wants to display a column which references
@@ -570,6 +544,69 @@ SITES CONFIGURATION
     You could also then place an access control on this path part in your
     web server (e.g. Apache) which is different from the default site
     itself.
+
+TROUBLESHOOTING
+  Foreign keys should be configured with "is_foreign_key"
+    Any column in your Result Classes that contains the primary key of
+    another table should have the "is_foreign_key => 1" option added to its
+    configuration.
+
+    Not doing this will cause the affected column to appear twice in your
+    table, with a "(REF)" suffix on the heading, rather than once with a
+    "(FK)" suffix. The technical reason for this, if you are interested, is
+    that "is_foreign_key" is used by "DBIx::Class" to differentiate between
+    "has_one" and "belongs_to" type relations. The plugin will emit an error
+    level log message if it detects this problem.
+
+    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
+    least version 0.05 or the most recent development release from CPAN to
+    have this configured for you.
+
+  Make sure "belongs_to" follows "add_columns"
+    Again, because "DBIx::Class" looks for the "is_foreign_key" option on
+    the column when setting up the relation accessor, make sure you issue
+    the "belongs_to" call after you have issued "add_columns". The plugin
+    will emit an error level log message if it detects this problem.
+
+    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
+    least version 0.05 or the most recent development release from CPAN to
+    have this configured for you.
+
+  Optional "belongs_to" relations must have a "join_type"
+    If you have any "belongs_to" type relations where the column containing
+    the foreign key can be NULL, it's *strongly recommended* that you add a
+    "join_type" parameter to the end of the relevant options to
+    "add_columns()", like so:
+
+     # in a Book class, the book optionally has an Owner
+     __PACKAGE__->belongs_to(
+         'my_owner',                      # accessor name
+         'My::DBIC::Schema::Owner',       # related class
+         'owner_id',                      # our FK column (or join condition)
+         { join_type => 'LEFT OUTER' }    # attributes
+     );
+
+    If you don't do this, some database records will be missing! The plugin
+    will emit an error level log message if it detects this problem. The
+    technical reason for this, if you are interested, is that "DBIx::Class"
+    defaults to an INNER join for the "belongs_to" relation, but if the
+    column can be null (that is, "is_nullable") then you instead want a LEFT
+    OUTER join.
+
+    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
+    least version 0.05 or the most recent development release from CPAN to
+    have this configured for you.
+
+  Columns with auto-increment data types
+    For those columns where your database uses an auto-incremented value,
+    add the "is_auto_increment => 1," parameter to the options list in
+    "add_columns()". This will let the plugin know you don't need to supply
+    a value for new or updated records. The interface will look much better
+    as a result.
+
+    If using "DBIx::Class::Schema::Loader" to generate your Schema, use at
+    least version 0.05 or the most recent development release from CPAN to
+    have this configured for you.
 
 EXAMPLES
     The code examples given above in this manual are also supplied in the

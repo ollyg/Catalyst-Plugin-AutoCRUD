@@ -190,11 +190,25 @@ sub _build_table_info {
             # emit warning about belongs_to relations which are is_nullable
             # but that do not have a join_type set
             if (exists $col_info->{is_nullable} and $col_info->{is_nullable} == 1
-                and !exists $rel_info->{attrs}->{join_type}) {
+                    and !exists $rel_info->{attrs}->{join_type}) {
                 $c->log->error( sprintf(
                     'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
                     'and is_nullable, but has no join_type set. You will not see '.
                     'all your data!', $source->source_name, $r
+                ));
+            }
+
+            # emit warning if belongs_to is using a column which does not have
+            # an inflator set. this is caused by belongs_to being issued
+            # before [the last] add_column in the result source.
+            if ($ti->{cols}->{$r}->{masked_col} eq $r
+                    and !exists $col_info->{_inflate_info}) {
+                $c->log->error( sprintf(
+                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
+                    'but the column [%s] does not have a row inflator. This means '.
+                    'you will not see related row data. Likely cause is belongs_to '.
+                    'being issued before add_column in your result source definition.',
+                        $source->source_name, $r, $self_col
                 ));
             }
         }
@@ -204,6 +218,18 @@ sub _build_table_info {
             $sfks{$r} = $rel_info;
             (my $foreign_col = (keys %{$rel_info->{cond}})[0]) =~ s/^foreign\.//;
             $ti->{cols}->{$r}->{foreign_col} = $foreign_col;
+
+            # emit warning about belongs_to relations which refer to columns
+            # without is_foreign_key set (triggers discovery as has_one or
+            # might_have)
+            if (not scalar grep {$_ eq $self_col} $source->primary_columns) {
+                $c->log->error( sprintf(
+                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
+                    'but is_foreign_key has not been set on column [%s]. You will '.
+                    'have incorrect column data from AutoCRUD until this is fixed!',
+                        $source->source_name, $r, $self_col
+                ));
+            }
         }
     }
 

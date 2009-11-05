@@ -275,6 +275,8 @@ sub list : Chained('base') Args(0) {
         push @{$response->{rows}}, $data;
     }
 
+    #$c->log->debug( Dumper $response->{rows} );
+
     #$c->model($lf->{model})->result_source->storage->debug(0)
     #    if $c->debug;
 
