@@ -4,68 +4,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>[% title %][% ' - Powered by ' IF title %][% version %]</title>
 
-<!-- hack, until some good person comes along with proper html/css for me -->
-<link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />
-
-<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "body.css" ) %]" />
-<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "lfb.css" ) %]" />
-[% IF c.req.user_agent.match('\.NET CLR') %]
-<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "iefix.css" ) %]" />
-[% END %]
+<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny_body.css" ) %]" />
+<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny.css" ) %]" />
 
 </head>
 <body>
 
-<div id="cpac_banner">Catalyst AutoCRUD</div>
+<div id="cpac_banner">[% title OR 'Catalyst AutoCRUD' %]</div>
 
 <div id="cpac_outer" class="cpac_box">
-    <noscript>
-        <div id="cpac_warning">
-            <h3>Javascript disabled ?</h3>
-            <br />
-            <p>It seems your web browser has not started the Javascript components which are required to view this site.</p>
-            <br />
-            <p>If you have Javascript disabled, please enable it and reload this page.</p>
-            <p>Otherwise, there could be a problem on the web server, so please contact this site's administrator.</p>
-        </div>
-    </noscript>
-
-    <div id="cpac_header">
-        [% IF title %]
-        <div class="cpac_top">
-            <div class="cpac_left">
-                [% IF site == 'default' %]
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> &gt;
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db] ) %]">[% dbtitle %]</a> &gt;
-                [% ELSE %]
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [site] ) %]">Home</a> &gt;
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site,db] ) %]">[% dbtitle %]</a> &gt;
-                [% END %]
-                [% IF lf.table2path.keys.size == 1 %]
-                    [% lf.main.title %]
-                [% ELSE %]
-                    <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
-                      [% FOREACH table IN lf.table2path.keys.sort %]
-                        [% SET tpath = lf.table2path.item(table) %]
-                        [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
-                        [% IF site == 'default' %]
-                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], tpath ) %]"
-                        [% ELSE %]
-                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], tpath ) %]"
-                        [% END %]
-                                [% ' selected="selected"' IF table == lf.main.title %]>[% table %]</option>
-                      [% END %]
-                    </select>
-                [% END %]
-            </div>
-            <div class="cpac_right">&nbsp;</div>
-        </div>
-
-        [% ELSE %]
-            [% content %]
-        [% END %]
-    </div>
-    
     <div id="cpac_content">
         [% IF title %]
             [% content %]

@@ -1,0 +1,9 @@
+[% IF properties.extjs_xtype AND properties.extjs_xtype == 'checkbox' %]
+    [% IF value == 1 %]
+        <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bullet_green.png" ) %]" />
+    [% ELSE %]
+        <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bullet_red.png" ) %]" />
+    [% END %]
+[% ELSE %]
+    [% value %]
+[% END %]

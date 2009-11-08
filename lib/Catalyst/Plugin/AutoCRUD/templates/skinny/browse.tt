@@ -1,0 +1,5 @@
+[% INCLUDE pager.tt %]
+
+[% INCLUDE table.tt %]
+
+[% INCLUDE pager.tt %]

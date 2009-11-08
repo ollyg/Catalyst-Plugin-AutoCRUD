@@ -1,0 +1,29 @@
+[% IF pager %]
+[% SET args = "?" %]
+[% SET args = args _ "sort=" _ sortby _ "&" IF sortby %]
+[% SET args = args _ "dir="  _ dir  _ "&" IF dir  %]
+
+<p class="cpac_pager">
+    [% IF limit == 'all' %]
+        <a class="cpac_link" href="[% args  %]limit=20">show in pages</a>
+    [% ELSE %]
+        [% IF pager.first_page == pager.last_page %]
+            Page: <span class="cpac_current-page">1</span>
+        [% ELSE %]
+            [% FOR num IN [pager.first_page .. pager.last_page];
+                IF num == pager.current_page;
+                    '<span class="cpac_current-page">' _ num _ '</span>';
+                ELSE;
+                    IF (pager.current_page - 2) <= num && (pager.current_page + 2) >= num OR num == pager.last_page OR num == pager.first_page;
+                        '<a class="cpac_link" href="' _ args _ 'page=' _ num _ '">' _ num _ '</a>';
+                    ELSE;
+                        '&middot;';
+                    END;
+                END;
+            END %]
+            <a class="cpac_link" href="[% args  %]limit=all">show all</a>
+        [% END %]
+    [% END %]
+</p>
+[% END %]
+

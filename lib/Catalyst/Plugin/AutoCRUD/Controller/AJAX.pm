@@ -102,9 +102,18 @@ sub acl : Private {
     }
 }
 
-sub base : Chained('/autocrud/root/ajax') PathPart('') CaptureArgs(0) {
+sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
     $c->forward('acl');
+
+    my $page   = $c->req->params->{'page'}  || 1;
+    my $limit  = $c->req->params->{'limit'} || 10;
+    my $sortby = $c->req->params->{'sort'}  || $c->stash->{lf}->{main}->{pk};
+    (my $dir   = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
+
+    @{$c->stash}{qw/ page limit sortby dir /}
+        = ($page, $limit, $sortby, $dir);
+
     $c->stash->{current_view} = 'AutoCRUD::JSON';
 }
 
@@ -132,10 +141,8 @@ sub list : Chained('base') Args(0) {
     my $info = $lf->{main};
     my $response = $c->stash->{json_data} = {};
 
-    my $page  = $c->req->params->{'page'}  || 1;
-    my $limit = $c->req->params->{'limit'} || 10;
-    my $sort  = $c->req->params->{'sort'}  || $info->{pk};
-    (my $dir  = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
+    my ($page, $limit, $sort, $dir) =
+        @{$c->stash}{qw/ page limit sortby dir /};
     my $filter = {}; my $search_opts = {};
 
     # we want to prefetch all related data for _sfy
