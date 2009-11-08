@@ -5,7 +5,18 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
 
-sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
+sub table : Chained('/autocrud/root/db') PathPart('') CaptureArgs(1) {
+    my ($self, $c) = @_;
+    $c->forward('/autocrud/root/source');
+}
+
+sub rpc_base : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
+    my ($self, $c) = @_;
+    $c->forward('base');
+    $c->detach('browse');
+}
+
+sub base : Chained('table') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
 
     my $page = $c->req->params->{'page'};
