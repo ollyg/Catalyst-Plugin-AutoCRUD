@@ -12,14 +12,6 @@ INSERT INTO artist (id,forename,surname,pseudonym,born) VALUES (2, 'David', 'Bro
 
 INSERT INTO artist (id,forename,surname,pseudonym,born) VALUES (3, 'Adam', 'Smith', 'Gamma Group', '1981-05-10');
 
-CREATE TABLE sleeve_notes (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  text varchar(255) NOT NULL,
-  album_id int REFERENCES album(id) UNIQUE NOT NULL
-);
-
-INSERT INTO sleeve_notes (id,text,album_id) VALUES (1, 'This is a groovy album.', 1);
-
 CREATE TABLE album (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title varchar(255) NOT NULL,
@@ -37,6 +29,14 @@ INSERT INTO album (id,title,recorded,deleted,artist_id) VALUES (3, 'DJ Mix 3', '
 INSERT INTO album (id,title,recorded,deleted,artist_id) VALUES (4, 'Pop Songs', '2007-05-30', 'false', 2);
 
 INSERT INTO album (id,title,recorded,deleted,artist_id) VALUES (5, 'Greatest Hits', '2002-05-21', 'false', 3);
+
+CREATE TABLE sleeve_notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text varchar(255) NOT NULL,
+  album_id int REFERENCES album(id) UNIQUE NOT NULL
+);
+
+INSERT INTO sleeve_notes (id,text,album_id) VALUES (1, 'This is a groovy album.', 1);
 
 CREATE TABLE copyright (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
