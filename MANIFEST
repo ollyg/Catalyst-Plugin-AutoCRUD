@@ -49,6 +49,7 @@ lib/Catalyst/Plugin/AutoCRUD/templates/helloworld.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/skinny/browse.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/skinny/cell.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/skinny/pager.tt
+lib/Catalyst/Plugin/AutoCRUD/templates/skinny/row.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/skinny/table.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/skinny/wrapper.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/tables.tt
