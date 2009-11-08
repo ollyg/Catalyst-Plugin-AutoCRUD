@@ -17,6 +17,7 @@ INSTALL
 lib/Catalyst/Plugin/AutoCRUD.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/AJAX.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/Root.pm
+lib/Catalyst/Plugin/AutoCRUD/Controller/Skinny.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/Static.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/Metadata.pm
@@ -29,6 +30,8 @@ lib/Catalyst/Plugin/AutoCRUD/static/find.png
 lib/Catalyst/Plugin/AutoCRUD/static/iefix.css
 lib/Catalyst/Plugin/AutoCRUD/static/lfb.css
 lib/Catalyst/Plugin/AutoCRUD/static/magnifier.png
+lib/Catalyst/Plugin/AutoCRUD/static/skinny.css
+lib/Catalyst/Plugin/AutoCRUD/static/skinny_body.css
 lib/Catalyst/Plugin/AutoCRUD/static/xdatetime.js
 lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/javascript/grid.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/javascript/grid/columns.tt
@@ -43,7 +46,10 @@ lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/javascript/util.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/list.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/wrapper.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/helloworld.tt
-lib/Catalyst/Plugin/AutoCRUD/templates/skinny/list.tt
+lib/Catalyst/Plugin/AutoCRUD/templates/skinny/browse.tt
+lib/Catalyst/Plugin/AutoCRUD/templates/skinny/cell.tt
+lib/Catalyst/Plugin/AutoCRUD/templates/skinny/pager.tt
+lib/Catalyst/Plugin/AutoCRUD/templates/skinny/table.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/skinny/wrapper.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/tables.tt
 lib/Catalyst/Plugin/AutoCRUD/View/JSON.pm
