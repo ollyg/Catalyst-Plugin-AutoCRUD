@@ -5,17 +5,29 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
 
-sub table : Chained('/autocrud/root/db') PathPart('') CaptureArgs(1) {
+# if user specifies frontend=skinny in the site config, Root will forward here
+
+sub process : Private {
     my ($self, $c) = @_;
-    $c->forward('/autocrud/root/source');
+    $c->forward('rpc_browse');
 }
 
-sub rpc_base : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
+# we also permit .../browse to force this frontend
+
+# if user should call full RPC to .../browse (but why?)
+sub rpc_browse : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
     my ($self, $c) = @_;
     $c->forward('base');
     $c->detach('browse');
 }
 
+# need to hack into the chain from Root and fork at .../table
+sub table : Chained('/autocrud/root/db') PathPart('') CaptureArgs(1) {
+    my ($self, $c) = @_;
+    $c->forward('/autocrud/root/source');
+}
+
+# re-set the template and some params defaults for Skinny frontend
 sub base : Chained('table') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
 
@@ -39,10 +51,10 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
     $c->stash->{site_conf}->{frontend} = 'skinny';
 }
 
+# pull in data by forwarding to JSON .../list, then send page and render
 sub browse : Chained('base') Args(0) {
     my ($self, $c) = @_;
 
-    # prime the JSON cache
     $c->forward('/autocrud/ajax/list');
     # need to shift off the filters row
     shift @{ $c->stash->{json_data}->{rows} };
@@ -55,7 +67,7 @@ sub browse : Chained('base') Args(0) {
 
     $c->stash->{pager} = $pager;
     $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' Browser';
-    $c->stash->{template} = 'browse.tt';
+    $c->stash->{template} = 'list.tt';
 
     $c->forward('/autocrud/root/end');
 }
