@@ -1,7 +1,10 @@
+[% SET table_info = lf.main %]
+[% SET table_config = site_conf.$db.$table %]
+
 <table class="cpac_table">
     <tr>
-    [% FOR col IN lf.main.col_order %]
-      [% NEXT IF site_conf.$db.$table.list_returns AND NOT site_conf.$db.$table.list_returns.$col %]
+    [% FOR col IN table_info.col_order %]
+      [% NEXT IF table_config.list_returns AND NOT table_config.list_returns.$col %]
         <th class="cpac_table_header">
         [% SET qp = "?sort=" _ col %]
         [% SET qp = qp _ "&page=" _ pager.current_page IF pager %]
@@ -9,10 +12,10 @@
         [% SET qp = qp _ "&limit=all" IF limit == "all" %]
 
             <a class="cpac_link" href="[% qp %]">
-            [% IF site_conf.$db.$table.list_returns AND site_conf.$db.$table.list_returns.$col AND site_conf.$db.$table.list_returns.$col != '' %]
-                [% site_conf.$db.$table.list_returns.$col %]
+            [% IF table_config.list_returns AND table_config.list_returns.$col AND table_config.list_returns.$col != '' %]
+                [% table_config.list_returns.$col %]
             [% ELSE %]
-                [% lf.main.cols.$col.heading %]
+                [% table_info.cols.$col.heading %]
             [% END %]
             </a>
 
@@ -24,7 +27,7 @@
               &uarr;
             [% END %]
           [% END %]
-        [% ELSIF col == lf.main.pk %]
+        [% ELSIF col == table_info.pk %]
               &darr;
         [% END %]
 
@@ -34,18 +37,7 @@
 
     [% SET count = 0 %]
     [% FOR item IN json_data.rows %]
-        <tr class="cpac_row[% ' cpac_stripe' IF count % 2 %]">
-        [% FOR col IN lf.main.col_order %]
-          [% NEXT IF site_conf.$db.$table.list_returns AND NOT site_conf.$db.$table.list_returns.$col %]
-            <td class="cpac_cell">
-              [% PROCESS cell.tt
-                value = item.$col
-                properties = lf.main.cols.$col
-              %]
-            </td>
-        [% END %]
-        </tr>
-        [% SET count = count + 1 %]
+        [% PROCESS row.tt %]
     [% END %]
 </table>
 

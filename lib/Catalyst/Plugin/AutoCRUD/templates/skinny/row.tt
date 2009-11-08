@@ -1,0 +1,13 @@
+<tr class="cpac_row[% ' cpac_stripe' IF count % 2 %]">
+[% FOR col IN table_info.col_order %]
+    [% NEXT IF table_config.list_returns AND NOT table_config.list_returns.$col %]
+    <td class="cpac_cell">
+        [% PROCESS cell.tt
+            value = item.$col
+            properties = lf.main.cols.$col
+        %]
+    </td>
+[% END %]
+</tr>
+
+[% SET count = count + 1 %]
