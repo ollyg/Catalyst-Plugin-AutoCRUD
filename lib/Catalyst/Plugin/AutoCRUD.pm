@@ -439,6 +439,15 @@ libraries. This will be used in the templates in some way like this:
 
  <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
+=head2 Simple read-only non-JavaScript Frontend
+
+All table views will default to the full-featured ExtJS based frontend. If you
+would prefer to see a simple read-only non-JavaScript interface, then append
+C</browse> to your URL.
+
+This simpler frontend uses HTTP GET only, supports paging and sorting, and
+will obey any column filtering and renaming as set in your L</"SITES CONFIGURATION"> file.
+
 =head2 Overriding built-in Templates
 
 The whole site is built from Perl Template Toolkit templates, and it is
@@ -643,14 +652,28 @@ overrides all child sources, B<even if> a source has a different setting.
 
 =item frontend [ full-fat | skinny | ... ]
 
-This option isn't fully implemented. It allows you to swap out the set of
-templates used to generate the web front-end. At the moment, only the
-C<full-fat> option is implemented, and it's the ExtJS front-end you'll be
-familiar with.
+With this option you can swap out the set of templates used to generate the
+web front-end, and completely change its look and feel.
 
-The C<skinny> front-end is just a stub (you can try if it you like), and I'm
-hoping someone will write HTML/CSS with a more lightweight JS library such as
-JQuery or YUI, and submit that.
+Currently you have two choices: either C<full-fat> which is the default and
+provides the standard full-featured ExtJS frontend, or C<skinny> which is a
+read-only non-JavaScript alternative supporting listing, paging and sorting
+only.
+
+Set the frontend in your site config at its top level. Note that you cannot
+set the frontend on a per-schema or per-source basis, only per-site:
+
+ <Plugin::AutoCRUD>
+    <sites>
+        <default>
+            frontend skinny
+        </default>
+    </sites>
+ </Plugin::AutoCRUD>
+
+Be aware that setting the frontend to C<skinny> does B<not> restrict create or
+update access to your database via the AJAX API. For that, you still should
+set the C<*_allowed> options listed above, as required.
 
 =back
 
