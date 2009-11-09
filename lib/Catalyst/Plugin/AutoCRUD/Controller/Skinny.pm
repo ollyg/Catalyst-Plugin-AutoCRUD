@@ -14,7 +14,7 @@ sub process : Private {
 
 # we also permit .../browse to force this frontend
 
-# if user should call full RPC to .../browse (but why?)
+# if user should call full RPC to .../browse
 sub rpc_browse : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
     my ($self, $c) = @_;
     $c->forward('base');
