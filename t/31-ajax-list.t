@@ -24,7 +24,7 @@ my $default_album_page = {
                         'id' => 1,
                         'title' => 'DJ Mix 1',
                         'recorded' => '1989-01-02',
-                        'sleeve_notes' => 'SleeveNotes: id(1)',
+                        'sleeve_notes' => '',
                         'deleted' => 1
                       },
                       {
@@ -37,7 +37,7 @@ my $default_album_page = {
                         'id' => 2,
                         'title' => 'DJ Mix 2',
                         'recorded' => '1989-02-02',
-                        'sleeve_notes' => '',
+                        'sleeve_notes' => 'SleeveNotes: id(1)',
                         'deleted' => 1
                       },
                       {
@@ -276,7 +276,7 @@ my $filtered_album_page =
           {
             'rows' => [
                         {
-                          'sleeve_notes' => 'SleeveNotes: id(1)',
+                          'sleeve_notes' => '',
                           'tracks' => [
                                         'Track 1.1',
                                         'Track 1.2',
@@ -289,7 +289,7 @@ my $filtered_album_page =
                           'id' => 1
                         },
                         {
-                          'sleeve_notes' => '',
+                          'sleeve_notes' => 'SleeveNotes: id(1)',
                           'tracks' => [
                                         'Track 2.1',
                                         'Track 2.2',

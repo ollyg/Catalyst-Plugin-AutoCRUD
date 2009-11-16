@@ -36,7 +36,7 @@ CREATE TABLE sleeve_notes (
   album_id int REFERENCES album(id) UNIQUE NOT NULL
 );
 
-INSERT INTO sleeve_notes (id,text,album_id) VALUES (1, 'This is a groovy album.', 1);
+INSERT INTO sleeve_notes (id,text,album_id) VALUES (1, 'This is a groovy album.', 2);
 
 CREATE TABLE copyright (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -11,6 +11,7 @@ requires       'Catalyst::View::TT' => 0;
 requires       'Catalyst::Action::RenderView' => 0;
 requires       'MRO::Compat' => 0;
 
+test_requires  'JSON::Any' => 0;
 test_requires  'Test::More' => 0;
 test_requires  'Test::WWW::Mechanize' => '1.16';
 test_requires  'Test::WWW::Mechanize::Catalyst' => '0.42';
