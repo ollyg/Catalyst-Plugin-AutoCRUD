@@ -1,3 +1,9 @@
+libcatalyst-plugin-autocrud-perl (0.59) UNRELEASED; urgency=low
+
+  * fix bug on filtering of FK when using real FK value (thanks denny) 
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Tue, 17 Nov 2009 19:04:44 +0000
+
 libcatalyst-plugin-autocrud-perl (0.58) UNRELEASED; urgency=low
 
   * fix test so it does not trip up on FK constraint and delete
