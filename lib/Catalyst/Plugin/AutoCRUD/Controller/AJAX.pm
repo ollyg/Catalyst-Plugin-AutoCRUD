@@ -257,7 +257,7 @@ sub list : Chained('base') Args(0) {
 
                 # check filter on FK, might want to skip further processing/storage
                 # woo-hoo, *massive* optimization here :-)
-                if (exists $c->req->params->{"search.$col"})
+                if (exists $c->req->params->{"search.$col"}
                         and exists $delay_page_sort{$col}) {
                     my $p_val = $c->req->params->{"search.$col"};
                     my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
