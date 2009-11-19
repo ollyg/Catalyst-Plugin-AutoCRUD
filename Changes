@@ -1,3 +1,10 @@
+libcatalyst-plugin-autocrud-perl (0.61) UNRELEASED; urgency=low
+
+  * enable the /browse functionality
+  * fix bug in /browse where it was accidentally being a sticky setting
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Thu, 19 Nov 2009 20:44:16 +0000
+
 libcatalyst-plugin-autocrud-perl (0.59) UNRELEASED; urgency=low
 
   * fix bug on filtering of FK when using real FK value (thanks denny) 

@@ -48,7 +48,7 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
     $dir = 'ASC' if !defined $dir or $dir !~ m/^\w+$/g;
     $c->stash->{dir} = $dir;
 
-    $c->stash->{site_conf}->{frontend} = 'skinny';
+    $c->stash->{frontend} = 'skinny';
 }
 
 # pull in data by forwarding to JSON .../list, then send page and render

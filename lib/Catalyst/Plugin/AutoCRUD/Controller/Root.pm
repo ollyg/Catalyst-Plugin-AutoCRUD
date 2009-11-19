@@ -79,8 +79,9 @@ sub source : Chained('schema') PathPart Args(1) {
     $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' List';
 
     # allow frontend override (default will be full-fat)
-    $c->forward('AutoCRUD::'. ucfirst $c->stash->{site_conf}->{frontend})
-        if $c->controller('AutoCRUD::'. ucfirst $c->stash->{site_conf}->{frontend});
+    $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
+    $c->forward('AutoCRUD::'. ucfirst $c->stash->{frontend})
+        if $c->controller('AutoCRUD::'. ucfirst $c->stash->{frontend});
 }
 
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
@@ -217,7 +218,7 @@ sub helloworld : Chained('base') Args(0) {
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{site_conf}->{frontend} || 'full-fat';
+    my $frontend = $c->stash->{frontend} || 'full-fat';
 
     my $tt_path = $c->config->{'Plugin::AutoCRUD'}->{tt_path};
     $tt_path = (defined $tt_path ? (ref $tt_path eq '' ? [$tt_path] : $tt_path ) : [] );
