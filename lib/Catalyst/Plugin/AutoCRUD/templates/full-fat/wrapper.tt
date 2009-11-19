@@ -39,6 +39,15 @@
             <br />
             <p>If you have Javascript disabled, please enable it and reload this page.</p>
             <p>Otherwise, there could be a problem on the web server, so please contact this site's administrator.</p>
+            <br />
+            <p>In the mean time, you could
+              [% IF site == 'default' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], lf.main.path, 'browse' ) %]"
+              [% ELSE %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], lf.main.path, 'browse' ) %]"
+              [% END %]
+                    title="Skinny (non-JS) Browser">
+                    browse the data without Javascript</a>, only with limited site features.</p>
         </div>
     </noscript>
 
@@ -70,7 +79,17 @@
                     </select>
                 [% END %]
             </div>
-            <div class="cpac_right">&nbsp;</div>
+            <div class="cpac_right">
+              [% IF site == 'default' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], lf.main.path, 'browse' ) %]"
+              [% ELSE %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], lf.main.path, 'browse' ) %]"
+              [% END %]
+                    title="Skinny (non-JS) Browser">
+                    <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "application_view_detail.png" ) %]"
+                        alt="Skinny (non-JS) Browser" />
+                </a>
+            </div>
         </div>
 
         [% ELSE %]

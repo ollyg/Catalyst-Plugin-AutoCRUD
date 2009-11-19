@@ -80,7 +80,7 @@ div.cpac_box {
 /* stuff for left-right magic, see
  * http://www.spartanicus.utvinternet.ie/left_and_right_alignment_using_css.htm
  */
-div.cpac_top { text-align: right }
+div.cpac_top { text-align: right; margin-bottom: -4px }
 div.cpac_top div { display: inline }
 div.cpac_top div.cpac_left { float: left }
 #cpac_outer>div.cpac_top { display: table; width: 100% }
