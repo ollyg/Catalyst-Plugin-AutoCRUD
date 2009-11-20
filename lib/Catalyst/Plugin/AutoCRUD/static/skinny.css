@@ -6,6 +6,19 @@
     margin: 4px 4px 2px 4px;
 }
 
+#cpac_banner_icons {
+    position: absolute;
+    left: 10px;
+    top: 6px;
+    border: 0px;
+    /* background-color: #FFFFFF; */
+}
+
+#cpac_banner_icons img {
+    border: 0px;
+    border-style: none;
+}
+
 div.cpac_box {
     position: relative;
     border: 0px;

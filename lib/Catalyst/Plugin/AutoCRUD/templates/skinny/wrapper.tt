@@ -10,7 +10,49 @@
 </head>
 <body>
 
-<div id="cpac_banner">[% title OR 'Catalyst AutoCRUD' %]</div>
+<div id="cpac_banner">
+  [% IF title %]
+    <span id="cpac_banner_icons">
+        [% IF site == 'default' %]
+            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db] ) %]"
+            title ="[% dbtitle %] Table Picker">
+                <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
+                    alt="[% dbtitle %] Table Picker" />
+            </a>
+
+            [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db], lf.main.path ) %]"
+                title ="Full-feature JS View">
+                    <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
+                        alt="[% dbtitle %] Table Picker" />
+                </a>
+            [% END %]
+        [% ELSE %]
+            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site,db] ) %]"
+            title ="[% dbtitle %] Table Picker">
+                <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
+                    alt="[% dbtitle %] Table Picker" />
+            </a>
+
+            [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site,db], lf.main.path ) %]"
+                title ="[% dbtitle %] Table Picker">
+                    <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
+                        alt="[% dbtitle %] Table Picker" />
+                </a>
+            [% END %]
+        [% END %]
+
+            <a href="[% c.req.uri %]" title="Refresh Page">
+                <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "arrow_refresh_small.png" ) %]"
+                    alt="Refresh Page">
+            </a>
+    </span>
+    [% title %]
+  [% ELSE %]
+    Catalyst AutoCRUD
+  [% END %]
+</div>
 
 <div id="cpac_outer" class="cpac_box">
   [% IF title %]
