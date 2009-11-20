@@ -13,6 +13,49 @@ div.cpac_box {
     margin: 0px 2px 0px 2px;
 }
 
+#cpac_header {
+    background-color: #E2F0FF;
+    border: 1px solid #BED3DD;
+    font-size: small;
+    padding: 6px 4px 10px 4px;
+    margin: 4px 4px 2px 4px;
+}
+
+#cpac_header p,
+#cpac_header h3,
+#cpac_header br {
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+#cpac_navcontainer {
+    margin-left: 20px;
+}
+
+#cpac_navcontainer ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+#cpac_navcontainer li {
+    margin: 0 0 .2em 0;
+}
+
+#cpac_navcontainer a {
+    display: block;
+    background-color: #369;
+    color: #FFF;
+    width: 9em;
+    padding: .2em .8em;
+    text-decoration: none;
+}
+
+#cpac_navcontainer a:hover {
+    background-color: #036;
+    color: #FFF;
+}
+
 #cpac_footer {
     background-color: #E2F0FF;
     border: 1px solid #BED3DD;

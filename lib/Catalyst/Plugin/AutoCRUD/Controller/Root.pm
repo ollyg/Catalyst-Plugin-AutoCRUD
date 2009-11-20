@@ -78,7 +78,7 @@ sub source : Chained('schema') PathPart Args(1) {
     $c->forward('do_meta');
     $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' List';
 
-    # allow frontend override (default will be full-fat)
+    # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->forward('AutoCRUD::'. ucfirst $c->stash->{frontend})
         if $c->controller('AutoCRUD::'. ucfirst $c->stash->{frontend});
@@ -133,6 +133,7 @@ sub err_message : Private {
 
     $c->forward('build_site_config') if !exists $c->stash->{site_conf};
     $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{lf}->{db2path};;
+    $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }
 

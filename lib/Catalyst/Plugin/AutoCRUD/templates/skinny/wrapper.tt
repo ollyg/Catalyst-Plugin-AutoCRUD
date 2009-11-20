@@ -13,11 +13,15 @@
 <div id="cpac_banner">[% title OR 'Catalyst AutoCRUD' %]</div>
 
 <div id="cpac_outer" class="cpac_box">
+  [% IF title %]
     <div id="cpac_content">
-        [% IF title %]
-            [% content %]
-        [% END %]
+      [% content %]
     </div>
+  [% ELSE %]
+    <div id="cpac_header">
+      [% content %]
+    </div>
+  [% END %]
     
     <div id="cpac_footer">
         Powered by [% version %]

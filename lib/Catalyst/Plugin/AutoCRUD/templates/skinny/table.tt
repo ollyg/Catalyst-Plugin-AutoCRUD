@@ -9,7 +9,7 @@
         [% SET qp = "?sort=" _ col %]
         [% SET qp = qp _ "&page=" _ pager.current_page IF pager %]
         [% SET qp = qp _ "&dir=DESC" IF col == sortby AND dir != "DESC" %]
-        [% SET qp = qp _ "&limit=all" IF limit == "all" %]
+        [% SET qp = qp _ "&limit=" _ limit IF limit %]
 
             <a class="cpac_link" href="[% qp %]">
             [% IF table_config.list_returns AND table_config.list_returns.$col AND table_config.list_returns.$col != '' %]

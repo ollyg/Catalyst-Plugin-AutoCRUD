@@ -1,5 +1,6 @@
 [% IF pager %]
 [% SET args = "?" %]
+[% SET args = args _ "limit="  _ limit  _ "&" IF limit  %]
 [% SET args = args _ "sort=" _ sortby _ "&" IF sortby %]
 [% SET args = args _ "dir="  _ dir  _ "&" IF dir  %]
 
