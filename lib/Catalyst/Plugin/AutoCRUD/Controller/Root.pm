@@ -191,15 +191,28 @@ sub build_site_config : Private {
                     map {($_ => $site->{$sc}->{$_})} keys %defaults
                 }, $site->{$sc}->{$so});
 
-            if (exists $site->{$sc}->{$so}->{list_returns}) {
+            # back-compat work for list_returns
+            if (exists $site->{$sc}->{$so}->{list_returns}
+                    and !exists $site->{$sc}->{$so}->{headings}) {
+                $site->{$sc}->{$so}->{headings} =
+                    delete $site->{$sc}->{$so}->{list_returns};
+            }
+
+            if (exists $site->{$sc}->{$so}->{headings}) {
                 # promote arrayref into hashref
-                if (ref $site->{$sc}->{$so}->{list_returns} eq 'ARRAY') {
-                    $site->{$sc}->{$so}->{list_returns} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{list_returns}} };
+                if (ref $site->{$sc}->{$so}->{headings} eq 'ARRAY') {
+                    $site->{$sc}->{$so}->{headings} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{headings}} };
                 }
 
                 # prettify the column headings 
-                $site->{$sc}->{$so}->{list_returns}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
-                    for keys %{ $site->{$sc}->{$so}->{list_returns} };
+                $site->{$sc}->{$so}->{headings}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
+                    for keys %{ $site->{$sc}->{$so}->{headings} };
+            }
+
+            # copy columns list as hashref for ease of lookups
+            if (exists $site->{$sc}->{$so}->{columns}
+                    and ref $site->{$sc}->{$so}->{columns} eq 'ARRAY') {
+                $site->{$sc}->{$so}->{col_keys} = { map {$_ => 1} @{$site->{$sc}->{$so}->{columns}} };
             }
         }
     }

@@ -94,10 +94,10 @@
 
     var cm = new Ext.grid.ColumnModel([
       [% SET colcount = 0 %]
-      [% FOREACH col IN lf.main.col_order %]
+      [% FOREACH col IN site_conf.$db.$table.columns.merge(lf.main.col_order).unique %]
         [% ',' IF lf.main.col_order.size > 1 AND colcount != 0 %]{
-          [% IF site_conf.$db.$table.list_returns AND site_conf.$db.$table.list_returns.$col AND site_conf.$db.$table.list_returns.$col != '' %]
-            header:     '[% site_conf.$db.$table.list_returns.$col %]'
+          [% IF site_conf.$db.$table.headings AND site_conf.$db.$table.headings.$col AND site_conf.$db.$table.headings.$col != '' %]
+            header:     '[% site_conf.$db.$table.headings.$col %]'
           [% ELSIF lf.main.cols.$col.is_fk %]
             header:     '[% lf.main.cols.$col.heading %] (FK)'
           [% ELSIF lf.main.cols.$col.is_rr %]
@@ -125,7 +125,9 @@
               [% END %]
             }
           [% END %]
-            [% ',hidden: true' IF site_conf.$db.$table.list_returns AND NOT site_conf.$db.$table.list_returns.$col %]
+            [% ',hidden: true' IF
+                (site_conf.$db.$table.col_keys AND NOT site_conf.$db.$table.col_keys.$col) OR
+                (NOT site_conf.$db.$table.col_keys AND site_conf.$db.$table.headings AND NOT site_conf.$db.$table.headings.$col) %]
         }
         [% SET colcount = colcount + 1 %]
       [% END %]
