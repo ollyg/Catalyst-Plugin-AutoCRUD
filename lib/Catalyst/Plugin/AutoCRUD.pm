@@ -590,10 +590,13 @@ removed from the user interface so as not to confuse users.
 
 =item columns \@column_names
 
-To restrict the set of columns displayed, provide a list of the column names
-(as the data source knows them) to this setting. This option must appear at
-the source level of your site config hierarchy. In C<Config::General> format,
-this would look something like:
+This option achieves two purposes. First, you can re-order the set of columns
+as they are displayed to the user. Second, by omitting columns from this list
+you can hide them from the main table views.
+
+Provide a list of the column names (as the data source knows them) to this
+setting. This option must appear at the source level of your site config
+hierarchy. In C<Config::General> format, this would look something like:
 
  <Plugin::AutoCRUD>
     <sites>
@@ -610,10 +613,9 @@ this would look something like:
  </Plugin::AutoCRUD>
 
 Any columns existing in the source, but not mentioned there, will not be
-displayed in the main table. They'll still appear in the record edit form, but
-that might be fixed in a future version of this plugin. If using this
-feauture, you probably want to also use C<update_allowed no> to preserve your
-users' sanity.
+displayed in the main table. They'll still appear in the record edit form, as
+some fields are required by the database schema so cannot be hidden. Columns
+will be displayed in the same order that you list them in the configuration.
 
 =item headings { col => title, ... }
 
