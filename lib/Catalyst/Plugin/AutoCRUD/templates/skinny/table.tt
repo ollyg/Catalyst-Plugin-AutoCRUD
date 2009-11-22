@@ -3,11 +3,9 @@
 
 <table class="cpac_table">
     <tr>
-    [% SET col_list = (table_config.columns OR table_info.col_order) %]
+    [% SET col_list = (table_config.columns.size > 0 ? table_config.columns : table_info.col_order) %]
     [% FOR col IN col_list %]
-      [% NEXT IF
-            (table_config.col_keys AND NOT table_config.col_keys.$col) OR
-            (NOT table_config.col_keys AND table_config.headings AND NOT table_config.headings.$col) %]
+      [% NEXT IF table_config.columns.size > 0 AND NOT table_config.col_keys.exists(col) %]
         <th class="cpac_table_header">
         [% SET qp = "?sort=" _ col %]
         [% SET qp = qp _ "&page=" _ pager.current_page IF pager %]
@@ -15,7 +13,7 @@
         [% SET qp = qp _ "&limit=" _ limit IF limit %]
 
             <a class="cpac_link" href="[% qp %]">
-            [% IF table_config.headings AND table_config.headings.$col AND table_config.headings.$col != '' %]
+            [% IF table_config.headings.exists(col) AND table_config.headings.defined(col) %]
                 [% table_config.headings.$col %]
             [% ELSE %]
                 [% table_info.cols.$col.heading %]

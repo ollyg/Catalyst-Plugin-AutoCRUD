@@ -96,7 +96,7 @@
       [% SET colcount = 0 %]
       [% FOREACH col IN site_conf.$db.$table.columns.merge(lf.main.col_order).unique %]
         [% ',' IF lf.main.col_order.size > 1 AND colcount != 0 %]{
-          [% IF site_conf.$db.$table.headings AND site_conf.$db.$table.headings.$col AND site_conf.$db.$table.headings.$col != '' %]
+          [% IF site_conf.$db.$table.headings.exists(col) AND site_conf.$db.$table.headings.defined(col) %]
             header:     '[% site_conf.$db.$table.headings.$col %]'
           [% ELSIF lf.main.cols.$col.is_fk %]
             header:     '[% lf.main.cols.$col.heading %] (FK)'
@@ -106,6 +106,7 @@
             header:     '[% lf.main.cols.$col.heading %]'
           [% END %]
             ,dataIndex: '[% col %]'
+            [% ',hidden: true' IF site_conf.$db.$table.columns.size > 0 AND NOT site_conf.$db.$table.col_keys.exists(col) %]
           [% IF lf.main.cols.$col.is_fk OR lf.main.cols.$col.is_rr %]
             ,editor: fk_combo_[% col %] //reference to combo instance
             ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %]) // pass combo instance to reusable renderer
@@ -125,9 +126,6 @@
               [% END %]
             }
           [% END %]
-            [% ',hidden: true' IF
-                (site_conf.$db.$table.col_keys AND NOT site_conf.$db.$table.col_keys.$col) OR
-                (NOT site_conf.$db.$table.col_keys AND site_conf.$db.$table.headings AND NOT site_conf.$db.$table.headings.$col) %]
         }
         [% SET colcount = colcount + 1 %]
       [% END %]

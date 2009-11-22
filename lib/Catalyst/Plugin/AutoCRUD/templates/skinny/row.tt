@@ -1,9 +1,7 @@
 <tr class="cpac_row[% ' cpac_stripe' IF count % 2 %]">
-[% SET col_list = (table_config.columns OR table_info.col_order) %]
+[% SET col_list = (table_config.columns.size > 0 ? table_config.columns : table_info.col_order) %]
 [% FOR col IN col_list %]
-    [% NEXT IF 
-        (table_config.col_keys AND NOT table_config.col_keys.$col) OR
-        (NOT table_config.col_keys AND table_config.headings AND NOT table_config.headings.$col) %]
+    [% NEXT IF table_config.columns.size > 0 AND NOT table_config.col_keys.exists(col) %]
     <td class="cpac_cell">
         [% PROCESS cell.tt
             value = item.$col

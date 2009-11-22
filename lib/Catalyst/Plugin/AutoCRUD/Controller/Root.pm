@@ -192,13 +192,11 @@ sub build_site_config : Private {
                 }, $site->{$sc}->{$so});
 
             # back-compat work for list_returns
-            if (exists $site->{$sc}->{$so}->{list_returns}
-                    and !exists $site->{$sc}->{$so}->{headings}) {
-                $site->{$sc}->{$so}->{headings} =
-                    delete $site->{$sc}->{$so}->{list_returns};
-            }
+            if (exists $site->{$sc}->{$so}->{list_returns} and
+                    (!exists $site->{$sc}->{$so}->{headings} and !exists $site->{$sc}->{$so}->{columns})) {
 
-            if (exists $site->{$sc}->{$so}->{headings}) {
+                $site->{$sc}->{$so}->{headings} = delete $site->{$sc}->{$so}->{list_returns};
+
                 # promote arrayref into hashref
                 if (ref $site->{$sc}->{$so}->{headings} eq 'ARRAY') {
                     $site->{$sc}->{$so}->{headings} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{headings}} };
@@ -207,6 +205,10 @@ sub build_site_config : Private {
                 # prettify the column headings 
                 $site->{$sc}->{$so}->{headings}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
                     for keys %{ $site->{$sc}->{$so}->{headings} };
+
+                # columns generated from old list_returns
+                # FIXME ordering!
+                $site->{$sc}->{$so}->{columns} = [ keys %{ $site->{$sc}->{$so}->{headings} } ];
             }
 
             # copy columns list as hashref for ease of lookups
@@ -214,6 +216,11 @@ sub build_site_config : Private {
                     and ref $site->{$sc}->{$so}->{columns} eq 'ARRAY') {
                 $site->{$sc}->{$so}->{col_keys} = { map {$_ => 1} @{$site->{$sc}->{$so}->{columns}} };
             }
+
+            # need stubs for TT
+            $site->{$sc}->{$so}->{columns}  ||= [];
+            $site->{$sc}->{$so}->{col_keys} ||= {};
+            $site->{$sc}->{$so}->{headings} ||= {};
         }
     }
 
