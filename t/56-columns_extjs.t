@@ -26,7 +26,10 @@ my @cols = ($colmodel =~ m/{(.+?)}\s+,/sg);
 
 ok(scalar @cols == 7, 'number of columns in ColumnModel');
 
-foreach my $id (2,3,4,5) {
+foreach my $id (0,1) {
+    ok($cols[$id] !~ m/hidden/, "col pos $id is not hidden");
+}
+foreach my $id (2,3,4,5,6) {
     ok($cols[$id] =~ m/hidden/, "col pos $id is hidden column");
 }
 

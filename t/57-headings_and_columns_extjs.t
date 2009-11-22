@@ -30,7 +30,10 @@ ok($cols[0] =~ m/header:\s+'Id'/, 'first heading is Id');
 ok($cols[1] =~ m/header:\s+'TheTitle'/, 'second heading is TheTitle');
 ok($cols[2] =~ m/header:\s+'RecordedWhen'/, 'third heading is RecordedWhen');
 
-foreach my $id (2,3,4,5) {
+foreach my $id (0,1) {
+    ok($cols[$id] !~ m/hidden/, "col pos $id is not hidden");
+}
+foreach my $id (2,3,4,5,6) {
     ok($cols[$id] =~ m/hidden/, "col pos $id is hidden column");
 }
 

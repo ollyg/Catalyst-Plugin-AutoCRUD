@@ -133,6 +133,7 @@
         ,{
             header: '[% lf.main.mfks.item(col) %]'
             ,dataIndex: 'lf-multi-column'
+            [% ',hidden: true' IF site_conf.$db.$table.columns.size > 0 AND NOT site_conf.$db.$table.col_keys.exists(col) %]
             ,align: 'center'
             ,sortable: false
             ,menuDisabled: true
