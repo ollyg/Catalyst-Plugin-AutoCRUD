@@ -195,6 +195,9 @@ sub build_site_config : Private {
             if (exists $site->{$sc}->{$so}->{list_returns} and
                     (!exists $site->{$sc}->{$so}->{headings} and !exists $site->{$sc}->{$so}->{columns})) {
 
+                $c->log->warn("AutoCRUD: 'list_returns' is deprecated for site config. ".
+                    "Please migrate to using 'columns' and 'headings' as shown in the Documentation.");
+
                 $site->{$sc}->{$so}->{headings} = delete $site->{$sc}->{$so}->{list_returns};
 
                 # promote arrayref into hashref
