@@ -159,7 +159,7 @@ my $expected = {
     'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
 };
 
-is_deeply( $response, $expected, 'Metadata is as we expect' );
+is_deeply( $response->{lf}, $expected, 'Metadata is as we expect' );
 
 #warn $mech->content;
 __END__

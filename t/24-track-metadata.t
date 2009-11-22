@@ -244,7 +244,7 @@ my $expected = {
     'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
 };
 
-is_deeply( $response, $expected, 'Metadata is as we expect' );
+is_deeply( $response->{lf}, $expected, 'Metadata is as we expect' );
 #use Data::Dumper;
 #print STDERR Dumper [$response, $expected];
 #warn $mech->content;

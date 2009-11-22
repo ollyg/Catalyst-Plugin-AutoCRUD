@@ -121,7 +121,10 @@ sub end : ActionClass('RenderView') {}
 
 sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->stash->{json_data} = $c->stash->{lf};
+    $c->stash->{json_data} = {
+        lf => $c->stash->{lf},
+        site_conf => $c->stash->{site_conf},
+    };
     return $self;
 }
 
