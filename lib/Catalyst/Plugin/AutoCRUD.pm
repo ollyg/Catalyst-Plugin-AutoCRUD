@@ -588,47 +588,68 @@ removed from the user interface so as not to confuse users.
     </sites>
  </Plugin::AutoCRUD>
 
-=item list_returns [ \@columns | { col => title, ... } ]
+=item columns \@column_names
 
 To restrict the set of columns displayed, provide a list of the column names
-(as the data source knows them) to this setting. In C<Config::General> format,
+(as the data source knows them) to this setting. This option must appear at
+the source level of your site config hierarchy. In C<Config::General> format,
 this would look something like:
 
  <Plugin::AutoCRUD>
     <sites>
         <default>
-            list_returns    id
-            list_returns    title
-            list_returns    length
+            <myschema>
+                <thesource>
+                    columns  id
+                    columns  title
+                    columns  length
+                </thesource>
+            </myschema>
         </default>
     </sites>
  </Plugin::AutoCRUD>
 
-So any columns existing in the source, but not mentioned there, will not be
+Any columns existing in the source, but not mentioned there, will not be
 displayed in the main table. They'll still appear in the record edit form, but
 that might be fixed in a future version of this plugin. If using this
 feauture, you probably want to also use C<update_allowed no> to preserve your
 users' sanity.
 
-At the same time, you can alter the titles given to some columns in the user
-interface, by changing this option from a list to a hash form:
+=item headings { col => title, ... }
+
+You can alter the title given to any column in the user interface, by
+providing a hash mapping of column names (as the data source knows them) to
+titles you wish displayed to the user. This option must appear at the source
+level of your site config hierarchy. In C<Config::General> format, this would
+look something like:
 
  <Plugin::AutoCRUD>
     <sites>
         <default>
-            <list_returns>
-                id      Key
-                title   Name
-                length  Time
-            </list_returns>
+            <myschema>
+                <thesource>
+                    <headings>
+                        id      Key
+                        title   Name
+                        length  Time
+                    </headings>
+                </thesource>
+            </myschema>
         </default>
     </sites>
  </Plugin::AutoCRUD>
 
-Here, the columns are still restricted, and their titles are changed to the
-values on the right hand side. To use the default value for a column (i.e.
-what the plugin works out for itself), just omit the value on the right hand
-side.
+Any columns not included in the hash mapping will use the default title (i.e.
+what the plugin works out for itself). To hide a column from view, use the
+C<columns> option, described above.
+
+=item list_returns [ \@columns | { col => title, ... } ]
+
+This configuration option is I<DEPRECATED>. Please see C<columns> to control
+which columns are displayed to users and, independently, C<headings> to alter
+the titles displayed for any columns. The plugin still respects a
+C<list_returns> configuration setting but will emit a warning to your log that
+you need to migrate to the new, more flexible, alternatives.
 
 =item hidden [ yes | no* ]
 
