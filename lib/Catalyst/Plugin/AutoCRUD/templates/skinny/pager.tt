@@ -1,6 +1,5 @@
 [% IF pager %]
 [% SET args = "?" %]
-[% SET args = args _ "limit="  _ limit  _ "&" IF limit  %]
 [% SET args = args _ "sort=" _ sortby _ "&" IF sortby %]
 [% SET args = args _ "dir="  _ dir  _ "&" IF dir  %]
 
@@ -16,7 +15,7 @@
                     '<span class="cpac_current-page">' _ num _ '</span>';
                 ELSE;
                     IF (pager.current_page - 2) <= num && (pager.current_page + 2) >= num OR num == pager.last_page OR num == pager.first_page;
-                        '<a class="cpac_link" href="' _ args _ 'page=' _ num _ '">' _ num _ '</a>';
+                        '<a class="cpac_link" href="' _ args _ 'limit=' _ (limit ? limit : 20) _ '&page=' _ num _ '">' _ num _ '</a>';
                     ELSE;
                         '&middot;';
                     END;
