@@ -210,7 +210,6 @@ sub build_site_config : Private {
                     for keys %{ $site->{$sc}->{$so}->{headings} };
 
                 # columns generated from old list_returns
-                # FIXME ordering!
                 $site->{$sc}->{$so}->{columns} = [ keys %{ $site->{$sc}->{$so}->{headings} } ];
             }
 
