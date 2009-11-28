@@ -1,7 +1,7 @@
     // this is the paging toolbar below the grid
 
     // need to extend Ext.PagingToolbar to display correct numbers even though
-    // the store itself has one too many records in (because of teh
+    // the store itself has one too many records in (because of the
     // filter/search row). Cannot do this via Ext.override as it knobbles
     // Ext.PagingToolbar globally and it is used elsewhere in the app.
 
@@ -38,7 +38,7 @@
 
     var pagebar = new Ext.ux.PagingToolbarForFilterGrid({
         id: 'pagebar'
-        ,pageSize: 10
+        ,pageSize: Ext.state.Manager.get('lfb-pgsz', 10)
         ,store: store
         ,displayInfo: true
         ,items: [
