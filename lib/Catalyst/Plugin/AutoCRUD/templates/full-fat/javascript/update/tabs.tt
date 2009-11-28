@@ -35,7 +35,7 @@
                     ,id: '[% info.path %].[% field %]'
                   [% END %]
 
-                  [% IF site_conf.$db.$tbl.headings.exists($field) AND site_conf.$db.$tbl.headings.defined($field) %]
+                  [% IF site_conf.$db.$tbl.headings.exists(field) AND site_conf.$db.$tbl.headings.defined(field) %]
                     ,fieldLabel: '[% site_conf.$db.$tbl.headings.$field %]'
                   [% ELSE %]
                     ,fieldLabel: '[% info.cols.$field.heading %]'
