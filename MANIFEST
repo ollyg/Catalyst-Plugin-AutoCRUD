@@ -32,6 +32,7 @@ lib/Catalyst/Plugin/AutoCRUD/static/find.png
 lib/Catalyst/Plugin/AutoCRUD/static/iefix.css
 lib/Catalyst/Plugin/AutoCRUD/static/lfb.css
 lib/Catalyst/Plugin/AutoCRUD/static/magnifier.png
+lib/Catalyst/Plugin/AutoCRUD/static/page_lightning.png
 lib/Catalyst/Plugin/AutoCRUD/static/script_lightning.png
 lib/Catalyst/Plugin/AutoCRUD/static/sitemap_color.png
 lib/Catalyst/Plugin/AutoCRUD/static/skinny.css
