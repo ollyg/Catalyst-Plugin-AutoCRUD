@@ -42,7 +42,20 @@
         ,store: store
         ,displayInfo: true
         ,items: [
-            '-' ,'Rows:' ,' ' ,{
+             ' ' ,{
+                tooltip: 'Reset'
+                ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "page_lightning.png" ) %]'
+                ,cls:"x-btn-icon"
+                ,handler: function (){
+                    // clear the cookie storing grid state
+                    Ext.state.Manager.getProvider().clear('lfb-pgsz');
+                    Ext.state.Manager.getProvider().clear('search-grid');
+                    // reload
+                    window.location.reload();
+                }
+            }
+            ,'-' ,'Rows:'
+            ,' ' ,{
                 xtype: 'combo'
                 ,mode: 'local'
                 ,allowBlank: false

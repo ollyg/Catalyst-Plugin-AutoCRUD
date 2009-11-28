@@ -21,7 +21,7 @@
                     var params = {};
                     var searchrow = grid.getStore().getAt(0).data;
                     for (var key in searchrow) {
-			var curval = searchrow[key] + ''; // stringify to allow indexOf
+                        var curval = searchrow[key] + ''; // stringify to allow indexOf
                         if ((curval.indexOf('(click to add filter)') !== -1) || (curval === '')) {
                             // don't submit if still the default, or empty
                             continue;
