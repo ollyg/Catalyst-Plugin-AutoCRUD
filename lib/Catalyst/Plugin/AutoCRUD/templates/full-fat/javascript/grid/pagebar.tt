@@ -50,13 +50,19 @@
                     // clear the cookie storing grid state
                     Ext.state.Manager.getProvider().clear('lfb-pgsz');
                     Ext.state.Manager.getProvider().clear('search-grid');
-                    // reload
-                    window.location.reload();
+                    // clear search opts
+                    store.baseParams = {};
+                    // reset page size to default of 10
+                    pagebar.pageSize = 10;
+                    Ext.getCmp('pgsz-combo').setValue(10);
+                    // reload grid
+                    pagebar.doLoad(0);
                 }
             }
             ,'-' ,'Rows:'
             ,' ' ,{
                 xtype: 'combo'
+                ,id: 'pgsz-combo'
                 ,mode: 'local'
                 ,allowBlank: false
                 ,triggerAction: 'all'
