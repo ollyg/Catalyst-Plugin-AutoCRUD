@@ -52,6 +52,8 @@
                     Ext.state.Manager.getProvider().clear('search-grid');
                     // clear search opts
                     store.baseParams = {};
+                    // private? clear sorting config
+                    store.sortInfo = { field: '[% lf.main.pk %]', direction: 'ASC' }
                     // reset page size to default of 10
                     pagebar.pageSize = 10;
                     Ext.getCmp('pgsz-combo').setValue(10);
