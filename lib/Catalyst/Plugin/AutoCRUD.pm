@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.64';
+our $VERSION = '0.65';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
@@ -131,7 +131,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.64 of Catalyst::Plugin::AutoCRUD
+This document refers to version 0.65 of Catalyst::Plugin::AutoCRUD
 
 =head1 PURPOSE
 
