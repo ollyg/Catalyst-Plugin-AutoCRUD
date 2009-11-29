@@ -568,7 +568,7 @@ sub list_stringified : Chained('base') Args(0) {
     my @data = ();
 
     # first try a simple and quick primary key search
-    if (my $single_result = $rs->find($query)) {
+    if (my $single_result = eval{ $rs->find($query) }) {
         @data = ({
             dbid => $single_result->id,
             stringified => _sfy($single_result),
