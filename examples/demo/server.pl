@@ -12,17 +12,10 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin;
 
-package DemoApp;
-    use Catalyst qw/-Debug
-                    ConfigLoader
-                    Static::Simple
-                    AutoCRUD/;
-    DemoApp->config(
-        root => "$FindBin::Bin/root",
-        'Plugin::ConfigLoader' => { file => "$FindBin::Bin/demo.conf" },
-    );
-    DemoApp->setup();
-package main;
+use lib "$FindBin::Bin/lib";
+eval { require Catalyst::Plugin::AutoCRUD }
+    or eval { use lib "$FindBin::Bin/../../lib" };
+use DemoApp;
 
 my $debug             = 0;
 my $fork              = 1;
