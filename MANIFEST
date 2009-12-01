@@ -2,6 +2,7 @@ Changes
 examples/app/autocruduser.conf
 examples/app/AutoCRUDUser.pm
 examples/demo/demo.conf
+examples/demo/lib/DemoApp.pm
 examples/demo/server.pl
 examples/sql/bootstrap_sqlite.pl
 examples/sql/test_app.sql
