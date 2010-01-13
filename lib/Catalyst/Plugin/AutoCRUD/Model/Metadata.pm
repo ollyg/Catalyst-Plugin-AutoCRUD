@@ -132,7 +132,7 @@ sub build_db_info {
     }
 
     foreach my $s (keys %sources) {
-        my $name = $c->model($s)->storage->dbh->{Name};
+        my $name = $c->model($s)->schema->storage->dbh->{Name};
 
         if ($name =~ m/\W/) {
             # SQLite will return a file name as the "database name"
