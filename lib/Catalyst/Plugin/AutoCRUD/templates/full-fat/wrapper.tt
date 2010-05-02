@@ -57,15 +57,15 @@
                     [% cpac_meta.main.title %]
                 [% ELSE %]
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
-                      [% FOREACH table IN cpac_meta.table2path.keys.sort %]
-                        [% SET tpath = cpac_meta.table2path.item(table) %]
+                      [% FOREACH tbl IN cpac_meta.table2path.keys.sort %]
+                        [% SET tpath = cpac_meta.table2path.item(tbl) %]
                         [% NEXT IF site_conf.$cpac_db.$tpath.hidden == 'yes' %]
                         [% IF cpac_site == 'default' %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], tpath ) %]"
                         [% ELSE %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site,cpac_db], tpath ) %]"
                         [% END %]
-                                [% ' selected="selected"' IF table == cpac_meta.main.title %]>[% table %]</option>
+                                [% ' selected="selected"' IF tbl == cpac_meta.main.title %]>[% tbl %]</option>
                       [% END %]
                     </select>
                 [% END %]
