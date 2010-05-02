@@ -45,7 +45,7 @@
                     return false;
                 }
 
-              [% IF site_conf.$cpac_db.$table.delete_allowed == 'yes' %]
+              [% IF site_conf.$cpac_db.$cpac_table.delete_allowed == 'yes' %]
                 if (fieldName == 'cpac-delete-column') {
                     if (row === 0) {
                         // edit row is ignored
@@ -103,7 +103,7 @@
                     }
                     g.startEditing(row,col);
                 }
-              [% IF site_conf.$cpac_db.$table.update_allowed == 'yes' %]
+              [% IF site_conf.$cpac_db.$cpac_table.update_allowed == 'yes' %]
                 else {
                     // draw the window!
                     var win = generate_win('update');

@@ -81,7 +81,7 @@ sub acl : Private {
     my ($self, $c) = @_;
     my $site = $c->stash->{cpac_site};
     my $db = $c->stash->{cpac_db};
-    my $table = $c->stash->{table};
+    my $table = $c->stash->{cpac_table};
 
     my $acl_for = {
         create   => 'create_allowed',
@@ -138,7 +138,7 @@ sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{cpac_site};
     my $db = $c->stash->{cpac_db};
-    my $table = $c->stash->{table};
+    my $table = $c->stash->{cpac_table};
 
     my $cpac = $c->stash->{cpac_meta};
     my $info = $cpac->{main};

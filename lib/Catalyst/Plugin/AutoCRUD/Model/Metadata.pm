@@ -53,14 +53,14 @@ sub process {
     my ($self, $c) = @_;
 
     if (exists $c->stash->{cpac_db} and defined $c->stash->{cpac_db}
-        and exists $c->stash->{table} and defined $c->stash->{table}
-        and exists $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{table}}) {
+        and exists $c->stash->{cpac_table} and defined $c->stash->{cpac_table}
+        and exists $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}}) {
 
         # we have a cache!
         $c->stash->{dbtitle} = _2title( $c->stash->{cpac_db} );
-        $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{table}};
+        $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}};
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
-            $c->stash->{cpac_db}, $c->stash->{table}) if $c->debug;
+            $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
         weaken $c->stash->{cpac_meta};
         return $self;
@@ -81,17 +81,17 @@ sub process {
     $self->build_table_info_for_db($c, $cpac, $c->stash->{cpac_db});
 
     # no table specified, or unknown table
-    return if !defined $c->stash->{table}
-        or !exists $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{table} };
+    return if !defined $c->stash->{cpac_table}
+        or !exists $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
 
-    $cpac->{model} = $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{table} };
+    $cpac->{model} = $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
 
     # build and store in cache
     _build_table_info($c, $cpac, $cpac->{model}, 1);
 
-    $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{table}} = $cpac;
+    $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}} = $cpac;
     $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
-        $c->stash->{cpac_db}, $c->stash->{table}) if $c->debug;
+        $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
     weaken $c->stash->{cpac_meta};
     return $self;

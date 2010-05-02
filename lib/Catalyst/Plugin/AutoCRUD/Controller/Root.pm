@@ -93,7 +93,7 @@ sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
 
 sub do_meta : Private {
     my ($self, $c, $table) = @_;
-    $c->stash->{table} = $table;
+    $c->stash->{cpac_table} = $table;
 
     my $db = $c->stash->{cpac_db};
     my $site = $c->stash->{cpac_site};
