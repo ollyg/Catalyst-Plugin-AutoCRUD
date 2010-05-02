@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>[% title %][% ' - Powered by ' IF title %][% cpac_version %]</title>
+<title>[% cpac_title %][% ' - Powered by ' IF cpac_title %][% cpac_version %]</title>
 
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny_body.css" ) %]" />
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny.css" ) %]" />
@@ -11,7 +11,7 @@
 <body>
 
 <div id="cpac_banner">
-  [% IF title %]
+  [% IF cpac_title %]
     <span id="cpac_banner_icons">
         [% IF cpac_site == 'default' %]
             <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]"
@@ -48,14 +48,14 @@
                     alt="Refresh Page">
             </a>
     </span>
-    [% title %]
+    [% cpac_title %]
   [% ELSE %]
     Catalyst AutoCRUD
   [% END %]
 </div>
 
 <div id="cpac_outer" class="cpac_box">
-  [% IF title %]
+  [% IF cpac_title %]
     <div id="cpac_content">
       [% content %]
     </div>

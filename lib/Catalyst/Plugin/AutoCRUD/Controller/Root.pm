@@ -76,7 +76,7 @@ sub no_source : Chained('schema') PathPart('') Args(0) {
 sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
-    $c->stash->{title} = $c->stash->{cpac_meta}->{main}->{title} .' List';
+    $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};

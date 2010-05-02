@@ -66,7 +66,7 @@ sub browse : Chained('base') Args(0) {
     $pager->current_page($c->stash->{page});
 
     $c->stash->{pager} = $pager;
-    $c->stash->{title} = $c->stash->{cpac_meta}->{main}->{title} .' Browser';
+    $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' Browser';
     $c->stash->{template} = 'list.tt';
 
     $c->forward('/autocrud/root/end');
