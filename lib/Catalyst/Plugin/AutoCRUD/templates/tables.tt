@@ -1,12 +1,12 @@
 <h3>Welcome to AutoCRUD, an automagic web interface for databases</h3>
 <br />
 
-[% IF NOT lf.exists('db2path') %]
+[% IF NOT cpac.exists('db2path') %]
     <p>No database schemas were found in this appliaction. Please contact the site administrator.</p>
     [% RETURN %]
 
 [% ELSE %]
-    [% IF lf.dbpath2model.exists( db ) %]
+    [% IF cpac.dbpath2model.exists( db ) %]
         [% IF site_conf.$db.hidden == 'yes' %]
             [% IF site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> to select another database.</p>
@@ -21,8 +21,8 @@
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH t IN lf.table2path.keys.sort %]
-            [% SET tpath = lf.table2path.item(t) %]
+        [% FOREACH t IN cpac.table2path.keys.sort %]
+            [% SET tpath = cpac.table2path.item(t) %]
             [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
             <li>
             [% IF site == 'default' %]
@@ -35,7 +35,7 @@
         </ul>
         </div>
 
-        [% IF lf.db2path.keys.size > 1 %]
+        [% IF cpac.db2path.keys.size > 1 %]
             <br />
             [% IF site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> to select another database.</p>
@@ -50,8 +50,8 @@
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH d IN lf.db2path.keys.sort %]
-            [% SET dpath = lf.db2path.item(d) %]
+        [% FOREACH d IN cpac.db2path.keys.sort %]
+            [% SET dpath = cpac.db2path.item(d) %]
             [% NEXT IF site_conf.$dpath.hidden == 'yes' %]
             <li>
             [% IF site == 'default' %]

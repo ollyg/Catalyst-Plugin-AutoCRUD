@@ -26,7 +26,7 @@
         // make the "Page x of y" work when we choose to show all rows
         ,getPageData : function() {
             var total = this.store.getTotalCount();
-            var pgsz = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
+            var pgsz = Ext.state.Manager.get('cpac-pgsz', pagebar.pageSize);
             if (isNaN(pgsz)) { pgsz = total }
             return {
                 total : total
@@ -38,7 +38,7 @@
 
     var pagebar = new Ext.ux.PagingToolbarForFilterGrid({
         id: 'pagebar'
-        ,pageSize: Ext.state.Manager.get('lfb-pgsz', 10)
+        ,pageSize: Ext.state.Manager.get('cpac-pgsz', 10)
         ,store: store
         ,displayInfo: true
         ,items: [
@@ -48,12 +48,12 @@
                 ,cls:"x-btn-icon"
                 ,handler: function (){
                     // clear the cookie storing grid state
-                    Ext.state.Manager.getProvider().clear('lfb-pgsz');
+                    Ext.state.Manager.getProvider().clear('cpac-pgsz');
                     Ext.state.Manager.getProvider().clear('search-grid');
                     // clear search opts
                     store.baseParams = {};
                     // private? clear sorting config
-                    store.sortInfo = { field: '[% lf.main.pk %]', direction: 'ASC' }
+                    store.sortInfo = { field: '[% cpac.main.pk %]', direction: 'ASC' }
                     // reset page size to default of 10
                     pagebar.pageSize = 10;
                     Ext.getCmp('pgsz-combo').setValue(10);
@@ -74,18 +74,18 @@
                 ,store: [10, 20, 50, 100, 'all']
                 ,listeners: {
                     render: function(combo) {
-                        var pgsz = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
+                        var pgsz = Ext.state.Manager.get('cpac-pgsz', pagebar.pageSize);
                         combo.setValue( isNaN(pgsz) ? 'all' : pgsz );
                     }
                     ,select: function(combo) {
                         pagebar.pageSize = parseInt(combo.getRawValue(), 10);
-                        Ext.state.Manager.set('lfb-pgsz', pagebar.pageSize);
+                        Ext.state.Manager.set('cpac-pgsz', pagebar.pageSize);
                         pagebar.doLoad(pagebar.cursor);
                     }
                     ,specialkey: function(combo, e) {
                         if (e.getKey() == 13) {
                             pagebar.pageSize = parseInt(combo.getRawValue(), 10) || 'all';
-                            Ext.state.Manager.set('lfb-pgsz', pagebar.pageSize);
+                            Ext.state.Manager.set('cpac-pgsz', pagebar.pageSize);
                             combo.setValue(pagebar.pageSize);
                             pagebar.doLoad(pagebar.cursor);
                         }

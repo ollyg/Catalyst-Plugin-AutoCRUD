@@ -21,7 +21,7 @@
             </a>
 
             [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db], lf.main.path ) %]"
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db], cpac.main.path ) %]"
                 title ="Full-feature JS View">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
                         alt="[% dbtitle %] Table Picker" />
@@ -35,7 +35,7 @@
             </a>
 
             [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site,db], lf.main.path ) %]"
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site,db], cpac.main.path ) %]"
                 title ="[% dbtitle %] Table Picker">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
                         alt="[% dbtitle %] Table Picker" />

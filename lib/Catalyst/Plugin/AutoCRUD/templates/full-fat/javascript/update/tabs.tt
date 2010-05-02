@@ -6,13 +6,13 @@
     // also readonly, validation
 
     var tabs = [
-      [% FOREACH tname IN lf.tab_order.nsort %]
-        [% SET info = lf.table_info.$tname %]
+      [% FOREACH tname IN cpac.tab_order.nsort %]
+        [% SET info = cpac.table_info.$tname %]
         [% SET tbl = info.path %]
         [% NEXT IF NOT loop.first AND site_conf.$db.$tbl.create_allowed == 'no' %]
-        [% ',' IF lf.tab_order.keys.size > 1 AND NOT loop.first %]{
-            [% IF lf.tab_order.item(tname) == 1 %]
-              title: '[% lf.main.title %]'
+        [% ',' IF cpac.tab_order.keys.size > 1 AND NOT loop.first %]{
+            [% IF cpac.tab_order.item(tname) == 1 %]
+              title: '[% cpac.main.title %]'
             [% ELSE %]
               title: 'New [% info.title %]'
               ,xtype: 'fieldset'
@@ -27,7 +27,7 @@
               [% NEXT IF info.cols.$field.is_rr %]
                 [% ',' IF count > 1 %]{
                 [% SET count = count + 1 %]
-                  [% IF lf.tab_order.item(tname) == 1 %]
+                  [% IF cpac.tab_order.item(tname) == 1 %]
                     name: '[% field %]'
                     ,id: '[% field %]'
                   [% ELSE %]

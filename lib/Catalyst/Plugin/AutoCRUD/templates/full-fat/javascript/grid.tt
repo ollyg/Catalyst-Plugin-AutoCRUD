@@ -40,27 +40,27 @@
                 // reset the grid selectionModel
                 g.getSelectionModel().deselectRow(row);
 
-                if (fieldName == 'lf-multi-column') {
+                if (fieldName == 'cpac-multi-column') {
                     // multi rows are ignored
                     return false;
                 }
 
               [% IF site_conf.$db.$table.delete_allowed == 'yes' %]
-                if (fieldName == 'lf-delete-column') {
+                if (fieldName == 'cpac-delete-column') {
                     if (row === 0) {
                         // edit row is ignored
                         return false;
                     }
 
-                    var data = rec.get('[% lf.main.pk %]');
+                    var data = rec.get('[% cpac.main.pk %]');
                     Ext.MessageBox.confirm (
-                        'Confirm Delete [% lf.main.title %]'
-                        ,'Are you sure you want to delete [% lf.main.title %] [% lf.main.pk %](' + data + ')?'
+                        'Confirm Delete [% cpac.main.title %]'
+                        ,'Are you sure you want to delete [% cpac.main.title %] [% cpac.main.pk %](' + data + ')?'
                         ,function (btn) {
                             if (btn == 'yes') {
                                 grid.loadMask.el.mask();
                                 Ext.Ajax.request({
-                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [site,db,lf.main.path] ) %]'
+                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [site,db,cpac.main.path] ) %]'
                                     ,params: {
                                         key: data
                                     }
@@ -118,13 +118,13 @@
                     // fill in reverse relations
                     mainform.setValues({
                       [% SET count = 1 %]
-                      [% FOREACH table IN lf.tab_order.keys %]
-                      [% NEXT IF lf.tab_order.item(table) == 1 %]
-                        [% FOREACH col IN lf.table_info.$table.cols.keys %]
-                        [% NEXT UNLESS lf.table_info.$table.cols.$col.is_fk
-                                AND NOT lf.table_info.$table.cols.$col.editable %]
+                      [% FOREACH table IN cpac.tab_order.keys %]
+                      [% NEXT IF cpac.tab_order.item(table) == 1 %]
+                        [% FOREACH col IN cpac.table_info.$table.cols.keys %]
+                        [% NEXT UNLESS cpac.table_info.$table.cols.$col.is_fk
+                                AND NOT cpac.table_info.$table.cols.$col.editable %]
                           [% ',' IF count > 1 %]
-                            '[% lf.table_info.$table.path %].[% col %]': rec.data['[% lf.main.pk %]']
+                            '[% cpac.table_info.$table.path %].[% col %]': rec.data['[% cpac.main.pk %]']
                           [% SET count = count + 1 %]
                         [% END %]
                       [% END %]

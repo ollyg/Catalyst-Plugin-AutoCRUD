@@ -1,4 +1,4 @@
-[% SET table_info = lf.main %]
+[% SET table_info = cpac.main %]
 [% SET table_config = site_conf.$db.$table %]
 
 <table class="cpac_table">

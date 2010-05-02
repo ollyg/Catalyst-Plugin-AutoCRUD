@@ -41,7 +41,7 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
   
     # XXX we call the stash var sortby so as to appease TT
     my $sortby = $c->req->params->{'sort'};
-    $sortby = $c->stash->{lf}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
+    $sortby = $c->stash->{cpac}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
     $c->stash->{sortby} = $sortby;
 
     my $dir = $c->req->params->{'dir'};
@@ -66,7 +66,7 @@ sub browse : Chained('base') Args(0) {
     $pager->current_page($c->stash->{page});
 
     $c->stash->{pager} = $pager;
-    $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' Browser';
+    $c->stash->{title} = $c->stash->{cpac}->{main}->{title} .' Browser';
     $c->stash->{template} = 'list.tt';
 
     $c->forward('/autocrud/root/end');

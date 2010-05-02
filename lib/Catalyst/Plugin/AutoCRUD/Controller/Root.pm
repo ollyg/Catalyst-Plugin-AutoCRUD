@@ -76,7 +76,7 @@ sub no_source : Chained('schema') PathPart('') Args(0) {
 sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
-    $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' List';
+    $c->stash->{title} = $c->stash->{cpac}->{main}->{title} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
@@ -118,7 +118,7 @@ sub do_meta : Private {
     }
 
     $c->forward('AutoCRUD::Metadata');
-    $c->detach('err_message') if !defined $c->stash->{lf}->{model};
+    $c->detach('err_message') if !defined $c->stash->{cpac}->{model};
 }
 
 sub verboden : Private {
@@ -132,7 +132,7 @@ sub err_message : Private {
     my ($self, $c) = @_;
 
     $c->forward('build_site_config') if !exists $c->stash->{site_conf};
-    $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{lf}->{db2path};;
+    $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{cpac}->{db2path};;
     $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }
@@ -152,12 +152,12 @@ sub build_site_config : Private {
 
     # first, prime our structure of schema and source aliases
     # get stash of db path parts
-    my $lf = $c->forward(qw/AutoCRUD::Metadata build_db_info/);
-    foreach my $db (keys %{$lf->{dbpath2model}}) {
+    my $cpac = $c->forward(qw/AutoCRUD::Metadata build_db_info/);
+    foreach my $db (keys %{$cpac->{dbpath2model}}) {
         $site->{$db} ||= {};
         # get stash of table path parts
-        $c->forward(qw/AutoCRUD::Metadata build_table_info_for_db/, [$lf, $db]);
-        foreach my $table (keys %{$lf->{path2model}->{$db}}) {
+        $c->forward(qw/AutoCRUD::Metadata build_table_info_for_db/, [$cpac, $db]);
+        foreach my $table (keys %{$cpac->{path2model}->{$db}}) {
             $site->{$db}->{$table} ||= {};
         }
     }

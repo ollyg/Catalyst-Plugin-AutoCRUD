@@ -108,7 +108,7 @@ sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
 
     my $page   = $c->req->params->{'page'}  || 1;
     my $limit  = $c->req->params->{'limit'} || 10;
-    my $sortby = $c->req->params->{'sort'}  || $c->stash->{lf}->{main}->{pk};
+    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac}->{main}->{pk};
     (my $dir   = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
 
     @{$c->stash}{qw/ page limit sortby dir /}
@@ -122,7 +122,7 @@ sub end : ActionClass('RenderView') {}
 sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
     $c->stash->{json_data} = {
-        lf => $c->stash->{lf},
+        cpac => $c->stash->{cpac},
         site_conf => $c->stash->{site_conf},
     };
     return $self;
@@ -140,8 +140,8 @@ sub list : Chained('base') Args(0) {
     my $db = $c->stash->{db};
     my $table = $c->stash->{table};
 
-    my $lf = $c->stash->{lf};
-    my $info = $lf->{main};
+    my $cpac = $c->stash->{cpac};
+    my $info = $cpac->{main};
     my $response = $c->stash->{json_data} = {};
 
     my ($page, $limit, $sort, $dir) =
@@ -151,7 +151,7 @@ sub list : Chained('base') Args(0) {
     # we want to prefetch all related data for _sfy
     foreach my $rel (keys %{$info->{cols}}) {
         next unless ($info->{cols}->{$rel}->{is_fk} or $info->{cols}->{$rel}->{is_rr});
-        #my $join_to = $lf->{table_info}->{$info->{cols}->{$rel}->{fk_model}}->{path};
+        #my $join_to = $cpac->{table_info}->{$info->{cols}->{$rel}->{fk_model}}->{path};
         push @{$search_opts->{prefetch}}, $rel;
     }
 
@@ -176,7 +176,7 @@ sub list : Chained('base') Args(0) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
         next unless exists $info->{cols}->{$col}
             and ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr});
-        my $rs = $c->model($lf->{model})
+        my $rs = $c->model($cpac->{model})
                     ->result_source->related_source($col)->resultset;
         # cannot page or sort this col in the DB if it's not a legit PK val
         $delay_page_sort{$col} += 1
@@ -215,7 +215,7 @@ sub list : Chained('base') Args(0) {
         # construct search clause if any of the filter fields were filled in UI
         $filter->{"me.$col"} = {
             # find whether this DMBS supports ILIKE or just LIKE
-            _likeop_for($c->model($lf->{model}))
+            _likeop_for($c->model($cpac->{model}))
                 => '%'. $c->req->params->{"search.$col"} .'%'
         };
     }
@@ -242,10 +242,10 @@ sub list : Chained('base') Args(0) {
     #use Data::Dumper;
     #$c->log->debug( Dumper [$filter, $search_opts] );
 
-    my $rs = $c->model($lf->{model})->search($filter, $search_opts);
+    my $rs = $c->model($cpac->{model})->search($filter, $search_opts);
     my @columns = keys %{ $info->{cols} };
 
-    #$c->model($lf->{model})->result_source->storage->debug(1)
+    #$c->model($cpac->{model})->result_source->storage->debug(1)
     #    if $c->debug;
 
     # make data structure for JSON output
@@ -300,7 +300,7 @@ sub list : Chained('base') Args(0) {
     }
 
     #$c->log->debug( Dumper $response->{rows} );
-    #$c->model($lf->{model})->result_source->storage->debug(0)
+    #$c->model($cpac->{model})->result_source->storage->debug(0)
     #    if $c->debug;
 
     # sort col which cannot be passed to the DB
@@ -354,10 +354,10 @@ sub list : Chained('base') Args(0) {
 
 sub update : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $lf = $c->stash->{lf};
+    my $cpac = $c->stash->{cpac};
     my $response = $c->stash->{json_data} = {};
 
-    my $stack = _build_table_data($c, [], $lf->{model});
+    my $stack = _build_table_data($c, [], $cpac->{model});
     #if ($c->debug) {
     #    use Data::Dumper;
     #    $c->log->debug(Dumper {table_stack => $stack});
@@ -366,10 +366,10 @@ sub update : Chained('base') Args(0) {
     # stack is processed in one transaction, so either all rows are
     # updated, or none, and an error thrown.
 
-    #$c->model($lf->{model})->result_source->storage->debug(1)
+    #$c->model($cpac->{model})->result_source->storage->debug(1)
     #    if $c->debug;
     my $success = eval {
-        $c->model($lf->{model})->result_source->schema->txn_do(
+        $c->model($cpac->{model})->result_source->schema->txn_do(
             \&_process_row_stack, $c, $stack
         );
     };
@@ -379,7 +379,7 @@ sub update : Chained('base') Args(0) {
     #}
     $response->{'success'} = (($success && !$@) ? 1 : 0);
 
-    #$c->model($lf->{model})->result_source->storage->debug(0)
+    #$c->model($cpac->{model})->result_source->storage->debug(0)
     #    if $c->debug;
 
     return $self;
@@ -387,11 +387,11 @@ sub update : Chained('base') Args(0) {
 
 sub _build_table_data {
     my ($c, $stack, $model) = @_;
-    my $lf = $c->stash->{lf};
+    my $cpac = $c->stash->{cpac};
     my $params = $c->req->params;
 
-    my $info = $lf->{table_info}->{$model};
-    my $prefix = ($model eq $lf->{model} ? '' : "$info->{path}.");
+    my $info = $cpac->{table_info}->{$model};
+    my $prefix = ($model eq $cpac->{model} ? '' : "$info->{path}.");
     my @related = ();
     my $data = {};
 
@@ -403,9 +403,9 @@ sub _build_table_data {
             if exists $ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox';
 
         if (exists $ci->{fk_model}) {
-            if (exists $lf->{table_info}->{ $ci->{fk_model} }) {
+            if (exists $cpac->{table_info}->{ $ci->{fk_model} }) {
             # FKs where we could have full row data for the FT
-                my $ft = $lf->{table_info}->{ $ci->{fk_model} }->{path};
+                my $ft = $cpac->{table_info}->{ $ci->{fk_model} }->{path};
 
                 # has the user submitted a new row in the related table?
                 if (exists $params->{ 'checkbox.' . $ft }) {
@@ -420,10 +420,10 @@ sub _build_table_data {
             }
 
             # okay, no full row for related table, maybe just an ID update?
-            if ($params->{ "combobox.$col" } and ($model eq $lf->{model})) {
-                my $pk = $lf->{main}->{pk};
+            if ($params->{ "combobox.$col" } and ($model eq $cpac->{model})) {
+                my $pk = $cpac->{main}->{pk};
                 if (exists $params->{ $pk } and $params->{ $pk } ne '') {
-                    my $this_row = eval { $c->model($lf->{model})->find( $params->{ $pk } ) };
+                    my $this_row = eval { $c->model($cpac->{model})->find( $params->{ $pk } ) };
 
                     # skip where the FK val isn't really an update
                     next if (blessed $this_row)
@@ -465,7 +465,7 @@ sub _build_table_data {
     foreach my $col (keys %{$info->{cols}}) {
         my $ci = $info->{cols}->{$col};
         next unless exists $ci->{fk_model}
-                and $ci->{fk_model} eq $lf->{model};
+                and $ci->{fk_model} eq $cpac->{model};
 
         if (!exists $data->{$col}) {
             $needs_keys = 1;
@@ -490,14 +490,14 @@ sub _build_table_data {
 
 sub _process_row_stack {
     my ($c, $stack) = @_;
-    my $lf = $c->stash->{lf};
+    my $cpac = $c->stash->{cpac};
     my %stashed_keys;
 
     while (my ($model, $data) = (pop @$stack, pop @$stack)) {
         last if !defined $model;
 
         # fetch and include PK vals from previously inserted rows
-        my $info = $lf->{table_info}->{$model};
+        my $info = $cpac->{table_info}->{$model};
         foreach my $col (keys %{$info->{cols}}) {
             my $ci = $info->{cols}->{$col};
             next unless $ci->{is_fk} and exists $stashed_keys{$ci->{fk_model}};
@@ -506,7 +506,7 @@ sub _process_row_stack {
         }
 
         # update or create the row; could this use a magic DBIC method?
-        my $pk = $lf->{table_info}->{$model}->{pk};
+        my $pk = $cpac->{table_info}->{$model}->{pk};
         my $row = (( defined $data->{ $pk } )
             ? eval { $c->model($model)->find( $data->{ $pk } ) }
             : undef );
@@ -523,11 +523,11 @@ sub _process_row_stack {
 
 sub delete : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $lf = $c->stash->{lf};
+    my $cpac = $c->stash->{cpac};
     my $response = $c->stash->{json_data} = {};
     my $params = $c->req->params;
 
-    my $row = eval { $c->model($lf->{model})->find($params->{key}) };
+    my $row = eval { $c->model($cpac->{model})->find($params->{key}) };
 
     if (blessed $row) {
         $row->delete;
@@ -542,7 +542,7 @@ sub delete : Chained('base') Args(0) {
 
 sub list_stringified : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $lf = $c->stash->{lf};
+    my $cpac = $c->stash->{cpac};
     my $response = $c->stash->{json_data} = {};
 
     my $page  = $c->req->params->{'page'}   || 1;
@@ -555,15 +555,15 @@ sub list_stringified : Chained('base') Args(0) {
     my $query_re = ($query ? qr/\Q$query\E/i : qr/./);
 
     if (!$fk
-        or !exists $lf->{main}->{cols}->{$fk}
-        or not ($lf->{main}->{cols}->{$fk}->{is_fk}
-            or $lf->{main}->{cols}->{$fk}->{is_rr})) {
+        or !exists $cpac->{main}->{cols}->{$fk}
+        or not ($cpac->{main}->{cols}->{$fk}->{is_fk}
+            or $cpac->{main}->{cols}->{$fk}->{is_rr})) {
 
         $c->stash->{json_data} = {total => 0, rows => []};
         return $self;
     }
     
-    my $rs = $c->model($lf->{model})
+    my $rs = $c->model($cpac->{model})
                 ->result_source->related_source($fk)->resultset;
     my @data = ();
 
