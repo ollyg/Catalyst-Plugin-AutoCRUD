@@ -118,13 +118,13 @@
                     // fill in reverse relations
                     mainform.setValues({
                       [% SET count = 1 %]
-                      [% FOREACH table IN cpac_meta.tab_order.keys %]
-                      [% NEXT IF cpac_meta.tab_order.item(table) == 1 %]
-                        [% FOREACH col IN cpac_meta.table_info.$table.cols.keys %]
-                        [% NEXT UNLESS cpac_meta.table_info.$table.cols.$col.is_fk
-                                AND NOT cpac_meta.table_info.$table.cols.$col.editable %]
+                      [% FOREACH tbl IN cpac_meta.tab_order.keys %]
+                      [% NEXT IF cpac_meta.tab_order.item(tbl) == 1 %]
+                        [% FOREACH col IN cpac_meta.table_info.$tbl.cols.keys %]
+                        [% NEXT UNLESS cpac_meta.table_info.$tbl.cols.$col.is_fk
+                                AND NOT cpac_meta.table_info.$tbl.cols.$col.editable %]
                           [% ',' IF count > 1 %]
-                            '[% cpac_meta.table_info.$table.path %].[% col %]': rec.data['[% cpac_meta.main.pk %]']
+                            '[% cpac_meta.table_info.$tbl.path %].[% col %]': rec.data['[% cpac_meta.main.pk %]']
                           [% SET count = count + 1 %]
                         [% END %]
                       [% END %]
