@@ -67,7 +67,7 @@
                     ,pageSize: 5
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
-                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac.site,db,info.path] ) %]'
+                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,db,info.path] ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]

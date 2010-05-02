@@ -41,7 +41,7 @@
             ,listClass: 'x-combo-list-small'
             ,lastQuery: ''
             ,store: new Ext.data.JsonStore ({
-                url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac.site,db,table] ) %]'
+                url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,db,table] ) %]'
                 ,root: 'rows'
                 ,totalProperty: 'total'
                 ,fields: [ 'dbid', 'stringified' ]

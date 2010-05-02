@@ -21,7 +21,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     $c->stash->{current_view} = 'AutoCRUD::TT';
     $c->stash->{version} = 'CPAC v'
         . $Catalyst::Plugin::AutoCRUD::VERSION;
-    $c->stash->{cpac}->{site} = 'default';
+    $c->stash->{cpac_site} = 'default';
     $c->stash->{template} = 'list.tt';
 }
 
@@ -55,7 +55,7 @@ sub table : Chained('db') PathPart('') Args(1) {
 
 sub site : Chained('base') PathPart CaptureArgs(1) {
     my ($self, $c, $site) = @_;
-    $c->stash->{cpac}->{site} = $site;
+    $c->stash->{cpac_site} = $site;
 }
 
 sub no_schema : Chained('site') PathPart('') Args(0) {
@@ -96,7 +96,7 @@ sub do_meta : Private {
     $c->stash->{table} = $table;
 
     my $db = $c->stash->{db};
-    my $site = $c->stash->{cpac}->{site};
+    my $site = $c->stash->{cpac_site};
     $c->forward('build_site_config');
 
     # ACLs on the schema and source from site config
@@ -140,13 +140,13 @@ sub err_message : Private {
 # build site config for filtering the frontend
 sub build_site_config : Private {
     my ($self, $c) = @_;
-    my $site = $self->_site_conf_cache->{$c->stash->{cpac}->{site}} ||= {};
+    my $site = $self->_site_conf_cache->{$c->stash->{cpac_site}} ||= {};
 
     # if we have it cached
     if ($site->{__built}) {
         $c->stash->{site_conf} = $site;
         $c->log->debug(sprintf "autocrud: retreived cached config for site [%s]",
-            $c->stash->{cpac}->{site}) if $c->debug;
+            $c->stash->{cpac_site}) if $c->debug;
         return;
     }
 
@@ -164,7 +164,7 @@ sub build_site_config : Private {
 
     # load whatever the user set in their site config
     $site = Catalyst::Utils::merge_hashes(
-        ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac}->{site}} || {}),
+        ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}} || {}),
         $site);
 
     my %defaults = (
@@ -228,10 +228,10 @@ sub build_site_config : Private {
 
     $site->{__built} = 1;
     $c->stash->{site_conf} = $site;
-    $self->_site_conf_cache->{$c->stash->{cpac}->{site}} = $site;
+    $self->_site_conf_cache->{$c->stash->{cpac_site}} = $site;
 
     $c->log->debug(sprintf "autocrud: cached the config for site [%s]",
-            $c->stash->{cpac}->{site}) if $c->debug;
+            $c->stash->{cpac_site}) if $c->debug;
 }
 
 sub helloworld : Chained('base') Args(0) {

@@ -79,7 +79,7 @@ sub _likeop_for {
 # we're going to check that calls to this RPC operation are allowed
 sub acl : Private {
     my ($self, $c) = @_;
-    my $site = $c->stash->{cpac}->{site};
+    my $site = $c->stash->{cpac_site};
     my $db = $c->stash->{db};
     my $table = $c->stash->{table};
 
@@ -136,7 +136,7 @@ sub create : Chained('base') Args(0) {
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $site = $c->stash->{cpac}->{site};
+    my $site = $c->stash->{cpac_site};
     my $db = $c->stash->{db};
     my $table = $c->stash->{table};
 
