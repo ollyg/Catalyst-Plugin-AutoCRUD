@@ -79,9 +79,9 @@ sub source : Chained('schema') PathPart Args(1) {
     $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
-    $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
-    $c->forward('AutoCRUD::'. ucfirst $c->stash->{frontend})
-        if $c->controller('AutoCRUD::'. ucfirst $c->stash->{frontend});
+    $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
+    $c->forward('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend})
+        if $c->controller('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend});
 }
 
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
@@ -133,7 +133,7 @@ sub err_message : Private {
 
     $c->forward('build_site_config') if !exists $c->stash->{site_conf};
     $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{cpac_meta}->{db2path};;
-    $c->stash->{frontend} ||= $c->stash->{site_conf}->{frontend};
+    $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }
 
@@ -241,7 +241,7 @@ sub helloworld : Chained('base') Args(0) {
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{frontend} || 'full-fat';
+    my $frontend = $c->stash->{cpac_frontend} || 'full-fat';
 
     my $tt_path = $c->config->{'Plugin::AutoCRUD'}->{tt_path};
     $tt_path = (defined $tt_path ? (ref $tt_path eq '' ? [$tt_path] : $tt_path ) : [] );
