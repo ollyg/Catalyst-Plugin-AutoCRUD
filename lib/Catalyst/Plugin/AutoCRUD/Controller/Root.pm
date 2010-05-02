@@ -19,7 +19,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     my ($self, $c) = @_;
 
     $c->stash->{current_view} = 'AutoCRUD::TT';
-    $c->stash->{version} = 'CPAC v'
+    $c->stash->{cpac_version} = 'CPAC v'
         . $Catalyst::Plugin::AutoCRUD::VERSION;
     $c->stash->{cpac_site} = 'default';
     $c->stash->{template} = 'list.tt';
