@@ -52,15 +52,15 @@ $xtype_for{$_} = 'xdatetime' for (
 sub process {
     my ($self, $c) = @_;
 
-    if (exists $c->stash->{db} and defined $c->stash->{db}
+    if (exists $c->stash->{cpac_db} and defined $c->stash->{cpac_db}
         and exists $c->stash->{table} and defined $c->stash->{table}
-        and exists $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}}) {
+        and exists $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{table}}) {
 
         # we have a cache!
-        $c->stash->{dbtitle} = _2title( $c->stash->{db} );
-        $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}};
+        $c->stash->{dbtitle} = _2title( $c->stash->{cpac_db} );
+        $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{table}};
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
-            $c->stash->{db}, $c->stash->{table}) if $c->debug;
+            $c->stash->{cpac_db}, $c->stash->{table}) if $c->debug;
 
         weaken $c->stash->{cpac_meta};
         return $self;
@@ -70,28 +70,28 @@ sub process {
     my $cpac = $c->stash->{cpac_meta} = $self->build_db_info($c);
 
     # only one db anyway? pretend the user selected that
-    $c->stash->{db} = [keys %{$cpac->{dbpath2model}}]->[0]
+    $c->stash->{cpac_db} = [keys %{$cpac->{dbpath2model}}]->[0]
         if scalar keys %{$cpac->{dbpath2model}} == 1;
 
     # no db specified, or unknown db
-    return if !defined $c->stash->{db}
-            or !exists $cpac->{dbpath2model}->{ $c->stash->{db} };
+    return if !defined $c->stash->{cpac_db}
+            or !exists $cpac->{dbpath2model}->{ $c->stash->{cpac_db} };
 
-    $c->stash->{dbtitle} = _2title( $c->stash->{db} );
-    $self->build_table_info_for_db($c, $cpac, $c->stash->{db});
+    $c->stash->{dbtitle} = _2title( $c->stash->{cpac_db} );
+    $self->build_table_info_for_db($c, $cpac, $c->stash->{cpac_db});
 
     # no table specified, or unknown table
     return if !defined $c->stash->{table}
-        or !exists $cpac->{path2model}->{ $c->stash->{db} }->{ $c->stash->{table} };
+        or !exists $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{table} };
 
-    $cpac->{model} = $cpac->{path2model}->{ $c->stash->{db} }->{ $c->stash->{table} };
+    $cpac->{model} = $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{table} };
 
     # build and store in cache
     _build_table_info($c, $cpac, $cpac->{model}, 1);
 
-    $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}} = $cpac;
+    $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{table}} = $cpac;
     $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
-        $c->stash->{db}, $c->stash->{table}) if $c->debug;
+        $c->stash->{cpac_db}, $c->stash->{table}) if $c->debug;
 
     weaken $c->stash->{cpac_meta};
     return $self;
@@ -309,7 +309,7 @@ sub _build_table_info {
     foreach my $col (keys %fks, keys %sfks) {
 
         $ti->{cols}->{$col}->{fk_model}
-            = _moniker2model( $c, $cpac, $c->stash->{db}, $source->related_source($col)->source_name );
+            = _moniker2model( $c, $cpac, $c->stash->{cpac_db}, $source->related_source($col)->source_name );
         next if !defined $ti->{cols}->{$col}->{fk_model};
 
         # override the heading for this col to be the foreign table name

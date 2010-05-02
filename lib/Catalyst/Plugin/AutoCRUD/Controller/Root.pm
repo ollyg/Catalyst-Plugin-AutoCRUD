@@ -65,7 +65,7 @@ sub no_schema : Chained('site') PathPart('') Args(0) {
 
 sub schema : Chained('site') PathPart CaptureArgs(1) {
     my ($self, $c, $db) = @_;
-    $c->stash->{db} = $db;
+    $c->stash->{cpac_db} = $db;
 }
 
 sub no_source : Chained('schema') PathPart('') Args(0) {
@@ -95,7 +95,7 @@ sub do_meta : Private {
     my ($self, $c, $table) = @_;
     $c->stash->{table} = $table;
 
-    my $db = $c->stash->{db};
+    my $db = $c->stash->{cpac_db};
     my $site = $c->stash->{cpac_site};
     $c->forward('build_site_config');
 

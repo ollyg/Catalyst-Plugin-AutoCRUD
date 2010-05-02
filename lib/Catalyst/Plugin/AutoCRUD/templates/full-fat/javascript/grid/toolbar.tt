@@ -32,7 +32,7 @@
                     pagebar.doLoad(0); // reset to first page
                 }
             }
-          [% IF site_conf.$db.$table.create_allowed == 'yes' %]
+          [% IF site_conf.$cpac_db.$table.create_allowed == 'yes' %]
             ,'->' ,{
                 text: 'Add New [% cpac_meta.main.title %]'
                 ,cls: 'x-btn-text-icon'

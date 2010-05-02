@@ -1,5 +1,5 @@
 [% SET table_info = cpac_meta.main %]
-[% SET table_config = site_conf.$db.$table %]
+[% SET table_config = site_conf.$cpac_db.$table %]
 
 <table class="cpac_table">
     <tr>

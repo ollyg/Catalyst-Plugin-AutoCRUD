@@ -80,7 +80,7 @@ sub _likeop_for {
 sub acl : Private {
     my ($self, $c) = @_;
     my $site = $c->stash->{cpac_site};
-    my $db = $c->stash->{db};
+    my $db = $c->stash->{cpac_db};
     my $table = $c->stash->{table};
 
     my $acl_for = {
@@ -137,7 +137,7 @@ sub create : Chained('base') Args(0) {
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
     my $site = $c->stash->{cpac_site};
-    my $db = $c->stash->{db};
+    my $db = $c->stash->{cpac_db};
     my $table = $c->stash->{table};
 
     my $cpac = $c->stash->{cpac_meta};

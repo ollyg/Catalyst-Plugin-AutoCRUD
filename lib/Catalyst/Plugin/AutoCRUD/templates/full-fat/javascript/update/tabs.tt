@@ -9,7 +9,7 @@
       [% FOREACH tname IN cpac_meta.tab_order.nsort %]
         [% SET info = cpac_meta.table_info.$tname %]
         [% SET tbl = info.path %]
-        [% NEXT IF NOT loop.first AND site_conf.$db.$tbl.create_allowed == 'no' %]
+        [% NEXT IF NOT loop.first AND site_conf.$cpac_db.$tbl.create_allowed == 'no' %]
         [% ',' IF cpac_meta.tab_order.keys.size > 1 AND NOT loop.first %]{
             [% IF cpac_meta.tab_order.item(tname) == 1 %]
               title: '[% cpac_meta.main.title %]'
@@ -35,8 +35,8 @@
                     ,id: '[% info.path %].[% field %]'
                   [% END %]
 
-                  [% IF site_conf.$db.$tbl.headings.exists(field) AND site_conf.$db.$tbl.headings.defined(field) %]
-                    ,fieldLabel: '[% site_conf.$db.$tbl.headings.$field %]'
+                  [% IF site_conf.$cpac_db.$tbl.headings.exists(field) AND site_conf.$cpac_db.$tbl.headings.defined(field) %]
+                    ,fieldLabel: '[% site_conf.$cpac_db.$tbl.headings.$field %]'
                   [% ELSE %]
                     ,fieldLabel: '[% info.cols.$field.heading %]'
                   [% END %]
@@ -67,7 +67,7 @@
                     ,pageSize: 5
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
-                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,db,info.path] ) %]'
+                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,cpac_db,info.path] ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]
