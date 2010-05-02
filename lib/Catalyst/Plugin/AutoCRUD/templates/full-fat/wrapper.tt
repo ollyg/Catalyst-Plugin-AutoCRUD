@@ -48,10 +48,10 @@
             <div class="cpac_left">
                 [% IF cpac_site == 'default' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> &gt;
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]">[% dbtitle %]</a> &gt;
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]">[% cpac_dbtitle %]</a> &gt;
                 [% ELSE %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac_site] ) %]">Home</a> &gt;
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]">[% dbtitle %]</a> &gt;
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]">[% cpac_dbtitle %]</a> &gt;
                 [% END %]
                 [% IF cpac_meta.table2path.keys.size == 1 %]
                     [% cpac_meta.main.title %]

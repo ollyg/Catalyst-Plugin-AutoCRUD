@@ -57,7 +57,7 @@ sub process {
         and exists $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}}) {
 
         # we have a cache!
-        $c->stash->{dbtitle} = _2title( $c->stash->{cpac_db} );
+        $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
         $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}};
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
             $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
@@ -77,7 +77,7 @@ sub process {
     return if !defined $c->stash->{cpac_db}
             or !exists $cpac->{dbpath2model}->{ $c->stash->{cpac_db} };
 
-    $c->stash->{dbtitle} = _2title( $c->stash->{cpac_db} );
+    $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
     $self->build_table_info_for_db($c, $cpac, $c->stash->{cpac_db});
 
     # no table specified, or unknown table

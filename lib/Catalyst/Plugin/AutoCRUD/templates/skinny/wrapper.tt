@@ -15,30 +15,30 @@
     <span id="cpac_banner_icons">
         [% IF cpac_site == 'default' %]
             <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]"
-            title ="[% dbtitle %] Table Picker">
+            title ="[% cpac_dbtitle %] Table Picker">
                 <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
-                    alt="[% dbtitle %] Table Picker" />
+                    alt="[% cpac_dbtitle %] Table Picker" />
             </a>
 
             [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db], cpac_meta.main.path ) %]"
                 title ="Full-feature JS View">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
-                        alt="[% dbtitle %] Table Picker" />
+                        alt="[% cpac_dbtitle %] Table Picker" />
                 </a>
             [% END %]
         [% ELSE %]
             <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]"
-            title ="[% dbtitle %] Table Picker">
+            title ="[% cpac_dbtitle %] Table Picker">
                 <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
-                    alt="[% dbtitle %] Table Picker" />
+                    alt="[% cpac_dbtitle %] Table Picker" />
             </a>
 
             [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db], cpac_meta.main.path ) %]"
-                title ="[% dbtitle %] Table Picker">
+                title ="[% cpac_dbtitle %] Table Picker">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
-                        alt="[% dbtitle %] Table Picker" />
+                        alt="[% cpac_dbtitle %] Table Picker" />
                 </a>
             [% END %]
         [% END %]

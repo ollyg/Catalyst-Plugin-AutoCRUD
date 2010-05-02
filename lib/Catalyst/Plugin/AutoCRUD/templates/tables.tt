@@ -16,7 +16,7 @@
             [% RETURN %]
         [% END %]
 
-        <p>The schema for database &quot;[% dbtitle %]&quot; has been loaded, so please select a table by clicking on its label, below.</p>
+        <p>The schema for database &quot;[% cpac_dbtitle %]&quot; has been loaded, so please select a table by clicking on its label, below.</p>
         <br />
 
         <div id="cpac_navcontainer">
