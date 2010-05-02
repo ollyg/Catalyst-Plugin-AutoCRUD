@@ -101,8 +101,15 @@ sub setup_components {
 # we subvert the pretty print error screen for dumpmeta
 sub dump_these {
     my $c = shift;
+    my $params = {
+            map {$_ => $c->stash->{$_}}
+                grep {ref $c->stash->{$_} eq ''}
+                grep {$_ =~ m/^cpac_/}
+                     keys %{$c->stash},
+    };
     if ($c->stash->{dumpmeta}) {
         return (
+            [ 'CPAC Parameters' => $params ],
             [ 'Site Configuration' => $c->stash->{site_conf} ],
             [ 'Storage Metadata'   => $c->stash->{cpac_meta} ],
             [ 'Response' => $c->response ], # only to pacify log_request

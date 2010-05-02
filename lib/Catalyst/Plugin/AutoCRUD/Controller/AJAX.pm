@@ -51,27 +51,27 @@ sub end : ActionClass('RenderView') {}
 
 sub create : Chained('base') Args(0) {
     my ($self, $c) = @_; 
-    $c->forward(qw/Model::AutoCRUD::Backend create/);
+    $c->forward(qw/Model::AutoCRUD::Backend dispatch_to/, ['create']);
 }
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward(qw/Model::AutoCRUD::Backend list/);
+    $c->forward(qw/Model::AutoCRUD::Backend dispatch_to/, ['list']);
 }
 
 sub update : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward(qw/Model::AutoCRUD::Backend update/);
+    $c->forward(qw/Model::AutoCRUD::Backend dispatch_to/, ['update']);
 }
 
 sub delete : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward(qw/Model::AutoCRUD::Backend delete/);
+    $c->forward(qw/Model::AutoCRUD::Backend dispatch_to/, ['delete']);
 }
 
 sub list_stringified : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward(qw/Model::AutoCRUD::Backend list_stringified/);
+    $c->forward(qw/Model::AutoCRUD::Backend dispatch_to/, ['list_stringified']);
 }
 
 # send our generated config back to the user in HTML

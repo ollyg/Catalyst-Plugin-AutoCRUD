@@ -5,34 +5,15 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Model';
 
-sub create {
-    my ($self, $c) = @_;
-    my $backend = 'Model::AutoCRUD::Backend::'. $c->stash->{cpac_backend};
-    $c->forward($backend, 'create');
-}
+sub dispatch_to {
+    my ($self, $c, $target) = @_;
+    die 'no target specified for dispatch_to' if !defined $target;
 
-sub list {
-    my ($self, $c) = @_;
-    my $backend = 'Model::AutoCRUD::Backend::'. $c->stash->{cpac_backend};
-    $c->forward($backend, 'list');
-}
+    my $backend = $c->stash->{cpac_backend}
+        or die 'missing backend specification in dispatch_to - possible bug?';
 
-sub update {
-    my ($self, $c) = @_;
-    my $backend = 'Model::AutoCRUD::Backend::'. $c->stash->{cpac_backend};
-    $c->forward($backend, 'update');
-}
-
-sub delete {
-    my ($self, $c) = @_;
-    my $backend = 'Model::AutoCRUD::Backend::'. $c->stash->{cpac_backend};
-    $c->forward($backend, 'delete');
-}
-
-sub list_stringified {
-    my ($self, $c) = @_;
-    my $backend = 'Model::AutoCRUD::Backend::'. $c->stash->{cpac_backend};
-    $c->forward($backend, 'list_stringified');
+    my $model = ( ($backend =~ m/^\+/) ? $backend : 'Model::AutoCRUD::Backend::'. $backend );
+    $c->forward($model, $target);
 }
 
 1;

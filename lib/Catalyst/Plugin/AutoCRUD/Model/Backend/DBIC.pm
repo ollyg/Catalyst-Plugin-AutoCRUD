@@ -79,7 +79,7 @@ sub _likeop_for {
 # allows us to pseudo-acl the create call separately from update
 sub create {
     my ($self, $c) = @_;
-    $c->forward('update');
+    return $self->update($c);
 }
 
 sub list {
