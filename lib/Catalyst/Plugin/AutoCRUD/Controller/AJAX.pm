@@ -121,10 +121,13 @@ sub end : ActionClass('RenderView') {}
 
 sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->stash->{json_data} = {
-        cpac => $c->stash->{cpac_meta},
-        site_conf => $c->stash->{site_conf},
-    };
+    my $msg = $c->stash->{cpac_version} . ' Metadata Debug Output';
+
+    $c->debug(1);
+    $c->error([ $msg ]);
+    $c->stash->{dumpmeta} = 1;
+    $c->response->body($msg);
+
     return $self;
 }
 

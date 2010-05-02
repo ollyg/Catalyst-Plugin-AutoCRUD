@@ -96,6 +96,19 @@ sub setup_components {
     return 1;
 }
 
+# we subvert the pretty print error screen for dumpmeta
+sub dump_these {
+    my $c = shift;
+    if ($c->stash->{dumpmeta}) {
+        return (
+            [ 'Site Configuration' => $c->stash->{site_conf} ],
+            [ 'Storage Metadata'   => $c->stash->{cpac_meta} ],
+            [ 'Response' => $c->response ], # only to pacify log_request
+        );
+    }
+    else { $c->next::method(@_) }
+}
+
 # monkey patch Catalyst::View::JSON until it is fixed, or users will get scared
 # by the warning currently emitted by Catalyst
 
