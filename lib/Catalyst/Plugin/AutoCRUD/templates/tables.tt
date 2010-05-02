@@ -1,17 +1,17 @@
 <h3>Welcome to AutoCRUD, an automagic web interface for databases</h3>
 <br />
 
-[% IF NOT cpac.exists('db2path') %]
+[% IF NOT cpac_meta.exists('db2path') %]
     <p>No database schemas were found in this appliaction. Please contact the site administrator.</p>
     [% RETURN %]
 
 [% ELSE %]
-    [% IF cpac.dbpath2model.exists( db ) %]
+    [% IF cpac_meta.dbpath2model.exists( db ) %]
         [% IF site_conf.$db.hidden == 'yes' %]
-            [% IF site == 'default' %]
+            [% IF cpac.site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> to select another database.</p>
             [% ELSE %]
-                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [site] ) %]">Home</a> to select another database.</p>
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac.site] ) %]">Home</a> to select another database.</p>
             [% END %]
             [% RETURN %]
         [% END %]
@@ -21,26 +21,26 @@
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH t IN cpac.table2path.keys.sort %]
-            [% SET tpath = cpac.table2path.item(t) %]
+        [% FOREACH t IN cpac_meta.table2path.keys.sort %]
+            [% SET tpath = cpac_meta.table2path.item(t) %]
             [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
             <li>
-            [% IF site == 'default' %]
+            [% IF cpac.site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], tpath ) %]">[% t %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site, db], tpath ) %]">[% t %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.site, db], tpath ) %]">[% t %]</a>
             [% END %]
             </li>
         [% END %]
         </ul>
         </div>
 
-        [% IF cpac.db2path.keys.size > 1 %]
+        [% IF cpac_meta.db2path.keys.size > 1 %]
             <br />
-            [% IF site == 'default' %]
+            [% IF cpac.site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> to select another database.</p>
             [% ELSE %]
-                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [site] ) %]">Home</a> to select another database.</p>
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac.site] ) %]">Home</a> to select another database.</p>
             [% END %]
         [% END %]
 
@@ -50,14 +50,14 @@
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH d IN cpac.db2path.keys.sort %]
-            [% SET dpath = cpac.db2path.item(d) %]
+        [% FOREACH d IN cpac_meta.db2path.keys.sort %]
+            [% SET dpath = cpac_meta.db2path.item(d) %]
             [% NEXT IF site_conf.$dpath.hidden == 'yes' %]
             <li>
-            [% IF site == 'default' %]
+            [% IF cpac.site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [dpath] ) %]">[% d %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site, dpath] ) %]">[% d %]</a>
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac.site, dpath] ) %]">[% d %]</a>
             [% END %]
             </li>
         [% END %]

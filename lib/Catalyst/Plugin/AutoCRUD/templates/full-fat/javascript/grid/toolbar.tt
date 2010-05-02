@@ -34,7 +34,7 @@
             }
           [% IF site_conf.$db.$table.create_allowed == 'yes' %]
             ,'->' ,{
-                text: 'Add New [% cpac.main.title %]'
+                text: 'Add New [% cpac_meta.main.title %]'
                 ,cls: 'x-btn-text-icon'
                 ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "add.png" ) %]'
                 ,handler: function(){

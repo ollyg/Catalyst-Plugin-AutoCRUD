@@ -52,15 +52,15 @@
                         return false;
                     }
 
-                    var data = rec.get('[% cpac.main.pk %]');
+                    var data = rec.get('[% cpac_meta.main.pk %]');
                     Ext.MessageBox.confirm (
-                        'Confirm Delete [% cpac.main.title %]'
-                        ,'Are you sure you want to delete [% cpac.main.title %] [% cpac.main.pk %](' + data + ')?'
+                        'Confirm Delete [% cpac_meta.main.title %]'
+                        ,'Are you sure you want to delete [% cpac_meta.main.title %] [% cpac_meta.main.pk %](' + data + ')?'
                         ,function (btn) {
                             if (btn == 'yes') {
                                 grid.loadMask.el.mask();
                                 Ext.Ajax.request({
-                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [site,db,cpac.main.path] ) %]'
+                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [cpac.site,db,cpac_meta.main.path] ) %]'
                                     ,params: {
                                         key: data
                                     }
@@ -118,13 +118,13 @@
                     // fill in reverse relations
                     mainform.setValues({
                       [% SET count = 1 %]
-                      [% FOREACH table IN cpac.tab_order.keys %]
-                      [% NEXT IF cpac.tab_order.item(table) == 1 %]
-                        [% FOREACH col IN cpac.table_info.$table.cols.keys %]
-                        [% NEXT UNLESS cpac.table_info.$table.cols.$col.is_fk
-                                AND NOT cpac.table_info.$table.cols.$col.editable %]
+                      [% FOREACH table IN cpac_meta.tab_order.keys %]
+                      [% NEXT IF cpac_meta.tab_order.item(table) == 1 %]
+                        [% FOREACH col IN cpac_meta.table_info.$table.cols.keys %]
+                        [% NEXT UNLESS cpac_meta.table_info.$table.cols.$col.is_fk
+                                AND NOT cpac_meta.table_info.$table.cols.$col.editable %]
                           [% ',' IF count > 1 %]
-                            '[% cpac.table_info.$table.path %].[% col %]': rec.data['[% cpac.main.pk %]']
+                            '[% cpac_meta.table_info.$table.path %].[% col %]': rec.data['[% cpac_meta.main.pk %]']
                           [% SET count = count + 1 %]
                         [% END %]
                       [% END %]

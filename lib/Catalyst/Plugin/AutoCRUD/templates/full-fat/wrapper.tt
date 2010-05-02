@@ -46,35 +46,35 @@
         [% IF title %]
         <div class="cpac_top">
             <div class="cpac_left">
-                [% IF site == 'default' %]
+                [% IF cpac.site == 'default' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> &gt;
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [db] ) %]">[% dbtitle %]</a> &gt;
                 [% ELSE %]
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [site] ) %]">Home</a> &gt;
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [site,db] ) %]">[% dbtitle %]</a> &gt;
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac.site] ) %]">Home</a> &gt;
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac.site,db] ) %]">[% dbtitle %]</a> &gt;
                 [% END %]
-                [% IF cpac.table2path.keys.size == 1 %]
-                    [% cpac.main.title %]
+                [% IF cpac_meta.table2path.keys.size == 1 %]
+                    [% cpac_meta.main.title %]
                 [% ELSE %]
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
-                      [% FOREACH table IN cpac.table2path.keys.sort %]
-                        [% SET tpath = cpac.table2path.item(table) %]
+                      [% FOREACH table IN cpac_meta.table2path.keys.sort %]
+                        [% SET tpath = cpac_meta.table2path.item(table) %]
                         [% NEXT IF site_conf.$db.$tpath.hidden == 'yes' %]
-                        [% IF site == 'default' %]
+                        [% IF cpac.site == 'default' %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], tpath ) %]"
                         [% ELSE %]
-                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], tpath ) %]"
+                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.site,db], tpath ) %]"
                         [% END %]
-                                [% ' selected="selected"' IF table == cpac.main.title %]>[% table %]</option>
+                                [% ' selected="selected"' IF table == cpac_meta.main.title %]>[% table %]</option>
                       [% END %]
                     </select>
                 [% END %]
             </div>
             <div class="cpac_right">
-              [% IF site == 'default' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], cpac.main.path, 'browse' ) %]"
+              [% IF cpac.site == 'default' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [db], cpac_meta.main.path, 'browse' ) %]"
               [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [site,db], cpac.main.path, 'browse' ) %]"
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.site,db], cpac_meta.main.path, 'browse' ) %]"
               [% END %]
                     title="Skinny (non-JS) Browser">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "application_view_detail.png" ) %]"

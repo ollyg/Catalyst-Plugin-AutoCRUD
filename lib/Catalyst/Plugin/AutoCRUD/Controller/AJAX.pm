@@ -79,7 +79,7 @@ sub _likeop_for {
 # we're going to check that calls to this RPC operation are allowed
 sub acl : Private {
     my ($self, $c) = @_;
-    my $site = $c->stash->{site};
+    my $site = $c->stash->{cpac}->{site};
     my $db = $c->stash->{db};
     my $table = $c->stash->{table};
 
@@ -108,7 +108,7 @@ sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
 
     my $page   = $c->req->params->{'page'}  || 1;
     my $limit  = $c->req->params->{'limit'} || 10;
-    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac}->{main}->{pk};
+    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac_meta}->{main}->{pk};
     (my $dir   = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
 
     @{$c->stash}{qw/ page limit sortby dir /}
@@ -122,7 +122,7 @@ sub end : ActionClass('RenderView') {}
 sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
     $c->stash->{json_data} = {
-        cpac => $c->stash->{cpac},
+        cpac => $c->stash->{cpac_meta},
         site_conf => $c->stash->{site_conf},
     };
     return $self;
@@ -136,11 +136,11 @@ sub create : Chained('base') Args(0) {
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $site = $c->stash->{site};
+    my $site = $c->stash->{cpac}->{site};
     my $db = $c->stash->{db};
     my $table = $c->stash->{table};
 
-    my $cpac = $c->stash->{cpac};
+    my $cpac = $c->stash->{cpac_meta};
     my $info = $cpac->{main};
     my $response = $c->stash->{json_data} = {};
 
@@ -354,7 +354,7 @@ sub list : Chained('base') Args(0) {
 
 sub update : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $cpac = $c->stash->{cpac};
+    my $cpac = $c->stash->{cpac_meta};
     my $response = $c->stash->{json_data} = {};
 
     my $stack = _build_table_data($c, [], $cpac->{model});
@@ -387,7 +387,7 @@ sub update : Chained('base') Args(0) {
 
 sub _build_table_data {
     my ($c, $stack, $model) = @_;
-    my $cpac = $c->stash->{cpac};
+    my $cpac = $c->stash->{cpac_meta};
     my $params = $c->req->params;
 
     my $info = $cpac->{table_info}->{$model};
@@ -490,7 +490,7 @@ sub _build_table_data {
 
 sub _process_row_stack {
     my ($c, $stack) = @_;
-    my $cpac = $c->stash->{cpac};
+    my $cpac = $c->stash->{cpac_meta};
     my %stashed_keys;
 
     while (my ($model, $data) = (pop @$stack, pop @$stack)) {
@@ -523,7 +523,7 @@ sub _process_row_stack {
 
 sub delete : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $cpac = $c->stash->{cpac};
+    my $cpac = $c->stash->{cpac_meta};
     my $response = $c->stash->{json_data} = {};
     my $params = $c->req->params;
 
@@ -542,7 +542,7 @@ sub delete : Chained('base') Args(0) {
 
 sub list_stringified : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $cpac = $c->stash->{cpac};
+    my $cpac = $c->stash->{cpac_meta};
     my $response = $c->stash->{json_data} = {};
 
     my $page  = $c->req->params->{'page'}   || 1;

@@ -58,16 +58,16 @@ sub process {
 
         # we have a cache!
         $c->stash->{dbtitle} = _2title( $c->stash->{db} );
-        $c->stash->{cpac} = $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}};
+        $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}};
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
             $c->stash->{db}, $c->stash->{table}) if $c->debug;
 
-        weaken $c->stash->{cpac};
+        weaken $c->stash->{cpac_meta};
         return $self;
     }
 
     # set up databases list, even if only to display to user
-    my $cpac = $c->stash->{cpac} = $self->build_db_info($c);
+    my $cpac = $c->stash->{cpac_meta} = $self->build_db_info($c);
 
     # only one db anyway? pretend the user selected that
     $c->stash->{db} = [keys %{$cpac->{dbpath2model}}]->[0]
@@ -93,7 +93,7 @@ sub process {
     $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
         $c->stash->{db}, $c->stash->{table}) if $c->debug;
 
-    weaken $c->stash->{cpac};
+    weaken $c->stash->{cpac_meta};
     return $self;
 }
 
