@@ -4,10 +4,10 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>[% title %][% ' - Powered by ' IF title %][% version %]</title>
 
-[% IF NOT cpac.extjs2 %]
+[% IF NOT cpac_config.extjs2 %]
 <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />
 [% ELSE %]
-<link rel="stylesheet" type="text/css" href="[% cpac.extjs2 %]/resources/css/ext-all.css" />
+<link rel="stylesheet" type="text/css" href="[% cpac_config.extjs2 %]/resources/css/ext-all.css" />
 [% END %]
 
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "body.css" ) %]" />
@@ -16,12 +16,12 @@
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "iefix.css" ) %]" />
 [% END %]
 
-[% IF NOT cpac.extjs2 %]
+[% IF NOT cpac_config.extjs2 %]
 <script type="text/javascript" src="http://extjs.cachefly.net/ext-2.2/adapter/ext/ext-base.js"></script>
 <script type="text/javascript" src="http://extjs.cachefly.net/ext-2.2/ext-all.js"></script>
 [% ELSE %]
-<script type="text/javascript" src="[% cpac.extjs2 %]/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="[% cpac.extjs2 %]/ext-all.js"></script>
+<script type="text/javascript" src="[% cpac_config.extjs2 %]/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="[% cpac_config.extjs2 %]/ext-all.js"></script>
 [% END %]
 
 <script type="text/javascript" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "xdatetime.js" ) %]"></script>
