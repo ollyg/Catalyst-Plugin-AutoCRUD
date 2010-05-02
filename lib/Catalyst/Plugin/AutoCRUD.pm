@@ -21,6 +21,8 @@ sub setup_components {
         Controller::AJAX
         Controller::Skinny
         Model::Metadata
+        Model::Backend::DBIC
+        Model::Backend
         View::JSON
         View::TT
     );

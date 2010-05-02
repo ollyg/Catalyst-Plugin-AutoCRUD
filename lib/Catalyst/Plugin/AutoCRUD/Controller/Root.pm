@@ -80,7 +80,7 @@ sub source : Chained('schema') PathPart Args(1) {
 
     # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
-    $c->forward('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend})
+    $c->forward('Controller::AutoCRUD::'. ucfirst $c->stash->{cpac_frontend})
         if $c->controller('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend});
 }
 
@@ -98,6 +98,7 @@ sub do_meta : Private {
     my $db = $c->stash->{cpac_db};
     my $site = $c->stash->{cpac_site};
     $c->forward('build_site_config');
+    $c->stash->{cpac_backend} = $c->stash->{site_conf}->{$db}->{backend} || 'DBIC';
 
     # ACLs on the schema and source from site config
     if ($c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
@@ -117,7 +118,7 @@ sub do_meta : Private {
         }
     }
 
-    $c->forward('AutoCRUD::Metadata');
+    $c->forward('Model::AutoCRUD::Metadata');
     $c->detach('err_message') if !defined $c->stash->{cpac_meta}->{model};
 }
 
@@ -132,7 +133,7 @@ sub err_message : Private {
     my ($self, $c) = @_;
 
     $c->forward('build_site_config') if !exists $c->stash->{site_conf};
-    $c->forward('AutoCRUD::Metadata') if !defined $c->stash->{cpac_meta}->{db2path};;
+    $c->forward('Model::AutoCRUD::Metadata') if !defined $c->stash->{cpac_meta}->{db2path};;
     $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }
@@ -152,11 +153,11 @@ sub build_site_config : Private {
 
     # first, prime our structure of schema and source aliases
     # get stash of db path parts
-    my $cpac = $c->forward(qw/AutoCRUD::Metadata build_db_info/);
+    my $cpac = $c->forward(qw/Model::AutoCRUD::Metadata build_db_info/);
     foreach my $db (keys %{$cpac->{dbpath2model}}) {
         $site->{$db} ||= {};
         # get stash of table path parts
-        $c->forward(qw/AutoCRUD::Metadata build_table_info_for_db/, [$cpac, $db]);
+        $c->forward(qw/Model::AutoCRUD::Metadata build_table_info_for_db/, [$cpac, $db]);
         foreach my $table (keys %{$cpac->{path2model}->{$db}}) {
             $site->{$db}->{$table} ||= {};
         }
@@ -172,6 +173,7 @@ sub build_site_config : Private {
         create_allowed => 'yes',
         update_allowed => 'yes',
         delete_allowed => 'yes',
+        dumpmeta_allowed => 'yes',
         hidden => 'no',
     );
 
