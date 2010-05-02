@@ -111,7 +111,7 @@ sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
     my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac_meta}->{main}->{pk};
     (my $dir   = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
 
-    @{$c->stash}{qw/ page limit sortby dir /}
+    @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /}
         = ($page, $limit, $sortby, $dir);
 
     $c->stash->{current_view} = 'AutoCRUD::JSON';
@@ -145,7 +145,7 @@ sub list : Chained('base') Args(0) {
     my $response = $c->stash->{json_data} = {};
 
     my ($page, $limit, $sort, $dir) =
-        @{$c->stash}{qw/ page limit sortby dir /};
+        @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /};
     my $filter = {}; my $search_opts = {};
 
     # we want to prefetch all related data for _sfy
