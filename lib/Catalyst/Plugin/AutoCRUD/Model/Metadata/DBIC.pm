@@ -114,7 +114,7 @@ sub build_db_info {
 
     MODEL:
     foreach my $m ($c->models) {
-        my $model = $c->model($m);
+        my $model = eval { $c->model($m) };
         next unless eval { $model->isa('Catalyst::Model::DBIC::Schema') };
         foreach my $s (keys %sources) {
             if (eval { $model->isa($s) }) {
@@ -389,7 +389,7 @@ sub _moniker2model {
     my $dbmodel = $cpac->{dbpath2model}->{ $db };
 
     foreach my $m ($c->models) {
-        my $model = $c->model($m);
+        my $model = eval { $c->model($m) };
         my $test = eval { $model->result_source->source_name };
         next if !defined $test;
 
