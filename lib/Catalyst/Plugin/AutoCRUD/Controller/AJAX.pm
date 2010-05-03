@@ -16,7 +16,8 @@ sub acl : Private {
         create   => 'create_allowed',
         update   => 'update_allowed',
         'delete' => 'delete_allowed',
-        dumpmeta => 'dumpmeta_allowed',
+        dumpmeta      => 'dumpmeta_allowed',
+        dumpmeta_html => 'dumpmeta_allowed',
     };
     my $action = [split m{/}, $c->action]->[-1];
     my $acl = $acl_for->{ $action } or return;
@@ -74,8 +75,19 @@ sub list_stringified : Chained('base') Args(0) {
     $c->forward(qw/Model::AutoCRUD::Backend dispatch_to/, ['list_stringified']);
 }
 
-# send our generated config back to the user in HTML
+# send our generated config back in JSON for debugging
 sub dumpmeta : Chained('base') Args(0) {
+    my ($self, $c) = @_;
+    $c->stash->{json_data} = {
+        cpac => $c->stash->{cpac_meta},
+        site_conf => $c->stash->{site_conf},
+    };
+
+    return $self;
+}
+
+# send our generated config back to the user in HTML
+sub dumpmeta_html : Chained('base') Args(0) {
     my ($self, $c) = @_;
     my $msg = $c->stash->{cpac_version} . ' Metadata Debug Output';
 
