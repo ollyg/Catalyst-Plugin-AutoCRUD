@@ -129,7 +129,7 @@ sub do_meta : Private {
         }
     }
 
-    $c->forward($c->stash->{cpac_backend_meta});
+    $c->stash->{cpac_meta} = $c->forward($c->stash->{cpac_backend_meta});
     $c->detach('err_message') if !defined $c->stash->{cpac_meta}->{model};
 }
 
@@ -160,8 +160,12 @@ sub err_message : Private {
 
     $c->forward('build_site_config') if !exists $c->stash->{site_conf};
 
+    # forward to each metadata builder to provide db data
     if (!defined $c->stash->{cpac_meta}->{db2path}) {
-        $c->forward($_) for $self->_enumerate_metadata_backends($c);
+        foreach my $backend ($self->_enumerate_metadata_backends($c)) {
+            $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
+                $c->stash->{cpac_meta}, $c->forward($backend));
+        }
     }
 
     # a fugly hack for back-compat - if there is only one schema running,
@@ -172,7 +176,8 @@ sub err_message : Private {
         my $backend = (exists $c->stash->{site_conf}->{$db}->{backend_meta}
             ? $c->stash->{site_conf}->{$db}->{backend_meta}
             : 'Model::AutoCRUD::Metadata::DBIC'); # the default
-        $c->forward($backend);
+        $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
+            $c->stash->{cpac_meta}, $c->forward($backend));
     }
 
     $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};

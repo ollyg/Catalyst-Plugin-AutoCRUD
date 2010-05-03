@@ -5,7 +5,6 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Model';
 use Scalar::Util qw(weaken);
-use Catalyst::Utils;
 use Carp;
 
 __PACKAGE__->mk_classdata(_schema_cache => {});
@@ -60,29 +59,24 @@ sub process {
         # we have a cache!
         $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
 
-        $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-            $c->stash->{cpac_meta},
-            $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}});
-
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
             $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
-        return $self;
+        return $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}};
     }
 
     # set up databases list, even if only to display to user
-    my $cpac = $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-        $c->stash->{cpac_meta}, $self->build_db_info($c));
+    my $cpac = $self->build_db_info($c);
 
     # no db specified, or unknown db
-    return if !defined $c->stash->{cpac_db}
+    return $cpac if !defined $c->stash->{cpac_db}
             or !exists $cpac->{dbpath2model}->{ $c->stash->{cpac_db} };
 
     $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
     $self->build_table_info_for_db($c, $cpac, $c->stash->{cpac_db});
 
     # no table specified, or unknown table
-    return if !defined $c->stash->{cpac_table}
+    return $cpac if !defined $c->stash->{cpac_table}
         or !exists $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
 
     $cpac->{model} = $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
@@ -94,7 +88,7 @@ sub process {
     $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
         $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
-    return $self;
+    return $cpac;
 }
 
 sub build_table_info_for_db {
