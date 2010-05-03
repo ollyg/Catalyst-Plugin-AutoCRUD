@@ -221,7 +221,7 @@ sub build_site_config : Private {
         create_allowed => 'yes',
         update_allowed => 'yes',
         delete_allowed => 'yes',
-        dumpmeta_allowed => 'yes',
+        dumpmeta_allowed => 'no',
         hidden => 'no',
     );
 
