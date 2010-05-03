@@ -164,6 +164,17 @@ sub err_message : Private {
         $c->forward($_) for $self->_enumerate_metadata_backends($c);
     }
 
+    # a fugly hack for back-compat - if there is only one schema running,
+    # then set that and re-dispatch to the metadata builder to set sources list
+    if (scalar keys %{$c->stash->{cpac_meta}->{dbpath2model}} == 1) {
+        my $db = [keys %{$c->stash->{cpac_meta}->{dbpath2model}}]->[0];
+        $c->stash->{cpac_db} = $db;
+        my $backend = (exists $c->stash->{site_conf}->{$db}->{backend_meta}
+            ? $c->stash->{site_conf}->{$db}->{backend_meta}
+            : 'Model::AutoCRUD::Metadata::DBIC'); # the default
+        $c->forward($backend);
+    }
+
     $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }

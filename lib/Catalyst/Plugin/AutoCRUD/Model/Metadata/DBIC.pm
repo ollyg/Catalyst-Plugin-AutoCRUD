@@ -74,10 +74,6 @@ sub process {
     my $cpac = $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
         $c->stash->{cpac_meta}, $self->build_db_info($c));
 
-#    # only one db anyway? pretend the user selected that
-#    $c->stash->{cpac_db} = [keys %{$cpac->{dbpath2model}}]->[0]
-#        if scalar keys %{$cpac->{dbpath2model}} == 1;
-
     # no db specified, or unknown db
     return if !defined $c->stash->{cpac_db}
             or !exists $cpac->{dbpath2model}->{ $c->stash->{cpac_db} };
