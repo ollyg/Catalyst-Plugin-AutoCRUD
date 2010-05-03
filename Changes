@@ -4,6 +4,7 @@ libcatalyst-plugin-autocrud-perl (0.69) UNRELEASED; urgency=low
   * Make stash use much more polite - use cpac_* namespacing
   * Add dumpmeta_html endpoint which dumps metadata to HTML
   * Support for dispatched storage backends via site_conf backend
+  * Add http_charset param to override the (new) default of utf-8
 
  -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sun, 02 May 2010 16:43:20 +0100
 
