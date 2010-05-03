@@ -102,7 +102,7 @@ sub build_table_info_for_db {
         my $source = $c->model($model)->result_source;
         my $p = _rs2path($source);
 
-        $cpac->{table2path}->{ _2title($p) } = $p;
+        $cpac->{table2path}->{$db}->{ _2title($p) } = $p;
         $cpac->{path2model}->{$db}->{ $p } = $model;
         $cpac->{editable}->{$db}->{$p} = not eval { $source->isa('DBIx::Class::ResultSource::View') };
     }

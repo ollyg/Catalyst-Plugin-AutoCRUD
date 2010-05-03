@@ -21,8 +21,8 @@
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH t IN cpac_meta.table2path.keys.sort %]
-            [% SET tpath = cpac_meta.table2path.item(t) %]
+        [% FOREACH t IN cpac_meta.table2path.$cpac_db.keys.sort %]
+            [% SET tpath = cpac_meta.table2path.$cpac_db.item(t) %]
             [% NEXT IF site_conf.$cpac_db.$tpath.hidden == 'yes' %]
             <li>
             [% IF cpac_site == 'default' %]

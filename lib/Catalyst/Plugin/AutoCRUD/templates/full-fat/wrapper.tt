@@ -53,12 +53,12 @@
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac_site] ) %]">Home</a> &gt;
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]">[% cpac_dbtitle %]</a> &gt;
                 [% END %]
-                [% IF cpac_meta.table2path.keys.size == 1 %]
+                [% IF cpac_meta.table2path.$cpac_db.keys.size == 1 %]
                     [% cpac_meta.main.title %]
                 [% ELSE %]
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
-                      [% FOREACH tbl IN cpac_meta.table2path.keys.sort %]
-                        [% SET tpath = cpac_meta.table2path.item(tbl) %]
+                      [% FOREACH tbl IN cpac_meta.table2path.$cpac_db.keys.sort %]
+                        [% SET tpath = cpac_meta.table2path.$cpac_db.item(tbl) %]
                         [% NEXT IF site_conf.$cpac_db.$tpath.hidden == 'yes' %]
                         [% IF cpac_site == 'default' %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], tpath ) %]"
