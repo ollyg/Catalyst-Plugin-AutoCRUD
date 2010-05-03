@@ -8,7 +8,10 @@ use Test::More 'no_plan';
 use JSON;
 
 # application loads
-BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
+BEGIN {
+    $ENV{AUTOCRUD_TESTING} = 1;
+    use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp"
+}
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the copyright table
@@ -84,6 +87,15 @@ my $expected = {
                 'editable'    => 0,
                 'heading'     => 'Id'
             }
+        }
+    },
+    'editable' => {
+        'dbic' => {
+            'sleeve_notes' => 1,
+            'artist'       => 1,
+            'album'        => 1,
+            'track'        => 1,
+            'copyright'    => 1,
         }
     },
     'path2model' => {

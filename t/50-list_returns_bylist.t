@@ -9,6 +9,7 @@ use Test::More 'no_plan';
 
 # application loads
 BEGIN {
+    $ENV{AUTOCRUD_TESTING} = 1;
     $ENV{AUTOCRUD_CONFIG} = 't/lib/list_returns_bylist.conf';
     use_ok "Test::WWW::Mechanize::Catalyst::AJAX" => "TestAppCustomConfig";
 }

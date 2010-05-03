@@ -99,10 +99,12 @@ sub build_table_info_for_db {
     foreach my $m ($try_schema->sources) {
         my $model = _moniker2model($c, $cpac, $db, $m)
             or croak "unable to translate model [$m] into moniker, bailing out";
-        my $p = _rs2path($c->model($model)->result_source);
+        my $source = $c->model($model)->result_source;
+        my $p = _rs2path($source);
 
         $cpac->{table2path}->{ _2title($p) } = $p;
         $cpac->{path2model}->{$db}->{ $p } = $model;
+        $cpac->{editable}->{$db}->{$p} = not eval { $source->isa('DBIx::Class::ResultSource::View') };
     }
 }
 

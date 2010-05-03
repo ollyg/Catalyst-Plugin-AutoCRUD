@@ -7,7 +7,10 @@ use lib qw( t/lib );
 use Test::More 'no_plan';
 
 # application loads
-BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppM2M" }
+BEGIN {
+    $ENV{AUTOCRUD_TESTING} = 1;
+    use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppM2M"
+}
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the album table
@@ -97,6 +100,13 @@ my $expected = {
                     'heading'     => 'Id'
                 }
             }
+        }
+    },
+    'editable' => {
+        'dbic' => {
+            'artist'       => 1,
+            'artist_album' => 1,
+            'album'        => 1,
         }
     },
     'path2model' => {

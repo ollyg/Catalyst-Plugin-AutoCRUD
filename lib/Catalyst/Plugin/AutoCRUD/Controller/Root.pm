@@ -188,6 +188,7 @@ sub err_message : Private {
 sub build_site_config : Private {
     my ($self, $c) = @_;
     my $site = $self->_site_conf_cache->{$c->stash->{cpac_site}} ||= {};
+    my $cpac = {};
 
     # if we have it cached
     if ($site->{__built}) {
@@ -200,15 +201,17 @@ sub build_site_config : Private {
     # first, prime our structure of schema and source aliases
     foreach my $backend ($self->_enumerate_metadata_backends($c)) {
         # get stash of db path parts
-        my $cpac = $c->forward($backend, 'build_db_info');
-        foreach my $db (keys %{$cpac->{dbpath2model}}) {
+        my $meta = $c->forward($backend, 'build_db_info');
+        foreach my $db (keys %{$meta->{dbpath2model}}) {
             $site->{$db} ||= {};
             # get stash of table path parts
-            $c->forward($backend, 'build_table_info_for_db', [$cpac, $db]);
-            foreach my $table (keys %{$cpac->{path2model}->{$db}}) {
+            $c->forward($backend, 'build_table_info_for_db', [$meta, $db]);
+            foreach my $table (keys %{$meta->{path2model}->{$db}}) {
                 $site->{$db}->{$table} ||= {};
             }
         }
+        # store this for setting override on *_allowed later
+        $cpac = Catalyst::Utils::merge_hashes( $cpac, $meta );
     }
 
     # load whatever the user set in their site config
@@ -224,6 +227,7 @@ sub build_site_config : Private {
         dumpmeta_allowed => 'no',
         hidden => 'no',
     );
+    $defaults{dumpmeta_allowed} = 'yes' if $ENV{AUTOCRUD_TESTING};
 
     # merge defaults into user prefs
     $site = Catalyst::Utils::merge_hashes (\%defaults, $site);
@@ -240,6 +244,13 @@ sub build_site_config : Private {
             $site->{$sc}->{$so} = Catalyst::Utils::merge_hashes ({
                     map {($_ => $site->{$sc}->{$_})} keys %defaults
                 }, $site->{$sc}->{$so});
+
+            # override *_allowed if the source is read only
+            if (not $cpac->{editable}->{$sc}->{$so}) {
+                $site->{$sc}->{$so}->{create_allowed} = 'no';
+                $site->{$sc}->{$so}->{update_allowed} = 'no';
+                $site->{$sc}->{$so}->{delete_allowed} = 'no';
+            }
 
             # back-compat work for list_returns
             if (exists $site->{$sc}->{$so}->{list_returns} and

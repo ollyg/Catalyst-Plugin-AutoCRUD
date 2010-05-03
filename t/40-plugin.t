@@ -7,7 +7,10 @@ use lib qw( t/lib );
 use Test::More 'no_plan';
 
 # application loads
-BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
+BEGIN {
+    $ENV{AUTOCRUD_TESTING} = 1;
+    use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp"
+}
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # these are tests for plugging AutoCRUD into applications with
