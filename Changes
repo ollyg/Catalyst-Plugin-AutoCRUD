@@ -7,6 +7,7 @@ libcatalyst-plugin-autocrud-perl (0.69) UNRELEASED; urgency=low
   * Add http_charset param to override the (new) default of utf-8
   * Filter output for HTML entities in skinny frontnend
   * DBIC ResultSource::View results in a CUD operations being disabled
+  * [temporary] fix for rt.cpan #56250 Views have no primary key(s)
 
  -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sun, 02 May 2010 16:43:20 +0100
 

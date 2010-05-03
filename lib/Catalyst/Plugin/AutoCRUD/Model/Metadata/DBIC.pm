@@ -247,7 +247,7 @@ sub _build_table_info {
         }
     }
 
-    $ti->{pk} = ($source->primary_columns)[0];
+    $ti->{pk} = ($source->primary_columns)[0] || $cols[0];
     $ti->{col_order} = [
         $ti->{pk},                                           # primary key
         (grep {!exists $fks{$_} and $_ ne $ti->{pk}} @cols), # ordinary cols
