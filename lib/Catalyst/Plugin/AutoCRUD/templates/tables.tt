@@ -2,7 +2,7 @@
 <br />
 
 [% IF NOT cpac_meta.exists('db2path') %]
-    <p>No database schemas were found in this appliaction. Please contact the site administrator.</p>
+    <p>No database schemas were found in this application. Please contact the site administrator.</p>
     [% RETURN %]
 
 [% ELSE %]

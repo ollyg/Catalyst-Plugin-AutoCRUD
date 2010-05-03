@@ -20,7 +20,7 @@ sub setup_components {
         Controller::Static
         Controller::AJAX
         Controller::Skinny
-        Model::Metadata
+        Model::Metadata::DBIC
         Model::Backend::DBIC
         Model::Backend
         View::JSON
@@ -194,7 +194,7 @@ Retrieve, Update, Delete and Search operations.
 
 The interface is not written to static files on your system, and uses AJAX to
 act upon the database without reloading your web page (much like other
-Web 2.0 appliactions, for example Google Mail).
+Web 2.0 applications, for example Google Mail).
 
 Almost all the information required by the plugin is retrieved from the
 L<DBIx::Class> ORM frontend to your database, which it is expected that you

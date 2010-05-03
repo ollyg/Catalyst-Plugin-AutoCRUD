@@ -23,6 +23,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
         . $Catalyst::Plugin::AutoCRUD::VERSION;
     $c->stash->{cpac_site} = 'default';
     $c->stash->{template} = 'list.tt';
+    $c->stash->{cpac_meta} = {};
 }
 
 # =====================================================================
@@ -73,6 +74,7 @@ sub no_source : Chained('schema') PathPart('') Args(0) {
     $c->detach('err_message');
 }
 
+# we know both the schema and the source here
 sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
@@ -84,6 +86,7 @@ sub source : Chained('schema') PathPart Args(1) {
         if $c->controller('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend});
 }
 
+# for AJAX calls
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
@@ -91,14 +94,22 @@ sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
 
 # =====================================================================
 
+# we know both the schema and the source here
 sub do_meta : Private {
     my ($self, $c, $table) = @_;
     $c->stash->{cpac_table} = $table;
 
     my $db = $c->stash->{cpac_db};
     my $site = $c->stash->{cpac_site};
+
+    $c->stash->{cpac_backend_store} =
+        $c->stash->{site_conf}->{$db}->{backend_store} ||
+        ('Model::AutoCRUD::Backend::'. ($c->stash->{site_conf}->{$db}->{backend} || 'DBIC'));
+    $c->stash->{cpac_backend_meta} =
+        $c->stash->{site_conf}->{$db}->{backend_meta} ||
+        ('Model::AutoCRUD::Metadata::'. ($c->stash->{site_conf}->{$db}->{backend} || 'DBIC'));
+
     $c->forward('build_site_config');
-    $c->stash->{cpac_backend} = $c->stash->{site_conf}->{$db}->{backend} || 'DBIC';
 
     # ACLs on the schema and source from site config
     if ($c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
@@ -118,7 +129,7 @@ sub do_meta : Private {
         }
     }
 
-    $c->forward('Model::AutoCRUD::Metadata');
+    $c->forward($c->stash->{cpac_backend_meta});
     $c->detach('err_message') if !defined $c->stash->{cpac_meta}->{model};
 }
 
@@ -129,11 +140,30 @@ sub verboden : Private {
     # detaches -> end
 }
 
+# when user has not selected a source, we don't know which backend to use
+sub _enumerate_metadata_backends {
+    my ($self, $c) = @_;
+    my $config = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}};
+    my @backends = qw/Model::AutoCRUD::Metadata::DBIC/;
+
+    foreach my $s (sort keys %$config) {
+        next unless exists $config->{$s} and exists $config->{$s}->{backend_meta};
+        push @backends, $config->{$s}->{backend_meta};
+    }
+    $c->log->debug(join ':', 'Backends are', ' ', @backends) if $c->debug;
+    return @backends;
+}
+
+# we know only the schema or no schema, or there is a problem
 sub err_message : Private {
     my ($self, $c) = @_;
 
     $c->forward('build_site_config') if !exists $c->stash->{site_conf};
-    $c->forward('Model::AutoCRUD::Metadata') if !defined $c->stash->{cpac_meta}->{db2path};;
+
+    if (!defined $c->stash->{cpac_meta}->{db2path}) {
+        $c->forward($_) for $self->_enumerate_metadata_backends($c);
+    }
+
     $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }
@@ -152,14 +182,16 @@ sub build_site_config : Private {
     }
 
     # first, prime our structure of schema and source aliases
-    # get stash of db path parts
-    my $cpac = $c->forward(qw/Model::AutoCRUD::Metadata build_db_info/);
-    foreach my $db (keys %{$cpac->{dbpath2model}}) {
-        $site->{$db} ||= {};
-        # get stash of table path parts
-        $c->forward(qw/Model::AutoCRUD::Metadata build_table_info_for_db/, [$cpac, $db]);
-        foreach my $table (keys %{$cpac->{path2model}->{$db}}) {
-            $site->{$db}->{$table} ||= {};
+    foreach my $backend ($self->_enumerate_metadata_backends($c)) {
+        # get stash of db path parts
+        my $cpac = $c->forward($backend, 'build_db_info');
+        foreach my $db (keys %{$cpac->{dbpath2model}}) {
+            $site->{$db} ||= {};
+            # get stash of table path parts
+            $c->forward($backend, 'build_table_info_for_db', [$cpac, $db]);
+            foreach my $table (keys %{$cpac->{path2model}->{$db}}) {
+                $site->{$db}->{$table} ||= {};
+            }
         }
     }
 

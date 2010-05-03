@@ -1,10 +1,11 @@
-package Catalyst::Plugin::AutoCRUD::Model::Metadata;
+package Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC;
 
 use strict;
 use warnings FATAL => 'all';
 
 use base 'Catalyst::Model';
 use Scalar::Util qw(weaken);
+use Catalyst::Utils;
 use Carp;
 
 __PACKAGE__->mk_classdata(_schema_cache => {});
@@ -58,20 +59,24 @@ sub process {
 
         # we have a cache!
         $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
-        $c->stash->{cpac_meta} = $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}};
+
+        $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
+            $c->stash->{cpac_meta},
+            $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}});
+
         $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
             $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
-        weaken $c->stash->{cpac_meta};
         return $self;
     }
 
     # set up databases list, even if only to display to user
-    my $cpac = $c->stash->{cpac_meta} = $self->build_db_info($c);
+    my $cpac = $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
+        $c->stash->{cpac_meta}, $self->build_db_info($c));
 
-    # only one db anyway? pretend the user selected that
-    $c->stash->{cpac_db} = [keys %{$cpac->{dbpath2model}}]->[0]
-        if scalar keys %{$cpac->{dbpath2model}} == 1;
+#    # only one db anyway? pretend the user selected that
+#    $c->stash->{cpac_db} = [keys %{$cpac->{dbpath2model}}]->[0]
+#        if scalar keys %{$cpac->{dbpath2model}} == 1;
 
     # no db specified, or unknown db
     return if !defined $c->stash->{cpac_db}
@@ -93,7 +98,6 @@ sub process {
     $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
         $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
-    weaken $c->stash->{cpac_meta};
     return $self;
 }
 
