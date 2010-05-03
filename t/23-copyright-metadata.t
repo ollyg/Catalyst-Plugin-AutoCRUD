@@ -55,11 +55,13 @@ my $expected = {
     },
     'model'      => 'AutoCRUD::DBIC::Copyright',
     'table2path' => {
-        'Album'        => 'album',
-        'Copyright'    => 'copyright',
-        'Sleeve Notes' => 'sleeve_notes',
-        'Track'        => 'track',
-        'Artist'       => 'artist'
+        'dbic' => {
+            'Album'        => 'album',
+            'Copyright'    => 'copyright',
+            'Sleeve Notes' => 'sleeve_notes',
+            'Track'        => 'track',
+            'Artist'       => 'artist'
+        }
     },
     'tab_order' => { 'AutoCRUD::DBIC::Copyright' => 1 },
     'main'      => {

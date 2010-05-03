@@ -25,9 +25,11 @@ my $response = JSON::from_json( $mech->content );
 my $expected = {
     'model'      => 'AutoCRUD::DBIC::Album',
     'table2path' => {
-        'Album'        => 'album',
-        'Artist Album' => 'artist_album',
-        'Artist'       => 'artist'
+        'dbic' => {
+            'Album'        => 'album',
+            'Artist Album' => 'artist_album',
+            'Artist'       => 'artist'
+        }
     },
     'tab_order' => { 'AutoCRUD::DBIC::Album' => 1 },
     'main'      => {

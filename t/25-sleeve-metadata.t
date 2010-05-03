@@ -110,11 +110,13 @@ my $expected = {
     },
     'model'      => 'AutoCRUD::DBIC::SleeveNotes',
     'table2path' => {
-        'Album'        => 'album',
-        'Copyright'    => 'copyright',
-        'Sleeve Notes' => 'sleeve_notes',
-        'Track'        => 'track',
-        'Artist'       => 'artist'
+        'dbic' => {
+            'Album'        => 'album',
+            'Copyright'    => 'copyright',
+            'Sleeve Notes' => 'sleeve_notes',
+            'Track'        => 'track',
+            'Artist'       => 'artist'
+        }
     },
     'tab_order' => {
         'AutoCRUD::DBIC::SleeveNotes' => 1,
