@@ -22,7 +22,6 @@ sub setup_components {
         Controller::Skinny
         Model::Metadata::DBIC
         Model::Backend::DBIC
-        Model::Backend
         View::JSON
         View::TT
     );

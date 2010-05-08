@@ -39,7 +39,7 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
     $limit = 20 if !defined $limit or ($limit ne 'all' and $limit !~ m/^\d+$/);
     $c->stash->{cpac_skinny_limit} = $limit;
   
-    # XXX we call the stash var sortby so as to appease TT
+    # XXX we don't call the stash var sort, as that upsets TT
     my $sortby = $c->req->params->{'sort'};
     $sortby = $c->stash->{cpac_meta}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
     $c->stash->{cpac_skinny_sortby} = $sortby;
