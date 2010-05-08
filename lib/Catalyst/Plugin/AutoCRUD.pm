@@ -462,13 +462,13 @@ libraries. This will be used in the templates in some way like this:
 
  <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
 
-=head2 Changing the HTTP Character Set
+=head2 Changing the HTML Character Set
 
-The default HTTP C<charset> used by this module is C<utf-8>. If you wish to override
-this, then set the C<http_charset> parameter, as below:
+The default HTML C<charset> used by this module is C<utf-8>. If you wish to override
+this, then set the C<html_charset> parameter, as below:
 
  <Plugin::AutoCRUD>
-    http_charset  iso-8859-1
+    html_charset  iso-8859-1
  </Plugin::AutoCRUD>
 
 =head2 Simple read-only non-JavaScript Frontend

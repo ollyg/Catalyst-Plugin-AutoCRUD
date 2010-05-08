@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=[% cpac_conf.http_charset OR 'utf-8' | html %]" />
+<meta http-equiv="Content-Type" content="text/html; charset=[% cpac_config.html_charset OR 'utf-8' | html %]" />
 <title>[% cpac_title %][% ' - Powered by ' IF cpac_title %][% cpac_version %]</title>
 
 [% IF NOT cpac_config.extjs2 %]
