@@ -3,6 +3,7 @@ examples/app/autocruduser.conf
 examples/app/AutoCRUDUser.pm
 examples/demo/demo.conf
 examples/demo/lib/DemoApp.pm
+examples/demo/root/static/extjs-2
 examples/demo/server.pl
 examples/sql/bootstrap_sqlite.pl
 examples/sql/test_app.sql
@@ -20,8 +21,10 @@ lib/Catalyst/Plugin/AutoCRUD/Controller/AJAX.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/Root.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/Skinny.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/Static.pm
+lib/Catalyst/Plugin/AutoCRUD/Model/Backend/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/Metadata.pm
+lib/Catalyst/Plugin/AutoCRUD/Model/Metadata/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/static/add.png
 lib/Catalyst/Plugin/AutoCRUD/static/application_view_detail.png
 lib/Catalyst/Plugin/AutoCRUD/static/arrow_refresh_small.png
@@ -29,6 +32,7 @@ lib/Catalyst/Plugin/AutoCRUD/static/bin_closed.png
 lib/Catalyst/Plugin/AutoCRUD/static/body.css
 lib/Catalyst/Plugin/AutoCRUD/static/bullet_green.png
 lib/Catalyst/Plugin/AutoCRUD/static/bullet_red.png
+lib/Catalyst/Plugin/AutoCRUD/static/cpac.css
 lib/Catalyst/Plugin/AutoCRUD/static/find.png
 lib/Catalyst/Plugin/AutoCRUD/static/iefix.css
 lib/Catalyst/Plugin/AutoCRUD/static/lfb.css
@@ -70,6 +74,8 @@ t/10-www.t
 t/11-site.t
 t/12-extjs-local.t
 t/13-extjs-cachefly.t
+t/14-with-html-charset.t
+t/14-without-html-charset.t
 t/21-album-metadata.t
 t/22-artist-metadata.t
 t/23-copyright-metadata.t
@@ -100,6 +106,7 @@ t/lib/columns_extjs.conf
 t/lib/headings_and_columns_extjs.conf
 t/lib/headings_byhash.conf
 t/lib/headings_extjs.conf
+t/lib/html_charset.conf
 t/lib/list_returns_byhash.conf
 t/lib/list_returns_bylist.conf
 t/lib/no_columns_extjs.conf
