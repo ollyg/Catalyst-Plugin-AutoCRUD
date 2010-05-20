@@ -41,7 +41,7 @@ DESCRIPTION
 
     The interface is not written to static files on your system, and uses
     AJAX to act upon the database without reloading your web page (much like
-    other Web 2.0 appliactions, for example Google Mail).
+    other Web 2.0 applications, for example Google Mail).
 
     Almost all the information required by the plugin is retrieved from the
     DBIx::Class ORM frontend to your database, which it is expected that you
@@ -309,6 +309,14 @@ TIPS AND TRICKS
     libraries. This will be used in the templates in some way like this:
 
      <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
+
+  Changing the HTML Character Set
+    The default HTML "charset" used by this module is "utf-8". If you wish
+    to override this, then set the "html_charset" parameter, as below:
+
+     <Plugin::AutoCRUD>
+        html_charset  iso-8859-1
+     </Plugin::AutoCRUD>
 
   Simple read-only non-JavaScript Frontend
     All table views will default to the full-featured ExtJS based frontend.

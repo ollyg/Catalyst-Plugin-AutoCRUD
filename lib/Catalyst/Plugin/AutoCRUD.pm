@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.69';
+our $VERSION = '0.71_02';
 $VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
