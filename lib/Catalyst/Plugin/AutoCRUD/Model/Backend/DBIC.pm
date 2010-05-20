@@ -192,6 +192,7 @@ sub list {
 
     my $rs = $c->model($cpac->{model})->search($filter, $search_opts);
     my @columns = keys %{ $info->{cols} };
+    $response->{rows} ||= [];
 
     #$c->model($cpac->{model})->result_source->storage->debug(1)
     #    if $c->debug;
@@ -259,7 +260,6 @@ sub list {
         } @{$response->{rows}};
     }
 
-    $response->{rows} ||= [];
     $response->{total} =
         eval {$rs->pager->total_entries} || scalar @{$response->{rows}};
 
