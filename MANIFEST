@@ -23,7 +23,6 @@ lib/Catalyst/Plugin/AutoCRUD/Controller/Skinny.pm
 lib/Catalyst/Plugin/AutoCRUD/Controller/Static.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/Backend/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/DBIC.pm
-lib/Catalyst/Plugin/AutoCRUD/Model/Metadata.pm
 lib/Catalyst/Plugin/AutoCRUD/Model/Metadata/DBIC.pm
 lib/Catalyst/Plugin/AutoCRUD/static/add.png
 lib/Catalyst/Plugin/AutoCRUD/static/application_view_detail.png
@@ -35,7 +34,6 @@ lib/Catalyst/Plugin/AutoCRUD/static/bullet_red.png
 lib/Catalyst/Plugin/AutoCRUD/static/cpac.css
 lib/Catalyst/Plugin/AutoCRUD/static/find.png
 lib/Catalyst/Plugin/AutoCRUD/static/iefix.css
-lib/Catalyst/Plugin/AutoCRUD/static/lfb.css
 lib/Catalyst/Plugin/AutoCRUD/static/magnifier.png
 lib/Catalyst/Plugin/AutoCRUD/static/page_lightning.png
 lib/Catalyst/Plugin/AutoCRUD/static/script_lightning.png
