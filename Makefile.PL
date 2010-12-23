@@ -18,5 +18,7 @@ test_requires  'Test::WWW::Mechanize::Catalyst' => '0.42';
 
 # resources 'MailingList' => 'http://groups.google.com/group/catalyst-plugin-autocrud';
 
+auto_install();
+
 WriteAll;
 
