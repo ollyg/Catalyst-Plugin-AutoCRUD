@@ -33,9 +33,11 @@ my %WriteMakefileArgs = (
   'NAME' => 'Catalyst::Plugin::AutoCRUD',
   'PREREQ_PM' => {
     'Carp' => '0',
+    'Catalyst::Action::RenderView' => '0',
     'Catalyst::Controller' => '0',
     'Catalyst::Model' => '0',
     'Catalyst::Model::DBIC::Schema' => '0',
+    'Catalyst::Runtime' => '5.70',
     'Catalyst::Utils' => '0',
     'Catalyst::View::JSON' => '0',
     'Catalyst::View::TT' => '0',
@@ -49,7 +51,7 @@ my %WriteMakefileArgs = (
     'Scalar::Util' => '0',
     'overload' => '0'
   },
-  'VERSION' => '1.110470',
+  'VERSION' => '1.110471',
   'test' => {
     'TESTS' => 't/*.t'
   }

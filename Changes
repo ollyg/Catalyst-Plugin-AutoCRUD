@@ -1,3 +1,7 @@
+1.110471  2011-02-16 23:13:52 Europe/London
+
+  * Fix Dist::Zilla config to include full dependencies list
+
 1.110470  2011-02-16 23:02:18 Europe/London
 
   * Port to Dist::Zilla

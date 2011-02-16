@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Skinny;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Controller::Skinny::VERSION = '1.110470';
+  $Catalyst::Plugin::AutoCRUD::Controller::Skinny::VERSION = '1.110471';
 }
 
 use strict;

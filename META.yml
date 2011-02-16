@@ -25,9 +25,11 @@ meta-spec:
 name: Catalyst-Plugin-AutoCRUD
 requires:
   Carp: 0
+  Catalyst::Action::RenderView: 0
   Catalyst::Controller: 0
   Catalyst::Model: 0
   Catalyst::Model::DBIC::Schema: 0
+  Catalyst::Runtime: 5.70
   Catalyst::Utils: 0
   Catalyst::View::JSON: 0
   Catalyst::View::TT: 0
@@ -44,4 +46,4 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Catalyst-Plugin-AutoCRUD
   homepage: https://github.com/ollyg/Catalyst-Plugin-AutoCRUD/wiki
   repository: git://github.com/ollyg/Catalyst-Plugin-AutoCRUD.git
-version: 1.110470
+version: 1.110471
