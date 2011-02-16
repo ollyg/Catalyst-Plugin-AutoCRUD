@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.110470  2011-02-16 23:02:18 Europe/London
+
   * Port to Dist::Zilla
   * Fix encoding on AJAX (shirirulestheworld rt.cpan #58483)
 
