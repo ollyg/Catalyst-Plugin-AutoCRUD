@@ -1,3 +1,7 @@
+{{$NEXT}}
+
+  * Port to Dist::Zilla
+
 libcatalyst-plugin-autocrud-perl (0.71_02) UNRELEASED; urgency=low
 
   * Rename all uses of lf to cpac (legacy ListFramework references)
