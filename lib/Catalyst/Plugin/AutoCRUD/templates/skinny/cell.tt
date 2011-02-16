@@ -5,5 +5,5 @@
         <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bullet_red.png" ) %]" />
     [% END %]
 [% ELSE %]
-    [% value %]
+    [% value | html %]
 [% END %]

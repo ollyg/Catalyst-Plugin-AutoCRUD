@@ -1,4 +1,7 @@
 package Catalyst::Plugin::AutoCRUD;
+BEGIN {
+  $Catalyst::Plugin::AutoCRUD::VERSION = '1.110470';
+}
 
 use strict;
 use warnings FATAL => 'all';
@@ -6,8 +9,6 @@ use warnings FATAL => 'all';
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
-our $VERSION = '0.68';
-$VERSION = eval $VERSION; # numify for warning-free dev releases
 our $this_package = __PACKAGE__; # so it can be used in hash keys
 
 sub setup_components {
@@ -20,7 +21,8 @@ sub setup_components {
         Controller::Static
         Controller::AJAX
         Controller::Skinny
-        Model::Metadata
+        Model::Metadata::DBIC
+        Model::Backend::DBIC
         View::JSON
         View::TT
     );
@@ -96,6 +98,26 @@ sub setup_components {
     return 1;
 }
 
+# we subvert the pretty print error screen for dumpmeta
+sub dump_these {
+    my $c = shift;
+    my $params = {
+            map {$_ => $c->stash->{$_}}
+                grep {ref $c->stash->{$_} eq ''}
+                grep {$_ =~ m/^cpac_/}
+                     keys %{$c->stash},
+    };
+    if ($c->stash->{dumpmeta}) {
+        return (
+            [ 'CPAC Parameters' => $params ],
+            [ 'Site Configuration' => $c->stash->{site_conf} ],
+            [ 'Storage Metadata'   => $c->stash->{cpac_meta} ],
+            [ 'Response' => $c->response ], # only to pacify log_request
+        );
+    }
+    else { $c->next::method(@_) }
+}
+
 # monkey patch Catalyst::View::JSON until it is fixed, or users will get scared
 # by the warning currently emitted by Catalyst
 
@@ -123,7 +145,11 @@ sub _get_subref {
 
 1;
 
+# ABSTRACT: Instant AJAX web front-end for DBIx::Class
+
+
 __END__
+=pod
 
 =head1 NAME
 
@@ -131,14 +157,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-This document refers to version 0.68 of Catalyst::Plugin::AutoCRUD
-
-=head1 PURPOSE
-
-You have a database, and wish to have a basic web interface supporting Create,
-Retrieve, Update, Delete and Search, with little effort. This module is able
-to create such interfaces on the fly. They are a bit whizzy and all Web
-2.0-ish.
+version 1.110470
 
 =head1 SYNOPSIS
 
@@ -172,13 +191,20 @@ Retrieve, Update, Delete and Search operations.
 
 The interface is not written to static files on your system, and uses AJAX to
 act upon the database without reloading your web page (much like other
-Web 2.0 appliactions, for example Google Mail).
+Web 2.0 applications, for example Google Mail).
 
 Almost all the information required by the plugin is retrieved from the
 L<DBIx::Class> ORM frontend to your database, which it is expected that you
 have already set up (although see L</USAGE>, below). This means that any
 change in database schema ought to be reflected immediately in the web
 interface after a page refresh.
+
+=head1 PURPOSE
+
+You have a database, and wish to have a basic web interface supporting Create,
+Retrieve, Update, Delete and Search, with little effort. This module is able
+to create such interfaces on the fly. They are a bit whizzy and all Web
+2.0-ish.
 
 =head1 USAGE
 
@@ -439,6 +465,15 @@ Use the C<extjs2> option as shown above to specify the URL path to the
 libraries. This will be used in the templates in some way like this:
 
  <script type="text/javascript" src="[% c.config.extjs2 %]/ext-all.js" />
+
+=head2 Changing the HTML Character Set
+
+The default HTML C<charset> used by this module is C<utf-8>. If you wish to override
+this, then set the C<html_charset> parameter, as below:
+
+ <Plugin::AutoCRUD>
+    html_charset  iso-8859-1
+ </Plugin::AutoCRUD>
 
 =head2 Simple read-only non-JavaScript Frontend
 
@@ -929,21 +964,14 @@ out L<CatalystX::ListFramework>.
 
 =head1 AUTHOR
 
-Oliver Gorwits C<< <oliver.gorwits@oucs.ox.ac.uk> >>
+Oliver Gorwits <oliver@cpan.org>
 
-=head1 COPYRIGHT & LICENSE
+=head1 COPYRIGHT AND LICENSE
 
-Bundled images are Copyright (c) 2006 Mark James, and are from
-L<http://www.famfamfam.com/lab/icons/silk/>.
+This software is copyright (c) 2011 by Oliver Gorwits.
 
-This distribution ships with the Ext.ux.form.DateTime Extension Class for Ext
-2.x Library, Copyright (c) 2008, Ing. Jozef Sakalos, and released under the
-LGPL 3.0 license (library version 289, 2008-06-12 21:08:08).
-
-The rest is Copyright (c) Oliver Gorwits 2009.
-
-This library is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 

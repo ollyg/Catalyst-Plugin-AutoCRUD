@@ -26,7 +26,7 @@
         // make the "Page x of y" work when we choose to show all rows
         ,getPageData : function() {
             var total = this.store.getTotalCount();
-            var pgsz = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
+            var pgsz = Ext.state.Manager.get('cpac-pgsz', pagebar.pageSize);
             if (isNaN(pgsz)) { pgsz = total }
             return {
                 total : total
@@ -38,7 +38,7 @@
 
     var pagebar = new Ext.ux.PagingToolbarForFilterGrid({
         id: 'pagebar'
-        ,pageSize: Ext.state.Manager.get('lfb-pgsz', 10)
+        ,pageSize: Ext.state.Manager.get('cpac-pgsz', 10)
         ,store: store
         ,displayInfo: true
         ,items: [
@@ -48,15 +48,40 @@
                 ,cls:"x-btn-icon"
                 ,handler: function (){
                     // clear the cookie storing grid state
-                    Ext.state.Manager.getProvider().clear('lfb-pgsz');
+                    Ext.state.Manager.getProvider().clear('cpac-pgsz');
                     Ext.state.Manager.getProvider().clear('search-grid');
                     // clear search opts
                     store.baseParams = {};
                     // private? clear sorting config
-                    store.sortInfo = { field: '[% lf.main.pk %]', direction: 'ASC' }
+                    store.sortInfo = { field: '[% cpac_meta.main.pk %]', direction: 'ASC' }
                     // reset page size to default of 10
                     pagebar.pageSize = 10;
                     Ext.getCmp('pgsz-combo').setValue(10);
+
+                    // reset column hiding to defaults. it seems when this is
+                    // changed via UI that it *reconfigures* the col, hence us
+                    // doing this manually in a loop for each col index.
+                    [% SET colidx = 0 %]
+                    [% FOREACH col IN site_conf.$cpac_db.$cpac_table.columns.merge(cpac_meta.main.col_order).unique %]
+                        [% IF site_conf.$cpac_db.$cpac_table.columns.size > 0 AND NOT site_conf.$cpac_db.$cpac_table.col_keys.exists(col) %]
+                            cm.setHidden([% colidx %], true);
+                        [% ELSE %]
+                            cm.setHidden([% colidx %], false);
+                        [% END %]
+                        [% SET colidx = colidx + 1 %]
+                    [% END %]
+                    [% FOREACH col IN cpac_meta.main.mfks.keys %]
+                        [% IF site_conf.$cpac_db.$cpac_table.columns.size > 0 AND NOT site_conf.$cpac_db.$cpac_table.col_keys.exists(col) %]
+                            cm.setHidden([% colidx %], true);
+                        [% ELSE %]
+                            cm.setHidden([% colidx %], false);
+                        [% END %]
+                        [% SET colidx = colidx + 1 %]
+                    [% END %]
+                    [% IF site_conf.$cpac_db.$cpac_table.delete_allowed == 'yes' %]
+                        cm.setHidden([% colidx %], false);
+                    [% END %]
+
                     // reload grid
                     pagebar.doLoad(0);
                 }
@@ -74,18 +99,18 @@
                 ,store: [10, 20, 50, 100, 'all']
                 ,listeners: {
                     render: function(combo) {
-                        var pgsz = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
+                        var pgsz = Ext.state.Manager.get('cpac-pgsz', pagebar.pageSize);
                         combo.setValue( isNaN(pgsz) ? 'all' : pgsz );
                     }
                     ,select: function(combo) {
                         pagebar.pageSize = parseInt(combo.getRawValue(), 10);
-                        Ext.state.Manager.set('lfb-pgsz', pagebar.pageSize);
+                        Ext.state.Manager.set('cpac-pgsz', pagebar.pageSize);
                         pagebar.doLoad(pagebar.cursor);
                     }
                     ,specialkey: function(combo, e) {
                         if (e.getKey() == 13) {
                             pagebar.pageSize = parseInt(combo.getRawValue(), 10) || 'all';
-                            Ext.state.Manager.set('lfb-pgsz', pagebar.pageSize);
+                            Ext.state.Manager.set('cpac-pgsz', pagebar.pageSize);
                             combo.setValue(pagebar.pageSize);
                             pagebar.doLoad(pagebar.cursor);
                         }

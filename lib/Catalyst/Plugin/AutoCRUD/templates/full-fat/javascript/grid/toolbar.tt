@@ -32,9 +32,9 @@
                     pagebar.doLoad(0); // reset to first page
                 }
             }
-          [% IF site_conf.$db.$table.create_allowed == 'yes' %]
+          [% IF site_conf.$cpac_db.$cpac_table.create_allowed == 'yes' %]
             ,'->' ,{
-                text: 'Add New [% lf.main.title %]'
+                text: 'Add New [% cpac_meta.main.title %]'
                 ,cls: 'x-btn-text-icon'
                 ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "add.png" ) %]'
                 ,handler: function(){

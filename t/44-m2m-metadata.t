@@ -5,16 +5,20 @@ use warnings FATAL => 'all';
 use lib qw( t/lib );
 
 use Test::More 'no_plan';
+use JSON::XS;
 
 # application loads
-BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppM2M" }
+BEGIN {
+    $ENV{AUTOCRUD_TESTING} = 1;
+    use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppM2M"
+}
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the album table
 $mech->get_ok( '/site/default/schema/dbic/source/album/dumpmeta', 'Get album autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
-my $response = JSON::from_json( $mech->content );
+my $response = JSON::XS::decode_json( $mech->content );
 
 #use Data::Dumper;
 #print STDERR Dumper $response;
@@ -22,9 +26,11 @@ my $response = JSON::from_json( $mech->content );
 my $expected = {
     'model'      => 'AutoCRUD::DBIC::Album',
     'table2path' => {
-        'Album'        => 'album',
-        'Artist Album' => 'artist_album',
-        'Artist'       => 'artist'
+        'dbic' => {
+            'Album'        => 'album',
+            'Artist Album' => 'artist_album',
+            'Artist'       => 'artist'
+        }
     },
     'tab_order' => { 'AutoCRUD::DBIC::Album' => 1 },
     'main'      => {
@@ -99,6 +105,13 @@ my $expected = {
             }
         }
     },
+    'editable' => {
+        'dbic' => {
+            'artist'       => 1,
+            'artist_album' => 1,
+            'album'        => 1,
+        }
+    },
     'path2model' => {
         'dbic' => {
             'artist'       => 'AutoCRUD::DBIC::Artist',
@@ -113,7 +126,7 @@ SKIP: {
 
         skip "Lingua::EN::Inflect::Number not installed", 1 if $@;
 
-    is_deeply( $response->{lf}, $expected, 'Metadata is as we expect' );
+    is_deeply( $response->{cpac}, $expected, 'Metadata is as we expect' );
 }
 
 #warn $mech->content;

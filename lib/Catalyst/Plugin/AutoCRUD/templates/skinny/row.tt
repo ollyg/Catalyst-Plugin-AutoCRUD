@@ -5,7 +5,7 @@
     <td class="cpac_cell">
         [% PROCESS cell.tt
             value = item.$col
-            properties = lf.main.cols.$col
+            properties = cpac_meta.main.cols.$col
         %]
     </td>
 [% END %]

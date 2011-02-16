@@ -1,17 +1,17 @@
     // create a data record
     var rowRecord = Ext.data.Record.create([
-      [% FOREACH col IN lf.main.col_order %]
-        [% ',' IF lf.main.col_order.size > 1 AND NOT loop.first %]
+      [% FOREACH col IN cpac_meta.main.col_order %]
+        [% ',' IF cpac_meta.main.col_order.size > 1 AND NOT loop.first %]
         { name: '[% col %]' }
       [% END %]
-      [% FOREACH col IN lf.main.mfks.keys %]
+      [% FOREACH col IN cpac_meta.main.mfks.keys %]
         ,{ name: '[% col %]' }
       [% END %]
     ]);
 
     // create the Data Store
     var store = new Ext.data.JsonStore({
-        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [site,db,lf.main.path] ) %]'
+        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [cpac_site,cpac_db,cpac_meta.main.path] ) %]'
         ,root: 'rows'
         ,fields: rowRecord
         ,remoteSort: true
@@ -19,12 +19,12 @@
     });
 
     // set default sort if we can
-    store.setDefaultSort('[% lf.main.pk %]', 'ASC');
+    store.setDefaultSort('[% cpac_meta.main.pk %]', 'ASC');
 
     // hook to add page num param
     // got this from the extjs forums
     store.on('beforeload', function(store, options) {
-        options.params.limit = Ext.state.Manager.get('lfb-pgsz', pagebar.pageSize);
+        options.params.limit = Ext.state.Manager.get('cpac-pgsz', pagebar.pageSize);
         var limit = options.params.limit;
         var start = options.params.start;
         options.params.page = Math.floor(start / limit) + 1;

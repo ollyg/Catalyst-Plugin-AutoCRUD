@@ -40,27 +40,27 @@
                 // reset the grid selectionModel
                 g.getSelectionModel().deselectRow(row);
 
-                if (fieldName == 'lf-multi-column') {
+                if (fieldName == 'cpac-multi-column') {
                     // multi rows are ignored
                     return false;
                 }
 
-              [% IF site_conf.$db.$table.delete_allowed == 'yes' %]
-                if (fieldName == 'lf-delete-column') {
+              [% IF site_conf.$cpac_db.$cpac_table.delete_allowed == 'yes' %]
+                if (fieldName == 'cpac-delete-column') {
                     if (row === 0) {
                         // edit row is ignored
                         return false;
                     }
 
-                    var data = rec.get('[% lf.main.pk %]');
+                    var data = rec.get('[% cpac_meta.main.pk %]');
                     Ext.MessageBox.confirm (
-                        'Confirm Delete [% lf.main.title %]'
-                        ,'Are you sure you want to delete [% lf.main.title %] [% lf.main.pk %](' + data + ')?'
+                        'Confirm Delete [% cpac_meta.main.title %]'
+                        ,'Are you sure you want to delete [% cpac_meta.main.title %] [% cpac_meta.main.pk %](' + data + ')?'
                         ,function (btn) {
                             if (btn == 'yes') {
                                 grid.loadMask.el.mask();
                                 Ext.Ajax.request({
-                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [site,db,lf.main.path] ) %]'
+                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [cpac_site,cpac_db,cpac_meta.main.path] ) %]'
                                     ,params: {
                                         key: data
                                     }
@@ -103,7 +103,7 @@
                     }
                     g.startEditing(row,col);
                 }
-              [% IF site_conf.$db.$table.update_allowed == 'yes' %]
+              [% IF site_conf.$cpac_db.$cpac_table.update_allowed == 'yes' %]
                 else {
                     // draw the window!
                     var win = generate_win('update');
@@ -118,13 +118,13 @@
                     // fill in reverse relations
                     mainform.setValues({
                       [% SET count = 1 %]
-                      [% FOREACH table IN lf.tab_order.keys %]
-                      [% NEXT IF lf.tab_order.item(table) == 1 %]
-                        [% FOREACH col IN lf.table_info.$table.cols.keys %]
-                        [% NEXT UNLESS lf.table_info.$table.cols.$col.is_fk
-                                AND NOT lf.table_info.$table.cols.$col.editable %]
+                      [% FOREACH tbl IN cpac_meta.tab_order.keys %]
+                      [% NEXT IF cpac_meta.tab_order.item(tbl) == 1 %]
+                        [% FOREACH col IN cpac_meta.table_info.$tbl.cols.keys %]
+                        [% NEXT UNLESS cpac_meta.table_info.$tbl.cols.$col.is_fk
+                                AND NOT cpac_meta.table_info.$tbl.cols.$col.editable %]
                           [% ',' IF count > 1 %]
-                            '[% lf.table_info.$table.path %].[% col %]': rec.data['[% lf.main.pk %]']
+                            '[% cpac_meta.table_info.$tbl.path %].[% col %]': rec.data['[% cpac_meta.main.pk %]']
                           [% SET count = count + 1 %]
                         [% END %]
                       [% END %]

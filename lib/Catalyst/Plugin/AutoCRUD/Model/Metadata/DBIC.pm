@@ -1,4 +1,7 @@
-package Catalyst::Plugin::AutoCRUD::Model::Metadata;
+package Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC;
+BEGIN {
+  $Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC::VERSION = '1.110470';
+}
 
 use strict;
 use warnings FATAL => 'all';
@@ -52,73 +55,69 @@ $xtype_for{$_} = 'xdatetime' for (
 sub process {
     my ($self, $c) = @_;
 
-    if (exists $c->stash->{db} and defined $c->stash->{db}
-        and exists $c->stash->{table} and defined $c->stash->{table}
-        and exists $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}}) {
+    if (exists $c->stash->{cpac_db} and defined $c->stash->{cpac_db}
+        and exists $c->stash->{cpac_table} and defined $c->stash->{cpac_table}
+        and exists $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}}) {
 
         # we have a cache!
-        $c->stash->{dbtitle} = _2title( $c->stash->{db} );
-        $c->stash->{lf} = $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}};
-        $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
-            $c->stash->{db}, $c->stash->{table}) if $c->debug;
+        $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
 
-        weaken $c->stash->{lf};
-        return $self;
+        $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
+            $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
+
+        return $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}};
     }
 
     # set up databases list, even if only to display to user
-    my $lf = $c->stash->{lf} = $self->build_db_info($c);
-
-    # only one db anyway? pretend the user selected that
-    $c->stash->{db} = [keys %{$lf->{dbpath2model}}]->[0]
-        if scalar keys %{$lf->{dbpath2model}} == 1;
+    my $cpac = $self->build_db_info($c);
 
     # no db specified, or unknown db
-    return if !defined $c->stash->{db}
-            or !exists $lf->{dbpath2model}->{ $c->stash->{db} };
+    return $cpac if !defined $c->stash->{cpac_db}
+            or !exists $cpac->{dbpath2model}->{ $c->stash->{cpac_db} };
 
-    $c->stash->{dbtitle} = _2title( $c->stash->{db} );
-    $self->build_table_info_for_db($c, $lf, $c->stash->{db});
+    $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
+    $self->build_table_info_for_db($c, $cpac, $c->stash->{cpac_db});
 
     # no table specified, or unknown table
-    return if !defined $c->stash->{table}
-        or !exists $lf->{path2model}->{ $c->stash->{db} }->{ $c->stash->{table} };
+    return $cpac if !defined $c->stash->{cpac_table}
+        or !exists $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
 
-    $lf->{model} = $lf->{path2model}->{ $c->stash->{db} }->{ $c->stash->{table} };
+    $cpac->{model} = $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
 
     # build and store in cache
-    _build_table_info($c, $lf, $lf->{model}, 1);
+    _build_table_info($c, $cpac, $cpac->{model}, 1);
 
-    $self->_schema_cache->{$c->stash->{db}}->{$c->stash->{table}} = $lf;
+    $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}} = $cpac;
     $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
-        $c->stash->{db}, $c->stash->{table}) if $c->debug;
+        $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
 
-    weaken $c->stash->{lf};
-    return $self;
+    return $cpac;
 }
 
 sub build_table_info_for_db {
-    my ($self, $c, $lf, $db) = @_;
+    my ($self, $c, $cpac, $db) = @_;
 
     # set up tables list, even if only to display to user
-    my $try_schema = $c->model( $lf->{dbpath2model}->{$db} )->schema;
+    my $try_schema = $c->model( $cpac->{dbpath2model}->{$db} )->schema;
     foreach my $m ($try_schema->sources) {
-        my $model = _moniker2model($c, $lf, $db, $m)
+        my $model = _moniker2model($c, $cpac, $db, $m)
             or croak "unable to translate model [$m] into moniker, bailing out";
-        my $p = _rs2path($c->model($model)->result_source);
+        my $source = $c->model($model)->result_source;
+        my $p = _rs2path($source);
 
-        $lf->{table2path}->{ _2title($p) } = $p;
-        $lf->{path2model}->{$db}->{ $p } = $model;
+        $cpac->{table2path}->{$db}->{ _2title($p) } = $p;
+        $cpac->{path2model}->{$db}->{ $p } = $model;
+        $cpac->{editable}->{$db}->{$p} = not eval { $source->isa('DBIx::Class::ResultSource::View') };
     }
 }
 
 sub build_db_info {
     my ($self, $c) = @_;
-    my (%lf, %sources);
+    my (%cpac, %sources);
 
     MODEL:
     foreach my $m ($c->models) {
-        my $model = $c->model($m);
+        my $model = eval { $c->model($m) };
         next unless eval { $model->isa('Catalyst::Model::DBIC::Schema') };
         foreach my $s (keys %sources) {
             if (eval { $model->isa($s) }) {
@@ -139,27 +138,27 @@ sub build_db_info {
             $name = lc [ reverse split '::', $s ]->[0];            
         }
 
-        $lf{db2path}->{_2title($name)} = $name;
-        $lf{dbpath2model}->{$name} = $s;
+        $cpac{db2path}->{_2title($name)} = $name;
+        $cpac{dbpath2model}->{$name} = $s;
     }
 
-    return \%lf;
+    return \%cpac;
 }
 
 sub _build_table_info {
-    my ($c, $lf, $model, $tab) = @_;
+    my ($c, $cpac, $model, $tab) = @_;
 
-    my $ti = $lf->{table_info}->{ $model } = {};
+    my $ti = $cpac->{table_info}->{ $model } = {};
     if ($tab == 1) {
         # convenience reference to the main table info, for the templates
-        $lf->{main} = $ti; weaken $lf->{main};
+        $cpac->{main} = $ti; weaken $cpac->{main};
     }
 
     my $source = $c->model($model)->result_source;
     $ti->{path}    = _rs2path($source);
     $ti->{title}   = _2title($ti->{path});
     $ti->{moniker} = $source->source_name;
-    $lf->{tab_order}->{ $model } = $tab;
+    $cpac->{tab_order}->{ $model } = $tab;
 
     # column and relation info for this table
     my (%mfks, %sfks, %fks);
@@ -251,7 +250,7 @@ sub _build_table_info {
         }
     }
 
-    $ti->{pk} = ($source->primary_columns)[0];
+    $ti->{pk} = ($source->primary_columns)[0] || $cols[0];
     $ti->{col_order} = [
         $ti->{pk},                                           # primary key
         (grep {!exists $fks{$_} and $_ ne $ti->{pk}} @cols), # ordinary cols
@@ -309,7 +308,7 @@ sub _build_table_info {
     foreach my $col (keys %fks, keys %sfks) {
 
         $ti->{cols}->{$col}->{fk_model}
-            = _moniker2model( $c, $lf, $c->stash->{db}, $source->related_source($col)->source_name );
+            = _moniker2model( $c, $cpac, $c->stash->{cpac_db}, $source->related_source($col)->source_name );
         next if !defined $ti->{cols}->{$col}->{fk_model};
 
         # override the heading for this col to be the foreign table name
@@ -334,7 +333,7 @@ sub _build_table_info {
         # relations where the foreign table is the main table are not editable
         # because the template/extjs will complete the field automatically
         if ($source->related_source($col)->source_name
-                eq $lf->{main}->{moniker}) {
+                eq $cpac->{main}->{moniker}) {
             $ti->{cols}->{$col}->{editable} = 0;
         }
         else {
@@ -343,7 +342,7 @@ sub _build_table_info {
 
             if ([caller(1)]->[3] !~ m/::_build_table_info$/) {
                 _build_table_info(
-                    $c, $lf, $ti->{cols}->{$col}->{fk_model}, ++$tab);
+                    $c, $cpac, $ti->{cols}->{$col}->{fk_model}, ++$tab);
             }
         }
     }
@@ -389,11 +388,11 @@ sub _rs2path {
 
 # find catalyst model which is serving this DBIC result source
 sub _moniker2model {
-    my ($c, $lf, $db, $moniker) = @_;
-    my $dbmodel = $lf->{dbpath2model}->{ $db };
+    my ($c, $cpac, $db, $moniker) = @_;
+    my $dbmodel = $cpac->{dbpath2model}->{ $db };
 
     foreach my $m ($c->models) {
-        my $model = $c->model($m);
+        my $model = eval { $c->model($m) };
         my $test = eval { $model->result_source->source_name };
         next if !defined $test;
 

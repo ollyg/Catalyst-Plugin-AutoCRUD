@@ -6,13 +6,13 @@
     // also readonly, validation
 
     var tabs = [
-      [% FOREACH tname IN lf.tab_order.nsort %]
-        [% SET info = lf.table_info.$tname %]
+      [% FOREACH tname IN cpac_meta.tab_order.nsort %]
+        [% SET info = cpac_meta.table_info.$tname %]
         [% SET tbl = info.path %]
-        [% NEXT IF NOT loop.first AND site_conf.$db.$tbl.create_allowed == 'no' %]
-        [% ',' IF lf.tab_order.keys.size > 1 AND NOT loop.first %]{
-            [% IF lf.tab_order.item(tname) == 1 %]
-              title: '[% lf.main.title %]'
+        [% NEXT IF NOT loop.first AND site_conf.$cpac_db.$tbl.create_allowed == 'no' %]
+        [% ',' IF cpac_meta.tab_order.keys.size > 1 AND NOT loop.first %]{
+            [% IF cpac_meta.tab_order.item(tname) == 1 %]
+              title: '[% cpac_meta.main.title %]'
             [% ELSE %]
               title: 'New [% info.title %]'
               ,xtype: 'fieldset'
@@ -27,7 +27,7 @@
               [% NEXT IF info.cols.$field.is_rr %]
                 [% ',' IF count > 1 %]{
                 [% SET count = count + 1 %]
-                  [% IF lf.tab_order.item(tname) == 1 %]
+                  [% IF cpac_meta.tab_order.item(tname) == 1 %]
                     name: '[% field %]'
                     ,id: '[% field %]'
                   [% ELSE %]
@@ -35,8 +35,8 @@
                     ,id: '[% info.path %].[% field %]'
                   [% END %]
 
-                  [% IF site_conf.$db.$tbl.headings.exists(field) AND site_conf.$db.$tbl.headings.defined(field) %]
-                    ,fieldLabel: '[% site_conf.$db.$tbl.headings.$field %]'
+                  [% IF site_conf.$cpac_db.$tbl.headings.exists(field) AND site_conf.$cpac_db.$tbl.headings.defined(field) %]
+                    ,fieldLabel: '[% site_conf.$cpac_db.$tbl.headings.$field %]'
                   [% ELSE %]
                     ,fieldLabel: '[% info.cols.$field.heading %]'
                   [% END %]
@@ -67,7 +67,7 @@
                     ,pageSize: 5
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
-                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [site,db,info.path] ) %]'
+                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,cpac_db,info.path] ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]

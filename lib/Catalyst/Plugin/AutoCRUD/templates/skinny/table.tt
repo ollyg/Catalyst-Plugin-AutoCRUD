@@ -1,5 +1,5 @@
-[% SET table_info = lf.main %]
-[% SET table_config = site_conf.$db.$table %]
+[% SET table_info = cpac_meta.main %]
+[% SET table_config = site_conf.$cpac_db.$cpac_table %]
 
 <table class="cpac_table">
     <tr>
@@ -8,9 +8,9 @@
       [% NEXT IF table_config.columns.size > 0 AND NOT table_config.col_keys.exists(col) %]
         <th class="cpac_table_header">
         [% SET qp = "?sort=" _ col %]
-        [% SET qp = qp _ "&page=" _ pager.current_page IF pager %]
-        [% SET qp = qp _ "&dir=DESC" IF col == sortby AND dir != "DESC" %]
-        [% SET qp = qp _ "&limit=" _ limit IF limit %]
+        [% SET qp = qp _ "&page=" _ cpac_skinny_pager.current_page IF cpac_skinny_pager %]
+        [% SET qp = qp _ "&dir=DESC" IF col == cpac_skinny_sortby AND cpac_skinny_dir != "DESC" %]
+        [% SET qp = qp _ "&limit=" _ cpac_skinny_limit IF cpac_skinny_limit %]
 
             <a class="cpac_link" href="[% qp %]">
             [% IF table_config.headings.exists(col) AND table_config.headings.defined(col) %]
@@ -20,9 +20,9 @@
             [% END %]
             </a>
 
-        [% IF sortby %]
-          [% IF sortby == col %]
-            [% IF dir != "DESC" %]
+        [% IF cpac_skinny_sortby %]
+          [% IF cpac_skinny_sortby == col %]
+            [% IF cpac_skinny_dir != "DESC" %]
               &darr;
             [% ELSE %]
               &uarr;

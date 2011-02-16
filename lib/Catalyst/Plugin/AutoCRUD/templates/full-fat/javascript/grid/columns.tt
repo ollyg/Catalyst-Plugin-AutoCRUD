@@ -24,8 +24,8 @@
     ]);
 
     // create the combo instances
-    [% FOREACH col IN lf.main.col_order %]
-      [% IF lf.main.cols.$col.is_fk OR lf.main.cols.$col.is_rr %]
+    [% FOREACH col IN cpac_meta.main.col_order %]
+      [% IF cpac_meta.main.cols.$col.is_fk OR cpac_meta.main.cols.$col.is_rr %]
         var fk_combo_[% col %] = new Ext.form.ComboBox ({
             valueField: 'dbid'
             ,displayField: 'stringified'
@@ -41,7 +41,7 @@
             ,listClass: 'x-combo-list-small'
             ,lastQuery: ''
             ,store: new Ext.data.JsonStore ({
-                url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [site,db,table] ) %]'
+                url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,cpac_db,cpac_table] ) %]'
                 ,root: 'rows'
                 ,totalProperty: 'total'
                 ,fields: [ 'dbid', 'stringified' ]
@@ -94,26 +94,26 @@
 
     var cm = new Ext.grid.ColumnModel([
       [% SET colcount = 0 %]
-      [% FOREACH col IN site_conf.$db.$table.columns.merge(lf.main.col_order).unique %]
-        [% ',' IF lf.main.col_order.size > 1 AND colcount != 0 %]{
-          [% IF site_conf.$db.$table.headings.exists(col) AND site_conf.$db.$table.headings.defined(col) %]
-            header:     '[% site_conf.$db.$table.headings.$col %]'
-          [% ELSIF lf.main.cols.$col.is_fk %]
-            header:     '[% lf.main.cols.$col.heading %] (FK)'
-          [% ELSIF lf.main.cols.$col.is_rr %]
-            header:     '[% lf.main.cols.$col.heading %] (REF)'
+      [% FOREACH col IN site_conf.$cpac_db.$cpac_table.columns.merge(cpac_meta.main.col_order).unique %]
+        [% ',' IF cpac_meta.main.col_order.size > 1 AND colcount != 0 %]{
+          [% IF site_conf.$cpac_db.$cpac_table.headings.exists(col) AND site_conf.$cpac_db.$cpac_table.headings.defined(col) %]
+            header:     '[% site_conf.$cpac_db.$cpac_table.headings.$col %]'
+          [% ELSIF cpac_meta.main.cols.$col.is_fk %]
+            header:     '[% cpac_meta.main.cols.$col.heading %] (FK)'
+          [% ELSIF cpac_meta.main.cols.$col.is_rr %]
+            header:     '[% cpac_meta.main.cols.$col.heading %] (REF)'
           [% ELSE %]
-            header:     '[% lf.main.cols.$col.heading %]'
+            header:     '[% cpac_meta.main.cols.$col.heading %]'
           [% END %]
             ,dataIndex: '[% col %]'
-            [% ',hidden: true' IF site_conf.$db.$table.columns.size > 0 AND NOT site_conf.$db.$table.col_keys.exists(col) %]
-          [% IF lf.main.cols.$col.is_fk OR lf.main.cols.$col.is_rr %]
+            [% ',hidden: true' IF site_conf.$cpac_db.$cpac_table.columns.size > 0 AND NOT site_conf.$cpac_db.$cpac_table.col_keys.exists(col) %]
+          [% IF cpac_meta.main.cols.$col.is_fk OR cpac_meta.main.cols.$col.is_rr %]
             ,editor: fk_combo_[% col %] //reference to combo instance
             ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %]) // pass combo instance to reusable renderer
           [% ELSE %]
             ,editor: new Ext.form.TextField({})
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
-              [% IF lf.main.cols.$col.extjs_xtype == 'checkbox' %]
+              [% IF cpac_meta.main.cols.$col.extjs_xtype == 'checkbox' %]
                 if (rowindex === 0) { return '' }
                 if (value == '1') {
                   return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bullet_green.png" ) %]" />';
@@ -129,11 +129,11 @@
         }
         [% SET colcount = colcount + 1 %]
       [% END %]
-      [% FOREACH col IN lf.main.mfks.keys %]
+      [% FOREACH col IN cpac_meta.main.mfks.keys %]
         ,{
-            header: '[% lf.main.mfks.item(col) %]'
-            ,dataIndex: 'lf-multi-column'
-            [% ',hidden: true' IF site_conf.$db.$table.columns.size > 0 AND NOT site_conf.$db.$table.col_keys.exists(col) %]
+            header: '[% cpac_meta.main.mfks.item(col) %]'
+            ,dataIndex: 'cpac-multi-column'
+            [% ',hidden: true' IF site_conf.$cpac_db.$cpac_table.columns.size > 0 AND NOT site_conf.$cpac_db.$cpac_table.col_keys.exists(col) %]
             ,align: 'center'
             ,sortable: false
             ,menuDisabled: true
@@ -142,9 +142,9 @@
                 if (rowindex === 0 || record.get('[% col %]').join('') === '') { return '' }
                 else {
                     metadata.css += 'half-grey';
-                    metadata.attr += 'ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
+                    metadata.attr += 'ext:qtitle="[% cpac_meta.main.mfks.item(col) %]" ext:qtip="'
                         + record.get('[% col %]').join('<br />') + '"';
-                    return '<img ext:qtitle="[% lf.main.mfks.item(col) %]" ext:qtip="'
+                    return '<img ext:qtitle="[% cpac_meta.main.mfks.item(col) %]" ext:qtip="'
                         + record.get('[% col %]').join('<br />')
                         + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
                         + ' Show';
@@ -152,11 +152,11 @@
             }
         }
       [% END %]
-      [% IF site_conf.$db.$table.delete_allowed == 'yes' %]
+      [% IF site_conf.$cpac_db.$cpac_table.delete_allowed == 'yes' %]
         ,{
             header: 'Delete'
             ,width: 35
-            ,dataIndex: 'lf-delete-column'
+            ,dataIndex: 'cpac-delete-column'
             ,align: 'left'
             ,sortable: false
             ,menuDisabled: true
@@ -164,9 +164,9 @@
                 if (rowindex === 0) { return '' }
                 else {
                     metadata.attr += 'ext:qtitle="Delete" ext:qtip="'
-                        + ' [% lf.main.pk %](' + record.get('[% lf.main.pk %]') + ')"';
+                        + ' [% cpac_meta.main.pk %](' + record.get('[% cpac_meta.main.pk %]') + ')"';
                     return '<img ext:qtitle="Delete" ext:qtip="'
-                        + ' [% lf.main.pk %](' + record.get('[% lf.main.pk %]') + ')"'
+                        + ' [% cpac_meta.main.pk %](' + record.get('[% cpac_meta.main.pk %]') + ')"'
                         + ' src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bin_closed.png" ) %]" />';
                 }
             }

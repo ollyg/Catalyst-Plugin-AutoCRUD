@@ -5,17 +5,20 @@ use warnings FATAL => 'all';
 use lib qw( t/lib );
 
 use Test::More 'no_plan';
-use JSON;
+use JSON::XS;
 
 # application loads
-BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
+BEGIN {
+    $ENV{AUTOCRUD_TESTING} = 1;
+    use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp"
+}
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get metadata for the copyright table
 $mech->get_ok( '/site/default/schema/dbic/source/copyright/dumpmeta', 'Get copyright autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
-my $response = JSON::from_json( $mech->content );
+my $response = JSON::XS::decode_json( $mech->content );
 
 #use Data::Dumper;
 #print STDERR Dumper $response;
@@ -52,11 +55,13 @@ my $expected = {
     },
     'model'      => 'AutoCRUD::DBIC::Copyright',
     'table2path' => {
-        'Album'        => 'album',
-        'Copyright'    => 'copyright',
-        'Sleeve Notes' => 'sleeve_notes',
-        'Track'        => 'track',
-        'Artist'       => 'artist'
+        'dbic' => {
+            'Album'        => 'album',
+            'Copyright'    => 'copyright',
+            'Sleeve Notes' => 'sleeve_notes',
+            'Track'        => 'track',
+            'Artist'       => 'artist'
+        }
     },
     'tab_order' => { 'AutoCRUD::DBIC::Copyright' => 1 },
     'main'      => {
@@ -86,6 +91,15 @@ my $expected = {
             }
         }
     },
+    'editable' => {
+        'dbic' => {
+            'sleeve_notes' => 1,
+            'artist'       => 1,
+            'album'        => 1,
+            'track'        => 1,
+            'copyright'    => 1,
+        }
+    },
     'path2model' => {
         'dbic' => {
             'sleeve_notes' => 'AutoCRUD::DBIC::SleeveNotes',
@@ -99,7 +113,7 @@ my $expected = {
     'dbpath2model' => { 'dbic' => 'AutoCRUD::DBIC' },
 };
 
-is_deeply( $response->{lf}, $expected, 'Metadata is as we expect' );
+is_deeply( $response->{cpac}, $expected, 'Metadata is as we expect' );
 
 #warn $mech->content;
 __END__

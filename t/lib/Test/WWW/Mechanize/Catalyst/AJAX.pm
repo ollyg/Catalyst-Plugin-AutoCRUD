@@ -2,7 +2,7 @@ package Test::WWW::Mechanize::Catalyst::AJAX;
 
 use base 'Test::WWW::Mechanize::Catalyst';
 use Test::More;
-use JSON;
+use JSON::XS;
 
 sub ajax_ok {
     my ($self, $path, $args, $expected, $message, $dump) = @_;
@@ -10,7 +10,7 @@ sub ajax_ok {
 
     my $post = $self->post_ok( $path, $args, 'POST'. $message );
     my $ct = is( $self->ct, 'application/json', 'AJAX content type'. $message );
-    my $response = JSON::from_json( $self->content );
+    my $response = JSON::XS::decode_json( $self->content );
     shift @{ $response->{rows} } if $path =~ m#/list$#;
 
     if ($dump) {

@@ -1,4 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Skinny;
+BEGIN {
+  $Catalyst::Plugin::AutoCRUD::Controller::Skinny::VERSION = '1.110470';
+}
 
 use strict;
 use warnings FATAL => 'all';
@@ -33,27 +36,31 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
 
     my $page = $c->req->params->{'page'};
     $page = 1 if !defined $page or $page !~ m/^\d+$/;
-    $c->stash->{page} = $page;
+    $c->stash->{cpac_skinny_page} = $page;
 
     my $limit = $c->req->params->{'limit'};
     $limit = 20 if !defined $limit or ($limit ne 'all' and $limit !~ m/^\d+$/);
-    $c->stash->{limit} = $limit;
+    $c->stash->{cpac_skinny_limit} = $limit;
   
-    # XXX we call the stash var sortby so as to appease TT
+    # XXX we don't call the stash var sort, as that upsets TT
     my $sortby = $c->req->params->{'sort'};
-    $sortby = $c->stash->{lf}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
-    $c->stash->{sortby} = $sortby;
+    $sortby = $c->stash->{cpac_meta}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
+    $c->stash->{cpac_skinny_sortby} = $sortby;
 
     my $dir = $c->req->params->{'dir'};
     $dir = 'ASC' if !defined $dir or $dir !~ m/^\w+$/g;
-    $c->stash->{dir} = $dir;
+    $c->stash->{cpac_skinny_dir} = $dir;
 
-    $c->stash->{frontend} = 'skinny';
+    $c->stash->{cpac_frontend} = 'skinny';
 }
 
 # pull in data by forwarding to JSON .../list, then send page and render
 sub browse : Chained('base') Args(0) {
     my ($self, $c) = @_;
+
+    # copy in under aliases for the AJAX list call
+    @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /}
+        = @{$c->stash}{qw/ cpac_skinny_page cpac_skinny_limit cpac_skinny_sortby cpac_skinny_dir /};
 
     $c->forward('/autocrud/ajax/list');
     # need to shift off the filters row
@@ -61,12 +68,12 @@ sub browse : Chained('base') Args(0) {
 
     my $pager = Data::Page->new;
     $pager->total_entries($c->stash->{json_data}->{total});
-    $pager->entries_per_page($c->stash->{limit} eq 'all'
-        ? $c->stash->{json_data}->{total} : $c->stash->{limit});
-    $pager->current_page($c->stash->{page});
+    $pager->entries_per_page($c->stash->{cpac_skinny_limit} eq 'all'
+        ? $c->stash->{json_data}->{total} : $c->stash->{cpac_skinny_limit});
+    $pager->current_page($c->stash->{cpac_skinny_page});
 
-    $c->stash->{pager} = $pager;
-    $c->stash->{title} = $c->stash->{lf}->{main}->{title} .' Browser';
+    $c->stash->{cpac_skinny_pager} = $pager;
+    $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' Browser';
     $c->stash->{template} = 'list.tt';
 
     $c->forward('/autocrud/root/end');

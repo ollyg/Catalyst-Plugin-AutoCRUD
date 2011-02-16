@@ -1,4 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
+BEGIN {
+  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '1.110470';
+}
 
 use strict;
 use warnings FATAL => 'all';
@@ -25,7 +28,7 @@ sub template_vars {
     my ($self, $c) = (shift, $_[0]);
 
     my @vars = $self->next::method(@_);
-    return @vars, ( cpac => $c->config->{'Plugin::AutoCRUD'} );
+    return @vars, ( cpac_config => $c->config->{'Plugin::AutoCRUD'} );
 }
 
 sub process {

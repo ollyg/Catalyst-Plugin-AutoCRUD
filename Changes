@@ -1,3 +1,22 @@
+1.110470  2011-02-16 23:02:18 Europe/London
+
+  * Port to Dist::Zilla
+  * Fix encoding on AJAX (shirirulestheworld rt.cpan #58483)
+
+libcatalyst-plugin-autocrud-perl (0.71_02) UNRELEASED; urgency=low
+
+  * Rename all uses of lf to cpac (legacy ListFramework references)
+  * Make stash use much more polite - use cpac_* namespacing
+  * Add dumpmeta_html endpoint which dumps metadata to HTML
+  * Support for dispatched storage backends via site_conf backend
+  * Add http_charset param to override the (new) default of utf-8
+  * Filter output for HTML entities in skinny frontnend
+  * DBIC ResultSource::View results in a CUD operations being disabled
+  * [temporary] fix for rt.cpan #56250 Views have no primary key(s)
+  * fix for rt.cpan #56795 non-DBIC models can blow up when instantiated
+
+ -- Oliver Gorwits <oliver.gorwits@oucs.ox.ac.uk>  Sun, 02 May 2010 16:43:20 +0100
+
 libcatalyst-plugin-autocrud-perl (0.68) UNRELEASED; urgency=low
 
   * Fix access of schema method via model not to assume proxying (thx nigel) 
