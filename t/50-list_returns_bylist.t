@@ -3,7 +3,7 @@
 use strict;
 use warnings FATAL => 'all';
 use lib qw( t/lib );
-use JSON::Any;
+use JSON::XS;
 
 use Test::More 'no_plan';
 
@@ -16,7 +16,7 @@ BEGIN {
 my $mech = Test::WWW::Mechanize::Catalyst::AJAX->new;
 
 $mech->get_ok("/autocrud/site/default/schema/dbic/source/album/dumpmeta", "Get metadata for album table");
-my $content = JSON::Any->from_json($mech->content);
+my $content = JSON::XS::decode_json($mech->content);
 
 ok(exists $content->{site_conf}->{dbic}->{album}->{headings}, 'headings created from list_returns');
 

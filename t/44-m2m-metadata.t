@@ -5,6 +5,7 @@ use warnings FATAL => 'all';
 use lib qw( t/lib );
 
 use Test::More 'no_plan';
+use JSON::XS;
 
 # application loads
 BEGIN {
@@ -17,7 +18,7 @@ my $mech = Test::WWW::Mechanize::Catalyst->new;
 $mech->get_ok( '/site/default/schema/dbic/source/album/dumpmeta', 'Get album autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
-my $response = JSON::from_json( $mech->content );
+my $response = JSON::XS::decode_json( $mech->content );
 
 #use Data::Dumper;
 #print STDERR Dumper $response;

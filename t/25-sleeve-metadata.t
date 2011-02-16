@@ -5,7 +5,7 @@ use warnings FATAL => 'all';
 use lib qw( t/lib );
 
 use Test::More 'no_plan';
-use JSON;
+use JSON::XS;
 
 # application loads
 BEGIN {
@@ -19,7 +19,7 @@ $mech->get_ok( '/site/default/schema/dbic/source/sleeve_notes/dumpmeta',
     'Get sleeve_notes autocrud metadata' );
 is( $mech->ct, 'application/json', 'Metadata content type' );
 
-my $response = JSON::from_json( $mech->content );
+my $response = JSON::XS::decode_json( $mech->content );
 
 #use Data::Dumper;
 #print STDERR Dumper $response;
