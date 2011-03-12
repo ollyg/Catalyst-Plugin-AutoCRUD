@@ -17,7 +17,8 @@ my $default_sleeve_notes_page = {
                       {
                         'id' => 1,
                         'text' => 'This is a groovy album.',
-                        'album_id' => 'DJ Mix 2'
+                        'album_id' => 'DJ Mix 2',
+                        'nonexistent_things' => [],
                       }
                     ]
 };

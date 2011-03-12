@@ -29,6 +29,7 @@ my $expected = {
         'AutoCRUD::DBIC::SleeveNotes' => {
             'pk'        => 'id',
             'moniker'   => 'SleeveNotes',
+            'mfks'      => { 'nonexistent_things' => 'Nonexistent Things' },
             'col_order' => [ 'id', 'text', 'album_id' ],
             'path'      => 'sleeve_notes',
             'title'     => 'Sleeve Notes',
@@ -125,6 +126,7 @@ my $expected = {
     'main' => {
         'pk'        => 'id',
         'moniker'   => 'SleeveNotes',
+        'mfks'      => { 'nonexistent_things' => 'Nonexistent Things' },
         'col_order' => [ 'id', 'text', 'album_id' ],
         'path'      => 'sleeve_notes',
         'title'     => 'Sleeve Notes',
