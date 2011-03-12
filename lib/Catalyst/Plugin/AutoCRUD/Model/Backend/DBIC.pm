@@ -244,7 +244,8 @@ sub list {
                 $data->{$m} = [ map { _sfy($_) } map {$_->$target} $row->$m->all ];
             }
             else {
-                $data->{$m} = [ map { _sfy($_) } $row->$m->all ];
+                # avoid dieing in the present of dangling rels
+                $data->{$m} = eval { [ map { _sfy($_) } $row->$m->all ] } || [];
             }
         }
         push @{$response->{rows}}, $data;
