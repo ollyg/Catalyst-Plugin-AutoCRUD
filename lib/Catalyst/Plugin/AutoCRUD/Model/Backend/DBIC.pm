@@ -5,6 +5,8 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Model';
 
+use Data::Page;
+
 use List::Util qw(first);
 use Scalar::Util qw(blessed);
 use overload ();
