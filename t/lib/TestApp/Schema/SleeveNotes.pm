@@ -26,5 +26,14 @@ __PACKAGE__->belongs_to("album_id", "TestApp::Schema::Album", { id => "album_id"
 # Created by DBIx::Class::Schema::Loader v0.04999_05 @ 2008-08-03 20:38:57
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KHS2SrT7ZnxECLzSP58k3Q
 
+our $skip_dangling_rels;
+unless( $skip_dangling_rels ){
+    __PACKAGE__->has_many(
+        'nonexistent_things',
+        'Nonexistent::Schema::Noggin',
+        { id => 'noggin_id' },
+      );
+}
+
 # You can replace this text with custom content, and it will be preserved on regeneration
 1;

@@ -31,6 +31,7 @@
             "Catalyst::View::JSON" : 0,
             "Catalyst::View::TT" : 0,
             "DBIx::Class::Schema::Loader" : 0,
+            "Data::Page" : 0,
             "Devel::InnerPackage" : 0,
             "File::Basename" : 0,
             "File::stat" : 0,
@@ -69,6 +70,6 @@
          "web" : "https://github.com/ollyg/Catalyst-Plugin-AutoCRUD"
       }
    },
-   "version" : "1.110471"
+   "version" : "1.110730"
 }
 

@@ -1,3 +1,7 @@
+1.110730  2011-03-14 09:24:22 Europe/London
+
+  * Avoid dieing in the presence of relations whose target class is missing
+
 1.110471  2011-02-16 23:13:52 Europe/London
 
   * Fix Dist::Zilla config to include full dependencies list

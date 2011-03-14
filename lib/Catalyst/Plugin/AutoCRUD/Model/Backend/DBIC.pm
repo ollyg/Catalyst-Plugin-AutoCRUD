@@ -1,12 +1,14 @@
 package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::VERSION = '1.110471';
+  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::VERSION = '1.110730';
 }
 
 use strict;
 use warnings FATAL => 'all';
 
 use base 'Catalyst::Model';
+
+use Data::Page;
 
 use List::Util qw(first);
 use Scalar::Util qw(blessed);
@@ -245,7 +247,8 @@ sub list {
                 $data->{$m} = [ map { _sfy($_) } map {$_->$target} $row->$m->all ];
             }
             else {
-                $data->{$m} = [ map { _sfy($_) } $row->$m->all ];
+                # avoid dieing in the present of dangling rels
+                $data->{$m} = eval { [ map { _sfy($_) } $row->$m->all ] } || [];
             }
         }
         push @{$response->{rows}}, $data;

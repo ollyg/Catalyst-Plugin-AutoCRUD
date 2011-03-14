@@ -42,6 +42,7 @@ my %WriteMakefileArgs = (
     'Catalyst::View::JSON' => '0',
     'Catalyst::View::TT' => '0',
     'DBIx::Class::Schema::Loader' => '0',
+    'Data::Page' => '0',
     'Devel::InnerPackage' => '0',
     'File::Basename' => '0',
     'File::stat' => '0',
@@ -51,7 +52,7 @@ my %WriteMakefileArgs = (
     'Scalar::Util' => '0',
     'overload' => '0'
   },
-  'VERSION' => '1.110471',
+  'VERSION' => '1.110730',
   'test' => {
     'TESTS' => 't/*.t'
   }

@@ -7,9 +7,19 @@ use lib qw( t/lib );
 use Test::More 'no_plan';
 use Storable;
 
+use DBIx::Class;
+
+my $skip_dangling_rels;
+BEGIN {
+    # remove dangling relation from tests if DBIC is too old to avoid
+    # dieing on this cascading delete
+    $skip_dangling_rels = $TestApp::Schema::SleeveNotes::skip_dangling_rels = $DBIx::Class::VERSION <= 0.08127;
+}
+
 # application loads
 BEGIN { use_ok "Test::WWW::Mechanize::Catalyst::AJAX" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst::AJAX->new;
+
 
 my $default_sleeve_notes_page = {
           'total' => 1,
@@ -17,7 +27,8 @@ my $default_sleeve_notes_page = {
                       {
                         'id' => 1,
                         'text' => 'This is a groovy album.',
-                        'album_id' => 'DJ Mix 2'
+                        'album_id' => 'DJ Mix 2',
+                        ( $skip_dangling_rels ? () : ('nonexistent_things' => [])),
                       }
                     ]
 };

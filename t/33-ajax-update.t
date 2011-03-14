@@ -94,7 +94,8 @@ my $new_sleeve_page = {
                       {
                         'id' => 2,
                         'text' =>'Very cool album indeed!', 
-                        'album_id' => 'Greatest Hits 2' 
+                        'album_id' => 'Greatest Hits 2',
+                        'nonexistent_things' => [],
                       }
                     ]
 };

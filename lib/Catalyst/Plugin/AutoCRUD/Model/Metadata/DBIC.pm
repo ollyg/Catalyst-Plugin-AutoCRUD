@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC::VERSION = '1.110471';
+  $Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC::VERSION = '1.110730';
 }
 
 use strict;
@@ -307,8 +307,9 @@ sub _build_table_info {
     # extra data for foreign key columns
     foreach my $col (keys %fks, keys %sfks) {
 
+        # eval to avoid dieing in the presence of dangling rels
         $ti->{cols}->{$col}->{fk_model}
-            = _moniker2model( $c, $cpac, $c->stash->{cpac_db}, $source->related_source($col)->source_name );
+            = eval { _moniker2model( $c, $cpac, $c->stash->{cpac_db}, $source->related_source($col)->source_name )};
         next if !defined $ti->{cols}->{$col}->{fk_model};
 
         # override the heading for this col to be the foreign table name
@@ -354,7 +355,9 @@ sub _build_table_info {
 sub _ism2m {
     my ($source, $rel) = @_;
 
-    my $fsource = $source->related_source($rel);
+    # avoid dieing in the resence of dangling rels
+    my $fsource = eval { $source->related_source($rel) }
+        or return 0;
     my @frels = $fsource->relationships;
     return 0 if scalar @frels != 2 or scalar $fsource->columns > 3;
 

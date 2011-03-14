@@ -34,6 +34,7 @@ requires:
   Catalyst::View::JSON: 0
   Catalyst::View::TT: 0
   DBIx::Class::Schema::Loader: 0
+  Data::Page: 0
   Devel::InnerPackage: 0
   File::Basename: 0
   File::stat: 0
@@ -46,4 +47,4 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Catalyst-Plugin-AutoCRUD
   homepage: https://github.com/ollyg/Catalyst-Plugin-AutoCRUD/wiki
   repository: git://github.com/ollyg/Catalyst-Plugin-AutoCRUD.git
-version: 1.110471
+version: 1.110730
