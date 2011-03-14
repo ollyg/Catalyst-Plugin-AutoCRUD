@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC::VERSION = '1.110730';
+  $Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC::VERSION = '1.110731';
 }
 
 use strict;

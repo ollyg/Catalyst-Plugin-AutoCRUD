@@ -1,4 +1,5 @@
-package DemoApp;
+package # hide from PAUSE
+    DemoApp;
 
 use Catalyst qw/-Debug
                 ConfigLoader

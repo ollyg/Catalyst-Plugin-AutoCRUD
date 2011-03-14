@@ -1,3 +1,7 @@
+1.110731  2011-03-14 20:14:06 Europe/London
+
+  * Fix example DemoApp to hide package name from PAUSE
+
 1.110730  2011-03-14 09:24:22 Europe/London
 
   * Avoid dieing in the presence of relations whose target class is missing
