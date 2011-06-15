@@ -74,7 +74,7 @@ sub filter {
             $remote_table = $schema->get_table($remote_table)
                 if not blessed $remote_table;
 
-            if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
+            if (scalar (grep {not ($_->is_unique)} $c->fields) == 0) {
                 add_to_rels_at(scalar $remote_table->extra, {
                     name => $local_table->name,
                     reference_table => $local_table->name,
