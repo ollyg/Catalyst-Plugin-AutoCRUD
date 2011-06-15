@@ -85,7 +85,7 @@ sub filter {
             @remote_names = (@remote_names, reverse @remote_names);
 
             # we don't make a hash as it could be a many_to_many to same table
-            # must be two rels to different tables to have two keys
+            # but it must be two relations only for this heuristic to work
             if (scalar @remote_names == 4) {
                 while ( my ($left, $right) = splice(@remote_names, 0, 2) ) {
                     add_to_rels_at(scalar $schema->get_table($left)->extra, {
