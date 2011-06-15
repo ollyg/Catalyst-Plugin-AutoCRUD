@@ -74,49 +74,47 @@ sub filter {
             $remote_table = $schema->get_table($remote_table)
                 if not blessed $remote_table;
 
-            if (scalar (grep {not ($_->is_unique)} $c->fields) == 0) {
-                add_to_rels_at(scalar $remote_table->extra, {
-                    name => $local_table->name,
-                    reference_table => $local_table->name,
-                    reference_fields => [$c->fields],
-                    extra => {
-                        dbic_type => 'might_have',
-                        via => $c->name,
-                        from => $local_table->name,
-                    }
-                });
+            # start by checking whether we're on m2m link table
+            my @remote_names = ();
+
+            foreach my $rel ($local_table->get_constraints) {
+                next unless $rel->type eq FOREIGN_KEY;
+                next unless scalar (grep {$_->is_nullable} $rel->fields) == 0;
+                push @remote_names, $rel->reference_table.'';
+            }
+            @remote_names = (@remote_names, reverse @remote_names);
+
+            # we don't make a hash as it could be a many_to_many to same table
+            # must be two rels to different tables to have two keys
+            if (scalar @remote_names == 4) {
+                while ( my ($left, $right) = splice(@remote_names, 0, 2) ) {
+                    add_to_rels_at(scalar $schema->get_table($left)->extra, {
+                        name => $right,
+                        reference_table => $right,
+                        reference_fields => [$schema->get_table($right)->primary_key->fields],
+                        extra => {
+                            dbic_type => 'many_to_many',
+                            via => $c->name,
+                            from => $local_table->name,
+                        },
+                    });
+                }
             }
             else {
-                # we could be sat on a m2m link table
-                my @remote_names = ();
-                my $is_m2m = 0;
-
-                foreach my $rel ($local_table->get_constraints) {
-                    next unless $rel->type eq FOREIGN_KEY;
-                    next unless scalar (grep {$_->is_nullable} $rel->fields) == 0;
-                    push @remote_names, $rel->reference_table.'';
+                if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
+                    # all FK are unique so is one-to-one
+                    add_to_rels_at(scalar $remote_table->extra, {
+                        name => $local_table->name,
+                        reference_table => $local_table->name,
+                        reference_fields => [$c->fields],
+                        extra => {
+                            dbic_type => 'might_have',
+                            via => $c->name,
+                            from => $local_table->name,
+                        }
+                    });
                 }
-
-                my %remote_lkp = (@remote_names, reverse @remote_names);
-
-                # must be two rels to different tables to have two keys
-                if (scalar keys %remote_lkp == 2) {
-                    foreach my $left (keys %remote_lkp) {
-                        add_to_rels_at(scalar $schema->get_table($left)->extra, {
-                            name => $remote_lkp{$left},
-                            reference_table => $remote_lkp{$left},
-                            reference_fields => [$schema->get_table($remote_lkp{$left})->primary_key->fields],
-                            extra => {
-                                dbic_type => 'many_to_many',
-                                via => $c->name,
-                                from => $local_table->name,
-                            },
-                        });
-                    }
-                    ++$is_m2m;
-                }
-
-                if (not $is_m2m) {
+                else {
                     add_to_rels_at(scalar $remote_table->extra, {
                         name => $local_table->name,
                         reference_table => $local_table->name,
