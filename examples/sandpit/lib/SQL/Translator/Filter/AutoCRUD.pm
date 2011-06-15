@@ -27,19 +27,28 @@ sub add_to_rels_at {
         $constraint->name($name);
     }
 
-    if ($loc->{seen}->{$name}++
-        and $config->{extra}->{dbic_type} ne 'many_to_many') {
+    if ($loc->{seen}->{$name}++) {
         # we have multiple rels between same two tables
         # rename each to refer to the rel on which it is based
 
+        # this is a bit yuk and I'm not sure we want it to be so complicated
+        # simply in order to support three way link tables
+
         if (exists $loc->{_relationships}->{$name}) {
-            my $orig_name = $name .'_via_'. $loc->{_relationships}->{$name}->{extra}->{via};
-            $loc->{_relationships}->{$name}->name($orig_name);
-            $loc->{_relationships}->{$name}->{extra}->{label} = make_label($orig_name);
-            $loc->{_relationships}->{$orig_name} = delete $loc->{_relationships}->{$name};
+            return if $config->{extra}->{from}
+                      eq $loc->{_relationships}->{$name}->{extra}->{from};
+
+            my $n_type = $loc->{_relationships}->{$name}->{extra}->{dbic_type}
+                    eq 'many_to_many' ? 'from' : 'via';
+            my $new_name = $name ."_${n_type}_"
+                    . $loc->{_relationships}->{$name}->{extra}->{$n_type};
+            $loc->{_relationships}->{$name}->name($new_name);
+            $loc->{_relationships}->{$name}->{extra}->{label} = make_label($new_name);
+            $loc->{_relationships}->{$new_name} = delete $loc->{_relationships}->{$name};
         }
 
-        $name = $name .'_via_'. $config->{extra}->{via};
+        my $type = $config->{extra}->{dbic_type} eq 'many_to_many' ? 'from' : 'via';
+        $name = $name ."_${type}_". $config->{extra}->{$type};
         $constraint->name($name);
     }
 
@@ -82,12 +91,14 @@ sub filter {
                 next unless scalar (grep {$_->is_nullable} $rel->fields) == 0;
                 push @remote_names, $rel->reference_table.'';
             }
-            @remote_names = (@remote_names, reverse @remote_names);
 
             # we don't make a hash as it could be a many_to_many to same table
-            # but it must be two relations only, for this heuristic to work
-            if (scalar @remote_names == 4) {
-                while ( my ($left, $right) = splice(@remote_names, 0, 2) ) {
+            # but it must be at least two relations, for this heuristic to work
+            if (scalar @remote_names >= 2) {
+                use Algorithm::Permute;
+                my $p = Algorithm::Permute->new(\@remote_names, 2);
+
+                while ( my ($left, $right) = $p->next ) {
                     add_to_rels_at(scalar $schema->get_table($left)->extra, {
                         name => $right,
                         reference_table => $right,
