@@ -74,7 +74,7 @@ sub filter {
             $remote_table = $schema->get_table($remote_table)
                 if not blessed $remote_table;
 
-            if (scalar (grep {not $_->is_unique} $c->fields) == 0) {
+            if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
                 add_to_rels_at(scalar $remote_table->extra, {
                     name => $local_table->name,
                     reference_table => $local_table->name,
@@ -129,19 +129,8 @@ sub filter {
                     });
                 }
             }
-
-            add_to_rels_at(scalar $local_table->extra, {
-                name => $remote_table->name,
-                reference_table => $remote_table->name,
-                reference_fields => [$c->reference_fields],
-                extra => {
-                    dbic_type => ((scalar (grep {$_->is_nullable} $c->fields) == 0) ? 'has_one' : 'might_have'),
-                    via => $c->name,
-                    from => $local_table->name,
-                },
-            });
-        }
-    }
-}
+        } # constraints
+    } # tables
+} # sub filter
 
 1;
