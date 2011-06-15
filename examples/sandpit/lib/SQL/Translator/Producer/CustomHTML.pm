@@ -72,7 +72,7 @@ sub produce {
             $q->hr;
     }
 
-    @table_names = grep { length $_->name } $schema->get_tables; 
+    @table_names = sort {$a->name cmp $b->name}  grep { length $_->name } $schema->get_tables; 
 
     if ($linktable) {
         # Generate top menu, with links to full table information
@@ -139,6 +139,7 @@ sub produce {
                 map { $q->li(
                     '<a href="#'. $_->reference_table .'">'
                         . $_->extra->{label} .'</a> ('. $_->extra->{dbic_type} .')'
+                        .' from <a href="#'. $_->extra->{from} .'">'. $_->extra->{from} .'</a>'
                 ) } sort {$a->extra->{label} cmp $b->extra->{label}}
                          values %{ $table->extra->{_relationships} }
             ), $q->br;
