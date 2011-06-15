@@ -19,9 +19,6 @@ sub add_to_rels_at {
     use SQL::Translator::Schema::Constraint;
     use Lingua::EN::Inflect::Number;
 
-    #use Data::Dumper;
-    #print STDERR Dumper [@_];
-
     my $constraint = SQL::Translator::Schema::Constraint->new($config);
     my $name = $config->{name};
 
@@ -29,15 +26,18 @@ sub add_to_rels_at {
         $name = Lingua::EN::Inflect::Number::to_PL($name);
         $constraint->name($name);
     }
-    if (exists $loc->{_relationships}->{$name}
+
+    if ($loc->{seen}->{$name}++
         and $config->{extra}->{dbic_type} ne 'many_to_many') {
-        # we have two rels between same two tables
+        # we have multiple rels between same two tables
         # rename each to refer to the rel on which it is based
 
-        my $orig_name = $name .'_via_'. $loc->{_relationships}->{$name}->{extra}->{via};
-        $loc->{_relationships}->{$name}->name($orig_name);
-        $loc->{_relationships}->{$name}->{extra}->{label} = make_label($orig_name);
-        $loc->{_relationships}->{$orig_name} = delete $loc->{_relationships}->{$name};
+        if (exists $loc->{_relationships}->{$name}) {
+            my $orig_name = $name .'_via_'. $loc->{_relationships}->{$name}->{extra}->{via};
+            $loc->{_relationships}->{$name}->name($orig_name);
+            $loc->{_relationships}->{$name}->{extra}->{label} = make_label($orig_name);
+            $loc->{_relationships}->{$orig_name} = delete $loc->{_relationships}->{$name};
+        }
 
         $name = $name .'_via_'. $config->{extra}->{via};
         $constraint->name($name);
@@ -85,7 +85,7 @@ sub filter {
             @remote_names = (@remote_names, reverse @remote_names);
 
             # we don't make a hash as it could be a many_to_many to same table
-            # but it must be two relations only for this heuristic to work
+            # but it must be two relations only, for this heuristic to work
             if (scalar @remote_names == 4) {
                 while ( my ($left, $right) = splice(@remote_names, 0, 2) ) {
                     add_to_rels_at(scalar $schema->get_table($left)->extra, {
@@ -103,6 +103,7 @@ sub filter {
             else {
                 if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
                     # all FK are unique so is one-to-one
+                    # but we cannot distinguish has_one/might_have
                     add_to_rels_at(scalar $remote_table->extra, {
                         name => $local_table->name,
                         reference_table => $local_table->name,
