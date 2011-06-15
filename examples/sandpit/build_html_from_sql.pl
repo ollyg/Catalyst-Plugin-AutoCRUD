@@ -6,9 +6,11 @@ use warnings FATAL => 'all';
 use DBI;
 use File::Temp;
 
+my $sql_file = $ARGV[0] || 'music.sql';
+
 my $dbfile = File::Temp->new( UNLINK => 1, EXLOCK => 0);
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile",'','');
-open my $sql_fh, 'music.sql' or die "Can't read SQL file: $!";
+open my $sql_fh, $sql_file or die "Can't read SQL file: $!";
 {
     local $/ = '';  # empty line(s) are delimeters
     while (<$sql_fh>) {
