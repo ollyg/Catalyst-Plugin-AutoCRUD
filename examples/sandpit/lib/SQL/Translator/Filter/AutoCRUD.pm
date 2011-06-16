@@ -3,6 +3,10 @@ package SQL::Translator::Filter::AutoCRUD;
 use strict;
 use warnings FATAL => 'all';
 use Scalar::Util 'blessed';
+use Lingua::EN::Inflect::Number;
+use SQL::Translator::Schema::Constraint;
+use SQL::Translator::Schema::Constants 'FOREIGN_KEY';
+use Algorithm::Permute;
 
 sub make_label { return join ' ', map ucfirst, split /[\W_]+/, lc shift }
 
@@ -16,8 +20,6 @@ sub make_path {
 
 sub add_to_rels_at {
     my ($loc, $config) = @_;
-    use SQL::Translator::Schema::Constraint;
-    use Lingua::EN::Inflect::Number;
 
     my $constraint = SQL::Translator::Schema::Constraint->new($config);
     my $name = $config->{name};
@@ -33,10 +35,10 @@ sub add_to_rels_at {
         # rename each to refer to the rel on which it is based
 
         if (exists $loc->{_relationships}->{$name}) {
-            my $orig_name = $name .'_via_'. $loc->{_relationships}->{$name}->{extra}->{via};
-            $loc->{_relationships}->{$name}->name($orig_name);
-            $loc->{_relationships}->{$name}->{extra}->{label} = make_label($orig_name);
-            $loc->{_relationships}->{$orig_name} = delete $loc->{_relationships}->{$name};
+            my $uniq_name = $name .'_via_'. $loc->{_relationships}->{$name}->{extra}->{via};
+            $loc->{_relationships}->{$name}->name($uniq_name);
+            $loc->{_relationships}->{$name}->{extra}->{label} = make_label($uniq_name);
+            $loc->{_relationships}->{$uniq_name} = delete $loc->{_relationships}->{$name};
         }
 
         $name = $name .'_via_'. $config->{extra}->{via};
@@ -65,7 +67,6 @@ sub filter {
             $local_field->extra->{path_part} = make_path($local_field->name);
         }
 
-        use SQL::Translator::Schema::Constants 'FOREIGN_KEY';
         foreach my $c ($local_table->get_constraints) {
             next unless $c->type eq FOREIGN_KEY;
             next if $local_table->extra->{seen}->{$c->name}++;
@@ -82,12 +83,13 @@ sub filter {
                 next unless scalar (grep {$_->is_nullable} $rel->fields) == 0;
                 push @remote_names, $rel->reference_table.'';
             }
-            @remote_names = (@remote_names, reverse @remote_names);
 
             # we don't make a hash as it could be a many_to_many to same table
-            # but it must be two relations only, for this heuristic to work
-            if (scalar @remote_names == 4) {
-                while ( my ($left, $right) = splice(@remote_names, 0, 2) ) {
+            # but it must be at least two relations, for this heuristic to work
+            if (scalar @remote_names >= 2) {
+                my $p = Algorithm::Permute->new(\@remote_names, 2);
+
+                while ( my ($left, $right) = $p->next ) {
                     add_to_rels_at(scalar $schema->get_table($left)->extra, {
                         name => $right,
                         reference_table => $right,
