@@ -244,16 +244,22 @@ sub produce {
                 $q->h3('Constraints'),
                 $q->start_table({ -border => 1 }),
                     $q->Tr({ -class => 'IndexRow' },
-                        $q->th([ 'Type', 'Fields' ]) 
+                        $q->th([ 'Name', 'Type', 'Fields', 'Extra' ])
                     );
 
-            for my $c ( @constraints ) {
+            for my $c ( sort {$a->name cmp $b->name } @constraints ) {
+                my $name   = $c->name || '';
                 my $type   = $c->type || '';
                 my $fields = join( ', ', $c->fields ) || '';
+                my $extra = join ',<br>', map {
+                    (ref $c->extra->{$_} eq ref '')
+                        ? ("$_ = ". $c->extra->{$_})
+                        : ("$_ = ". ref $c->extra->{$_})
+                } sort {$a cmp $b} grep {$_ !~ m/^_/} keys %{$c->extra};
 
                 push @html,
                     $q->Tr({ -class => 'IndexCell' },
-                        $q->td( [ $type, $fields ] )
+                        $q->td( [ $name, $type, $fields, $extra ] )
                     );
             }
 

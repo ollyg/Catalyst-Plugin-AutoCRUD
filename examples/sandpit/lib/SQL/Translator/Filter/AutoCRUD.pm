@@ -45,6 +45,7 @@ sub add_to_rels_at {
         $constraint->name($name);
     }
 
+    $constraint->extra->{from_autocrud} = 1;
     $constraint->extra->{label} = make_label($name);
     $loc->{_relationships}->{$name} = $constraint;
 }
@@ -132,6 +133,15 @@ sub filter {
             }
         } # constraints
     } # tables
+
+    foreach my $table ($schema->get_tables) {
+        $table = $schema->get_table($table)
+            if not blessed $table;
+
+        next unless exists $table->extra->{_relationships};
+        $table->add_constraint($_) for values %{ $table->extra->{_relationships} };
+        delete $table->extra->{_relationships};
+    }
 } # sub filter
 
 1;
