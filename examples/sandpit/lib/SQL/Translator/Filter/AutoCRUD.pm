@@ -45,7 +45,7 @@ sub add_to_rels_at {
         $constraint->name($name);
     }
 
-    $constraint->extra->{from_autocrud} = 1;
+    $constraint->extra->{is_reverse} = 1;
     $constraint->extra->{label} = make_label($name);
     $loc->{_relationships}->{$name} = $constraint;
 }
