@@ -18,7 +18,6 @@ sub setup_components {
         Controller::Static
         Controller::AJAX
         Controller::Skinny
-        Model::Metadata::DBIC
         Model::Backend::DBIC
         View::JSON
         View::TT
@@ -60,6 +59,21 @@ sub setup_components {
         and exists $class->config->{$config_key}->{basepath}) {
         $class->config->{'Controller::AutoCRUD::Root'}->{action}->{base}->{PathPart}
             = $class->config->{$config_key}->{basepath};
+    }
+
+    # any additional backends requested
+    if (exists $class->config->{$config_key}->{backends}) {
+        my @backends = ref $class->config->{$config_key}->{backends} eq ref ''
+            ? $class->config->{$config_key}->{backends}
+            : @{ $class->config->{$config_key}->{backends} };
+
+        # they will be componentized below
+        push @packages, map {'Model::Backend::' . $_} @backends;
+
+        # this so that they can be forwarded to in the controller
+        my %m = map {('Model::AutoCRUD::Backend::' . $_) => 1} @backends;
+        ++$m{'Model::AutoCRUD::Backend::DBIC'};
+        $class->config->{$config_key}->{backends} = [ keys %m ];
     }
 
     foreach my $orig (@packages) {

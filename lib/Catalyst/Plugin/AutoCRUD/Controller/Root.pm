@@ -141,15 +141,10 @@ sub verboden : Private {
 }
 
 # when user has not selected a source, we don't know which backend to use
-sub _enumerate_metadata_backends {
+sub _enumerate_backends {
     my ($self, $c) = @_;
-    my $config = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}};
-    my @backends = qw/Model::AutoCRUD::Metadata::DBIC/;
 
-    foreach my $s (sort keys %$config) {
-        next unless exists $config->{$s} and exists $config->{$s}->{backend_meta};
-        push @backends, $config->{$s}->{backend_meta};
-    }
+    my @backends = @{ $c->config->{'Plugin::AutoCRUD'}->{backends} };
     $c->log->debug(join ':', 'Backends are', ' ', @backends) if $c->debug;
     return @backends;
 }
@@ -162,7 +157,7 @@ sub err_message : Private {
 
     # forward to each metadata builder to provide db data
     if (!defined $c->stash->{cpac_meta}->{db2path}) {
-        foreach my $backend ($self->_enumerate_metadata_backends($c)) {
+        foreach my $backend ($self->_enumerate_backends($c)) {
             $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
                 $c->stash->{cpac_meta}, $c->forward($backend));
         }
@@ -199,7 +194,7 @@ sub build_site_config : Private {
     }
 
     # first, prime our structure of schema and source aliases
-    foreach my $backend ($self->_enumerate_metadata_backends($c)) {
+    foreach my $backend ($self->_enumerate_backends($c)) {
         # get stash of db path parts
         my $meta = $c->forward($backend, 'build_db_info');
         foreach my $db (keys %{$meta->{dbpath2model}}) {
