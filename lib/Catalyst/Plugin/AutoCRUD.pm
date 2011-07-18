@@ -75,6 +75,10 @@ sub setup_components {
         ++$m{'Model::AutoCRUD::Backend::DBIC'};
         $class->config->{$config_key}->{backends} = [ keys %m ];
     }
+    else {
+        $class->config->{$config_key}->{backends} =
+            [ 'Model::AutoCRUD::Backend::DBIC' ];
+    }
 
     foreach my $orig (@packages) {
         (my $p = $orig) =~ s/::/::AutoCRUD::/;
