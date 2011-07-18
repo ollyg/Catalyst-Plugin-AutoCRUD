@@ -52,27 +52,27 @@ sub end : ActionClass('RenderView') {}
 
 sub create : Chained('base') Args(0) {
     my ($self, $c) = @_; 
-    $c->forward($c->stash->{cpac_backend_store}, 'create');
+    $c->forward($c->stash->{cpac_backend}, 'create');
 }
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend_store}, 'list');
+    $c->forward($c->stash->{cpac_backend}, 'list');
 }
 
 sub update : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend_store}, 'update');
+    $c->forward($c->stash->{cpac_backend}, 'update');
 }
 
 sub delete : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend_store}, 'delete');
+    $c->forward($c->stash->{cpac_backend}, 'delete');
 }
 
 sub list_stringified : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend_store}, 'list_stringified');
+    $c->forward($c->stash->{cpac_backend}, 'list_stringified');
 }
 
 # send our generated config back in JSON for debugging

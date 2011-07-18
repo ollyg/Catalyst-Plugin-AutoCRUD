@@ -1,13 +1,16 @@
-package Catalyst::Plugin::AutoCRUD::Model::Metadata::DBIC;
+package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata;
 
 use strict;
 use warnings FATAL => 'all';
 
-use base 'Catalyst::Model';
+our @EXPORT;
+BEGIN {
+    use base 'Exporter';
+    @EXPORT = qw/ build_metadata build_table_info_for_db build_db_info /;
+}
+
 use Scalar::Util qw(weaken);
 use Carp;
-
-__PACKAGE__->mk_classdata(_schema_cache => {});
 
 my %xtype_for = (
     boolean => 'checkbox',
@@ -49,7 +52,7 @@ $xtype_for{$_} = 'xdatetime' for (
     'timestamp with time zone',
 );
 
-sub process {
+sub build_metadata {
     my ($self, $c) = @_;
 
     if (exists $c->stash->{cpac_db} and defined $c->stash->{cpac_db}

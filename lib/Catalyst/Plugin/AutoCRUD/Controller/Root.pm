@@ -102,13 +102,7 @@ sub do_meta : Private {
     my $db = $c->stash->{cpac_db};
     my $site = $c->stash->{cpac_site};
 
-    $c->stash->{cpac_backend_store} =
-        $c->stash->{site_conf}->{$db}->{backend_store} ||
-        ('Model::AutoCRUD::Backend::'. ($c->stash->{site_conf}->{$db}->{backend} || 'DBIC'));
-    $c->stash->{cpac_backend_meta} =
-        $c->stash->{site_conf}->{$db}->{backend_meta} ||
-        ('Model::AutoCRUD::Metadata::'. ($c->stash->{site_conf}->{$db}->{backend} || 'DBIC'));
-
+    $c->stash->{cpac_backend} = 'Model::AutoCRUD::Backend::DBIC'; # FIXME
     $c->forward('build_site_config');
 
     # ACLs on the schema and source from site config
@@ -129,7 +123,7 @@ sub do_meta : Private {
         }
     }
 
-    $c->stash->{cpac_meta} = $c->forward($c->stash->{cpac_backend_meta});
+    $c->stash->{cpac_meta} = $c->forward($c->stash->{cpac_backend}, 'build_metadata');
     $c->detach('err_message') if !defined $c->stash->{cpac_meta}->{model};
 }
 
@@ -159,7 +153,7 @@ sub err_message : Private {
     if (!defined $c->stash->{cpac_meta}->{db2path}) {
         foreach my $backend ($self->_enumerate_backends($c)) {
             $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-                $c->stash->{cpac_meta}, $c->forward($backend));
+                $c->stash->{cpac_meta}, $c->forward($backend, 'build_metadata'));
         }
     }
 
@@ -168,11 +162,9 @@ sub err_message : Private {
     if (scalar keys %{$c->stash->{cpac_meta}->{dbpath2model}} == 1) {
         my $db = [keys %{$c->stash->{cpac_meta}->{dbpath2model}}]->[0];
         $c->stash->{cpac_db} = $db;
-        my $backend = (exists $c->stash->{site_conf}->{$db}->{backend_meta}
-            ? $c->stash->{site_conf}->{$db}->{backend_meta}
-            : 'Model::AutoCRUD::Metadata::DBIC'); # the default
+        my $backend = 'Model::AutoCRUD::Backend::DBIC'; # FIXME
         $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-            $c->stash->{cpac_meta}, $c->forward($backend));
+            $c->stash->{cpac_meta}, $c->forward($backend, 'build_metadata'));
     }
 
     $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
