@@ -14,7 +14,7 @@ my %mime = (
     js  => 'application/x-javascript',
 );
 
-# erm, this is a bit sick. it's basically Catalyst::Plugin::Static on the
+# erm, this is a bit naughty. it's basically Catalyst::Plugin::Static on the
 # cheap. there are a couple of nice icons we want to make sure the users have
 # but it'd be too much hassle to ask them to install, so we bundle them.
 #
