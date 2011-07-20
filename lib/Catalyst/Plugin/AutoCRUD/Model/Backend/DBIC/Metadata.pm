@@ -6,7 +6,8 @@ use warnings FATAL => 'all';
 our @EXPORT;
 BEGIN {
     use base 'Exporter';
-    @EXPORT = qw/ build_metadata build_table_info_for_db build_db_info /;
+    @EXPORT = qw/ schema_display_names source_display_names
+                  build_metadata build_table_info_for_db build_db_info /;
 }
 
 use Scalar::Util qw(weaken);
@@ -109,6 +110,105 @@ sub build_table_info_for_db {
         $cpac->{path2model}->{$db}->{ $p } = $model;
         $cpac->{editable}->{$db}->{$p} = not eval { $source->isa('DBIx::Class::ResultSource::View') };
     }
+}
+
+# return mapping of uril path part to friendly display names
+# for each result source within a given schema.
+# also generate a cache of which App Model supports which source.
+# die if the schema is not supported by this backend.
+sub source_display_names {
+    my ($self, $c, $schema_path) = @_;
+    my $display = {};
+
+    $self->schema_display_names
+        if not exists $self->schema_cache->{handles};
+
+    die "failed to load metadata for schema [$schema_path] - is it DBIC?"
+        if not exists $self->schema_cache->{handles}->{$schema_path};
+    my $cache = $self->schema_cache->{handles}->{$schema_path};
+
+    # rebuild retval from cache
+    if (exists $cache->{sources}) {
+        my $sources = $cache->{sources};
+        return { map {($_ => {
+                display_name => $sources->{$_}->{display_name},
+                editable => $sources->{$_}->{editable},
+            })} keys %$sources };
+    }
+
+    # find the catalyst model supporting each result source
+    my $schema_model = $c->model( $cache->{model} );
+    foreach my $moniker ($schema_model->schema->sources) {
+        my $source_model = _moniker2model($c, undef, $schema_path, $moniker)
+            or die "unable to translate moniker [$moniker] into model";
+        my $result_source = $c->model($source_model)->result_source;
+        my $path = _rs2path($result_source);
+
+        $display->{$path} = {
+            display_name => _2title($path),
+            editable =>
+                not eval { $result_source->isa('DBIx::Class::ResultSource::View') },
+        };
+
+        $cache->{sources}->{$path} = {
+            model => $source_model,
+            display_name => $display->{$path}->{display_name},
+            editable => $display->{$path}->{editable},
+        };
+    }
+
+    # already cached for us
+    return $display;
+}
+
+# return mapping of uri path part to friendly display names
+# for each schema which this backend supports.
+# also generate a cache of which App Model supports which schema.
+sub schema_display_names {
+    my ($self, $c) = @_;
+    my ($cache, $display, %schema);
+
+    # rebuild retval from cache
+    if (exists $self->_schema_cache->{handles}) {
+        $cache = $self->_schema_cache->{handles};
+        return { map {($_ => $cache->{display_name})} keys %$cache };
+    }
+
+    MODEL:
+    foreach my $m ($c->models) {
+        my $model = eval { $c->model($m) };
+        next unless eval { $model->isa('Catalyst::Model::DBIC::Schema') };
+
+        # some models are subclasses of others - skip them
+        # this is usually the result source models created automagically
+        foreach my $s (keys %schema) {
+            if (eval { $model->isa($s) }) {
+                delete $schema{$s};
+            }
+            elsif (eval { $c->model($s)->isa($m) }) {
+                next MODEL;
+            }
+        }
+        $schema{$m} = 1;
+    }
+
+    foreach my $s (keys %schema) {
+        my $name = $c->model($s)->schema->storage->dbh->{Name};
+
+        if ($name =~ m/\W/) {
+            # SQLite will return a file name as the "database name"
+            $name = lc [ reverse split '::', $s ]->[0];            
+        }
+
+        $display->{$name} = _2title($name);
+        $cache->{$name} = {
+            model        => $s,
+            display_name => _2title($name),
+        }
+    }
+
+    $self->_schema_cache->{handles} = $cache; # cache it
+    return $display;
 }
 
 sub build_db_info {
