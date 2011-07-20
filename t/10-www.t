@@ -10,6 +10,8 @@ use Test::More 'no_plan';
 BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
+$Catalyst::Plugin::AutoCRUD::VERSION ||= 'TESTING';
+
 # get basic template, no Metadata
 $mech->get_ok('/helloworld', 'Get Hello World page');
 is($mech->ct, 'text/html', 'Hello World page content type');

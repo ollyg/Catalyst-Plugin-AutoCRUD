@@ -1,4 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata;
+BEGIN {
+  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata::VERSION = '1.112010';
+}
 
 use strict;
 use warnings FATAL => 'all';
@@ -121,11 +124,11 @@ sub source_display_names {
     my $display = {};
 
     $self->schema_display_names
-        if not exists $self->schema_cache->{handles};
+        if not exists $self->_schema_cache->{handles};
 
     die "failed to load metadata for schema [$schema_path] - is it DBIC?"
-        if not exists $self->schema_cache->{handles}->{$schema_path};
-    my $cache = $self->schema_cache->{handles}->{$schema_path};
+        if not exists $self->_schema_cache->{handles}->{$schema_path};
+    my $cache = $self->_schema_cache->{handles}->{$schema_path};
 
     # rebuild retval from cache
     if (exists $cache->{sources}) {
@@ -139,7 +142,7 @@ sub source_display_names {
     # find the catalyst model supporting each result source
     my $schema_model = $c->model( $cache->{model} );
     foreach my $moniker ($schema_model->schema->sources) {
-        my $source_model = _moniker2model($c, undef, $schema_path, $moniker)
+        my $source_model = _moniker2model2($self, $c, $schema_path, $moniker)
             or die "unable to translate moniker [$moniker] into model";
         my $result_source = $c->model($source_model)->result_source;
         my $path = _rs2path($result_source);
@@ -159,6 +162,21 @@ sub source_display_names {
 
     # already cached for us
     return $display;
+}
+
+# find catalyst model which is serving this DBIC result source
+sub _moniker2model2 {
+    my ($self, $c, $db, $moniker) = @_;
+    my $dbmodel = $self->_schema_cache->{handles}->{$db}->{model};
+
+    foreach my $m ($c->models) {
+        my $model = eval { $c->model($m) };
+        my $test = eval { $model->result_source->source_name };
+        next if !defined $test;
+
+        return $m if $test eq $moniker and $m =~ m/^${dbmodel}::/;
+    }
+    return undef;
 }
 
 # return mapping of uri path part to friendly display names
@@ -193,17 +211,17 @@ sub schema_display_names {
     }
 
     foreach my $s (keys %schema) {
-        my $name = $c->model($s)->schema->storage->dbh->{Name};
+        my $path = $c->model($s)->schema->storage->dbh->{Name};
 
-        if ($name =~ m/\W/) {
+        if ($path =~ m/\W/) {
             # SQLite will return a file name as the "database name"
-            $name = lc [ reverse split '::', $s ]->[0];            
+            $path = lc [ reverse split '::', $s ]->[0];
         }
 
-        $display->{$name} = _2title($name);
-        $cache->{$name} = {
+        $display->{$path} = { display_name => _2title($path) };
+        $cache->{$path} = {
             model        => $s,
-            display_name => _2title($name),
+            display_name => $display->{$path}->{display_name},
         }
     }
 

@@ -1,4 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Root;
+BEGIN {
+  $Catalyst::Plugin::AutoCRUD::Controller::Root::VERSION = '1.112010';
+}
 
 use strict;
 use warnings FATAL => 'all';
@@ -24,6 +27,30 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     $c->stash->{cpac_site} = 'default';
     $c->stash->{template} = 'list.tt';
     $c->stash->{cpac_meta} = {};
+
+    # build the site config up-front. this isn't very good for the
+    # startup time of large db schema, but can optimize later.
+    # well, at least it's cached after the first dispatch.
+
+    if (!defined $self) {
+        foreach my $backend ($self->_enumerate_backends($c)) {
+            $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
+                $c->stash->{cpac_meta}, $c->forward($backend, 'build_metadata'));
+        }
+    }
+    if (!defined $self->_site_conf_cache->{dispatch}) {
+        my $dispatch = $self->_site_conf_cache->{dispatch} = {};
+        foreach my $backend ($self->_enumerate_backends($c)) {
+            my $new_dispatch = $c->forward($backend, 'schema_display_names');
+            foreach (keys %$new_dispatch) {$new_dispatch->{$_}->{backend} = $backend}
+            $dispatch = Catalyst::Utils::merge_hashes($dispatch, $new_dispatch);
+        }
+        foreach my $schema_path (keys %$dispatch) {
+            my $backend =  $dispatch->{$schema_path}->{backend};
+            $dispatch->{$schema_path}->{sources}
+                =  $c->forward($backend, 'source_display_names', [$schema_path]);
+        }
+    }
 }
 
 # =====================================================================
