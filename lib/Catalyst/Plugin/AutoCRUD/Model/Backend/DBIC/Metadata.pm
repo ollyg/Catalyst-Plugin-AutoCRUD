@@ -1,7 +1,4 @@
 package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata;
-BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata::VERSION = '1.112010';
-}
 
 use strict;
 use warnings FATAL => 'all';
