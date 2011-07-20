@@ -29,12 +29,6 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     # startup time of large db schema, but can optimize later.
     # well, at least it's cached after the first dispatch.
 
-    if (!defined $self) {
-        foreach my $backend ($self->_enumerate_backends($c)) {
-            $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-                $c->stash->{cpac_meta}, $c->forward($backend, 'build_metadata'));
-        }
-    }
     if (!defined $self->_site_conf_cache->{dispatch}) {
         my $dispatch = $self->_site_conf_cache->{dispatch} = {};
         foreach my $backend ($self->_enumerate_backends($c)) {
