@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 our @EXPORT;
 BEGIN {
     use base 'Exporter';
-    @EXPORT = qw/ schema_display_names source_display_names
+    @EXPORT = qw/ dispatch_table source_dispatch_table
                   build_metadata build_table_info_for_db build_db_info /;
 }
 
@@ -116,12 +116,9 @@ sub build_table_info_for_db {
 # for each result source within a given schema.
 # also generate a cache of which App Model supports which source.
 # die if the schema is not supported by this backend.
-sub source_display_names {
+sub source_dispatch_table {
     my ($self, $c, $schema_path) = @_;
     my $display = {};
-
-    $self->schema_display_names
-        if not exists $self->_schema_cache->{handles};
 
     die "failed to load metadata for schema [$schema_path] - is it DBIC?"
         if not exists $self->_schema_cache->{handles}->{$schema_path};
@@ -139,7 +136,7 @@ sub source_display_names {
     # find the catalyst model supporting each result source
     my $schema_model = $c->model( $cache->{model} );
     foreach my $moniker ($schema_model->schema->sources) {
-        my $source_model = _moniker2model2($self, $c, $schema_path, $moniker)
+        my $source_model = _moniker2model2($c, $cache->{model}, $moniker)
             or die "unable to translate moniker [$moniker] into model";
         my $result_source = $c->model($source_model)->result_source;
         my $path = _rs2path($result_source);
@@ -161,17 +158,16 @@ sub source_display_names {
     return $display;
 }
 
-# find catalyst model which is serving this DBIC result source
+# find catalyst model serving a DBIC *result source*
 sub _moniker2model2 {
-    my ($self, $c, $db, $moniker) = @_;
-    my $dbmodel = $self->_schema_cache->{handles}->{$db}->{model};
+    my ($c, $parent_model, $moniker) = @_;
 
     foreach my $m ($c->models) {
         my $model = eval { $c->model($m) };
         my $test = eval { $model->result_source->source_name };
         next if !defined $test;
 
-        return $m if $test eq $moniker and $m =~ m/^${dbmodel}::/;
+        return $m if $test eq $moniker and $m =~ m/^${parent_model}::/;
     }
     return undef;
 }
@@ -179,7 +175,7 @@ sub _moniker2model2 {
 # return mapping of uri path part to friendly display names
 # for each schema which this backend supports.
 # also generate a cache of which App Model supports which schema.
-sub schema_display_names {
+sub dispatch_table {
     my ($self, $c) = @_;
     my ($cache, $display, %schema);
 
@@ -187,6 +183,10 @@ sub schema_display_names {
     if (exists $self->_schema_cache->{handles}) {
         $cache = $self->_schema_cache->{handles};
         return { map {($_ => $cache->{display_name})} keys %$cache };
+    }
+    # initialize new cache
+    else {
+        $cache = $self->_schema_cache->{handles} = {};
     }
 
     MODEL:
@@ -222,7 +222,11 @@ sub schema_display_names {
         }
     }
 
-    $self->_schema_cache->{handles} = $cache; # cache it
+    # source_dispatch_table needs to see the cache so this is separate
+    foreach my $p(keys %$cache) {
+        $display->{$p}->{sources} = $self->source_dispatch_table($c, $p);
+    }
+
     return $display;
 }
 
