@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 our @EXPORT;
 BEGIN {
     use base 'Exporter';
-    @EXPORT = qw/ dispatch_table source_dispatch_table source_metadata /;
+    @EXPORT = qw/ dispatch_table source_dispatch_table schema_metadata /;
 }
 
 use SQL::Translator;
@@ -160,7 +160,7 @@ sub dispatch_table {
 }
 
 # generate SQLT Schema instance representing this data schema
-sub source_metadata {
+sub schema_metadata {
     my ($self, $c) = @_;
     my $db = $c->stash->{cpac_db};
 
