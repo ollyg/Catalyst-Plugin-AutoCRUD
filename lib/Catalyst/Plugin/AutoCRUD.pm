@@ -125,8 +125,8 @@ sub dump_these {
     if ($c->stash->{dumpmeta}) {
         return (
             [ 'CPAC Parameters' => $params ],
-            [ 'Site Configuration' => $c->stash->{site_conf} ],
-            [ 'Storage Metadata'   => $c->stash->{cpac_meta} ],
+            [ 'Site Configuration' => $c->stash->{cpac}->{conf} ],
+            [ 'Storage Metadata'   => $c->stash->{cpac}->{meta} ],
             [ 'Response' => $c->response ], # only to pacify log_request
         );
     }

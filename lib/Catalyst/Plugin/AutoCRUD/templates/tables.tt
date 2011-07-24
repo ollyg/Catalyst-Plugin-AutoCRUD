@@ -1,12 +1,12 @@
 <h3>Welcome to AutoCRUD, an automagic web interface for data sources</h3>
 <br />
 
-[% IF cpac.meta.dispatch.keys.size == 0 %]
+[% IF cpac.dispatch.keys.size == 0 %]
     <p>No database schemas were found in this application. Please contact the site administrator.</p>
     [% RETURN %]
 
 [% ELSE %]
-    [% IF cpac.meta.dispatch.exists( cpac_db ) %]
+    [% IF cpac.dispatch.exists( cpac_db ) %]
         [% IF cpac.conf.$cpac_db.hidden == 'yes' %]
             [% IF cpac_site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">
@@ -18,28 +18,28 @@
             [% RETURN %]
         [% END %]
 
-        <p>The schema for database &quot;[% cpac.meta.dispatch.$cpac_db.display_name %]&quot; has been loaded,
+        <p>The schema for database &quot;[% cpac.dispatch.$cpac_db.display_name %]&quot; has been loaded,
             so please select a table by clicking on its label, below.</p>
         <br />
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH t IN cpac.meta.dispatch.$cpac_db.sources.keys.sort %]
+        [% FOREACH t IN cpac.dispatch.$cpac_db.sources.keys.sort %]
             [% NEXT IF cpac.conf.$cpac_db.$t.hidden == 'yes' %]
             <li>
             [% IF cpac_site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], t ) %]">
-                    [% cpac.meta.dispatch.$cpac_db.sources.$t.display_name %]</a>
+                    [% cpac.dispatch.$cpac_db.sources.$t.display_name %]</a>
             [% ELSE %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site, cpac_db], t ) %]">
-                    [% cpac.meta.dispatch.$cpac_db.sources.$t.display_name %]</a>
+                    [% cpac.dispatch.$cpac_db.sources.$t.display_name %]</a>
             [% END %]
             </li>
         [% END %]
         </ul>
         </div>
 
-        [% IF cpac.meta.dispatch.keys.size > 1 %]
+        [% IF cpac.dispatch.keys.size > 1 %]
             <br />
             [% IF cpac_site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">
@@ -57,15 +57,15 @@
 
         <div id="cpac_navcontainer">
         <ul>
-        [% FOREACH d IN cpac.meta.dispatch.keys.sort %]
+        [% FOREACH d IN cpac.dispatch.keys.sort %]
             [% NEXT IF cpac.conf.$d.hidden == 'yes' %]
             <li>
             [% IF cpac_site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [d] ) %]">
-                    [% cpac.meta.dispatch.$d.display_name %]</a>
+                    [% cpac.dispatch.$d.display_name %]</a>
             [% ELSE %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site, d] ) %]">
-                    [% cpac.meta.dispatch.$d.display_name %]</a>
+                    [% cpac.dispatch.$d.display_name %]</a>
             [% END %]
             </li>
         [% END %]

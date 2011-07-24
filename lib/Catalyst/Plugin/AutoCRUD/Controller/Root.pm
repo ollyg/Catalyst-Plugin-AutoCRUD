@@ -38,7 +38,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
         }
         $self->_site_conf_cache->{dispatch} = $dispatch;
     }
-    $c->stash->{cpac}->{meta} = { dispatch => $self->_site_conf_cache->{dispatch} };
+    $c->stash->{cpac}->{dispatch} = $self->_site_conf_cache->{dispatch};
 }
 
 # =====================================================================
@@ -93,7 +93,7 @@ sub no_source : Chained('schema') PathPart('') Args(0) {
 sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
-    $c->stash->{cpac_title} = $c->stash->{cpac}->{meta}->{main}->{display_name} .' List';
+    $c->stash->{cpac_title} = $c->stash->{cpac}->{main}->{display_name} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{cpac_frontend} ||= $c->stash->{cpac}->{conf}->{frontend};
@@ -116,11 +116,11 @@ sub do_meta : Private {
     my $db = $c->stash->{cpac_db};
     my $site = $c->stash->{cpac_site};
 
-    $c->detach('err_message') if !exists $c->stash->{cpac}->{meta}->{dispatch}->{$db}
-        or !exists $c->stash->{cpac}->{meta}->{dispatch}->{$db}->{sources}->{$table};
+    $c->detach('err_message') if !exists $c->stash->{cpac}->{dispatch}->{$db}
+        or !exists $c->stash->{cpac}->{dispatch}->{$db}->{sources}->{$table};
 
     $c->forward('build_site_config');
-    $c->stash->{cpac}->{meta}->{main} = $c->stash->{cpac}->{meta}->{dispatch}->{$db}->{sources}->{$table};
+    $c->stash->{cpac}->{main} = $c->stash->{cpac}->{dispatch}->{$db}->{sources}->{$table};
 
     # ACLs on the schema and source from site config
     if ($c->stash->{cpac}->{conf}->{$db}->{hidden} eq 'yes') {
@@ -164,8 +164,8 @@ sub err_message : Private {
 
     # if there's only one schema, then we choose it and skip straight to
     # the tables display.
-    if (scalar keys %{$c->stash->{cpac}->{meta}->{dispatch}} == 1) {
-        $c->stash->{cpac_db} = [keys %{$c->stash->{cpac}->{meta}->{dispatch}}]->[0];
+    if (scalar keys %{$c->stash->{cpac}->{dispatch}} == 1) {
+        $c->stash->{cpac_db} = [keys %{$c->stash->{cpac}->{dispatch}}]->[0];
     }
 
     $c->stash->{cpac_frontend} ||= $c->stash->{cpac}->{conf}->{frontend};
@@ -206,19 +206,19 @@ sub build_site_config : Private {
         ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}} || {}));
 
     # then bubble up the prefs until each source def has a complete set
-    foreach my $sc (keys %{ $c->stash->{cpac}->{meta}->{dispatch} }) {
+    foreach my $sc (keys %{ $c->stash->{cpac}->{dispatch} }) {
         $site->{$sc} = Catalyst::Utils::merge_hashes ({
                 map {($_ => $site->{$_})} keys %defaults
             }, $site->{$sc});
 
-        foreach my $so (keys %{ $c->stash->{cpac}->{meta}->{dispatch}->{$sc}->{sources} }) {
+        foreach my $so (keys %{ $c->stash->{cpac}->{dispatch}->{$sc}->{sources} }) {
             $site->{$sc}->{$so} = Catalyst::Utils::merge_hashes ({
                     map {($_ => $site->{$sc}->{$_})} keys %defaults
                 }, $site->{$sc}->{$so});
 
             # override *_allowed if the source is read only
-            if (not exists $c->stash->{cpac}->{meta}->{dispatch}->{$sc}->{sources}->{$so}->{editable}
-                or not $c->stash->{cpac}->{meta}->{dispatch}->{$sc}->{sources}->{$so}->{editable}) {
+            if (not exists $c->stash->{cpac}->{dispatch}->{$sc}->{sources}->{$so}->{editable}
+                or not $c->stash->{cpac}->{dispatch}->{$sc}->{sources}->{$so}->{editable}) {
                 $site->{$sc}->{$so}->{create_allowed} = 'no';
                 $site->{$sc}->{$so}->{update_allowed} = 'no';
                 $site->{$sc}->{$so}->{delete_allowed} = 'no';

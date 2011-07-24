@@ -49,17 +49,17 @@
                 [% IF cpac_site == 'default' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> &gt;
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]">
-                        [% cpac.meta.dispatch.$cpac_db.display_name %]</a> &gt;
+                        [% cpac.dispatch.$cpac_db.display_name %]</a> &gt;
                 [% ELSE %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac_site] ) %]">Home</a> &gt;
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]">
-                        [% cpac.meta.dispatch.$cpac_db.display_name %]</a> &gt;
+                        [% cpac.dispatch.$cpac_db.display_name %]</a> &gt;
                 [% END %]
-                [% IF cpac.meta.dispatch.$cpac_db.sources.keys.size == 1 %]
-                    [% cpac.meta.main.display_name %]
+                [% IF cpac.dispatch.$cpac_db.sources.keys.size == 1 %]
+                    [% cpac.main.display_name %]
                 [% ELSE %]
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
-                      [% FOREACH tpath IN cpac.meta.dispatch.$cpac_db.sources.keys.sort %]
+                      [% FOREACH tpath IN cpac.dispatch.$cpac_db.sources.keys.sort %]
                         [% NEXT IF cpac.conf.$cpac_db.$tpath.hidden == 'yes' %]
                         [% IF cpac_site == 'default' %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], tpath ) %]"
@@ -67,7 +67,7 @@
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site,cpac_db], tpath ) %]"
                         [% END %]
                                 [% ' selected="selected"' IF tpath == cpac_table %]>
-                                [% cpac.meta.dispatch.$cpac_db.sources.tpath.display_name %]</option>
+                                [% cpac.dispatch.$cpac_db.sources.tpath.display_name %]</option>
                       [% END %]
                     </select>
                 [% END %]
