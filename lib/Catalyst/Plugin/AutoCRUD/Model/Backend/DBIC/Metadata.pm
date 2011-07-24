@@ -6,8 +6,7 @@ use warnings FATAL => 'all';
 our @EXPORT;
 BEGIN {
     use base 'Exporter';
-    @EXPORT = qw/ dispatch_table source_dispatch_table
-                  build_metadata build_table_info_for_db build_db_info /;
+    @EXPORT = qw/ dispatch_table source_dispatch_table /;
 }
 
 use Scalar::Util qw(weaken);
@@ -53,66 +52,7 @@ $xtype_for{$_} = 'xdatetime' for (
     'timestamp with time zone',
 );
 
-sub build_metadata {
-    my ($self, $c) = @_;
-
-    if (exists $c->stash->{cpac_db} and defined $c->stash->{cpac_db}
-        and exists $c->stash->{cpac_table} and defined $c->stash->{cpac_table}
-        and exists $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}}) {
-
-        # we have a cache!
-        $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
-
-        $c->log->debug(sprintf 'autocrud: retrieved cached metadata for db: [%s] table: [%s]',
-            $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
-
-        return $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}};
-    }
-
-    # set up databases list, even if only to display to user
-    my $cpac = $self->build_db_info($c);
-
-    # no db specified, or unknown db
-    return $cpac if !defined $c->stash->{cpac_db}
-            or !exists $cpac->{dbpath2model}->{ $c->stash->{cpac_db} };
-
-    $c->stash->{cpac_dbtitle} = _2title( $c->stash->{cpac_db} );
-    $self->build_table_info_for_db($c, $cpac, $c->stash->{cpac_db});
-
-    # no table specified, or unknown table
-    return $cpac if !defined $c->stash->{cpac_table}
-        or !exists $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
-
-    $cpac->{model} = $cpac->{path2model}->{ $c->stash->{cpac_db} }->{ $c->stash->{cpac_table} };
-
-    # build and store in cache
-    _build_table_info($c, $cpac, $cpac->{model}, 1);
-
-    $self->_schema_cache->{$c->stash->{cpac_db}}->{$c->stash->{cpac_table}} = $cpac;
-    $c->log->debug(sprintf 'autocrud: cached metadata for db: [%s] table: [%s]',
-        $c->stash->{cpac_db}, $c->stash->{cpac_table}) if $c->debug;
-
-    return $cpac;
-}
-
-sub build_table_info_for_db {
-    my ($self, $c, $cpac, $db) = @_;
-
-    # set up tables list, even if only to display to user
-    my $try_schema = $c->model( $cpac->{dbpath2model}->{$db} )->schema;
-    foreach my $m ($try_schema->sources) {
-        my $model = _moniker2model($c, $cpac, $db, $m)
-            or croak "unable to translate model [$m] into moniker, bailing out";
-        my $source = $c->model($model)->result_source;
-        my $p = _rs2path($source);
-
-        $cpac->{table2path}->{$db}->{ _2title($p) } = $p;
-        $cpac->{path2model}->{$db}->{ $p } = $model;
-        $cpac->{editable}->{$db}->{$p} = not eval { $source->isa('DBIx::Class::ResultSource::View') };
-    }
-}
-
-# return mapping of uril path part to friendly display names
+# return mapping of url path part to friendly display names
 # for each result source within a given schema.
 # also generate a cache of which App Model supports which source.
 # die if the schema is not supported by this backend.
@@ -156,20 +96,6 @@ sub source_dispatch_table {
 
     # already cached for us
     return $display;
-}
-
-# find catalyst model serving a DBIC *result source*
-sub _moniker2model2 {
-    my ($c, $parent_model, $moniker) = @_;
-
-    foreach my $m ($c->models) {
-        my $model = eval { $c->model($m) };
-        my $test = eval { $model->result_source->source_name };
-        next if !defined $test;
-
-        return $m if $test eq $moniker and $m =~ m/^${parent_model}::/;
-    }
-    return undef;
 }
 
 # return mapping of uri path part to friendly display names
@@ -228,40 +154,6 @@ sub dispatch_table {
     }
 
     return $display;
-}
-
-sub build_db_info {
-    my ($self, $c) = @_;
-    my (%cpac, %sources);
-
-    MODEL:
-    foreach my $m ($c->models) {
-        my $model = eval { $c->model($m) };
-        next unless eval { $model->isa('Catalyst::Model::DBIC::Schema') };
-        foreach my $s (keys %sources) {
-            if (eval { $model->isa($s) }) {
-                delete $sources{$s};
-            }
-            elsif (eval { $c->model($s)->isa($m) }) {
-                next MODEL;
-            }
-        }
-        $sources{$m} = 1;
-    }
-
-    foreach my $s (keys %sources) {
-        my $name = $c->model($s)->schema->storage->dbh->{Name};
-
-        if ($name =~ m/\W/) {
-            # SQLite will return a file name as the "database name"
-            $name = lc [ reverse split '::', $s ]->[0];            
-        }
-
-        $cpac{db2path}->{_2title($name)} = $name;
-        $cpac{dbpath2model}->{$name} = $s;
-    }
-
-    return \%cpac;
 }
 
 sub _build_table_info {
@@ -506,6 +398,20 @@ sub _rs2path {
     my $name = $rs->source_name;
     $name =~ s/(\w)([A-Z][a-z0-9])/$1_$2/g;
     return lc $name;
+}
+
+# find catalyst model serving a DBIC *result source*
+sub _moniker2model2 {
+    my ($c, $parent_model, $moniker) = @_;
+
+    foreach my $m ($c->models) {
+        my $model = eval { $c->model($m) };
+        my $test = eval { $model->result_source->source_name };
+        next if !defined $test;
+
+        return $m if $test eq $moniker and $m =~ m/^${parent_model}::/;
+    }
+    return undef;
 }
 
 # find catalyst model which is serving this DBIC result source
