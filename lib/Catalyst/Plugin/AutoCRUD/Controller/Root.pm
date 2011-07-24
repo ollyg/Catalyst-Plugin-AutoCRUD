@@ -175,7 +175,6 @@ sub err_message : Private {
 # build site config for filtering the frontend
 sub build_site_config : Private {
     my ($self, $c) = @_;
-    my $site = {};
 
     # if we have it cached
     if (keys %{ $self->_site_conf_cache->{sites}->{$c->stash->{cpac_site}} }) {
@@ -185,13 +184,8 @@ sub build_site_config : Private {
         return;
     }
 
-    # load whatever the user set in their site config
-    $site = Catalyst::Utils::merge_hashes(
-        ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}} || {}),
-        $site);
-
     my %defaults = (
-        frontend => 'full-fat', # needlessly copied to schema & sources
+        frontend => 'full-fat',
         create_allowed => 'yes',
         update_allowed => 'yes',
         delete_allowed => 'yes',
@@ -200,8 +194,16 @@ sub build_site_config : Private {
     );
     $defaults{dumpmeta_allowed} = 'yes' if $ENV{AUTOCRUD_TESTING};
 
-    # merge defaults into user prefs
-    $site = Catalyst::Utils::merge_hashes (\%defaults, $site);
+    # start with the default config for all sites
+    my $site = Catalyst::Utils::merge_hashes({}, \%defaults);
+
+    # add config from our plugin, without site options
+    $site = Catalyst::Utils::merge_hashes($site, $c->config->{'Plugin::AutoCRUD'});
+    delete $site->{sites}; # don't want all sites' config
+
+    # load whatever the user set in current site's config
+    $site = Catalyst::Utils::merge_hashes($site,
+        ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}} || {}));
 
     # then bubble up the prefs until each source def has a complete set
     foreach my $sc (keys %{ $c->stash->{cpac}->{meta}->{dispatch} }) {

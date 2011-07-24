@@ -20,14 +20,6 @@ __PACKAGE__->config(
     # STRICT => 1,
 );
 
-# override to push a template var giving easy access to our plugin conf
-sub template_vars {
-    my ($self, $c) = (shift, $_[0]);
-
-    my @vars = $self->next::method(@_);
-    return @vars, ( cpac_config => $c->config->{'Plugin::AutoCRUD'} );
-}
-
 sub process {
     my ($self, $c) = (shift, $_[0]);
 
