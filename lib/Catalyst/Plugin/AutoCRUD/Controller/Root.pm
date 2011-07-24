@@ -25,10 +25,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     $c->stash->{template} = 'list.tt';
     $c->stash->{cpac} = {};
 
-    # build the site config up-front. this isn't very good for the
-    # startup time of large db schema, but can optimize later.
-    # well, at least it's cached after the first dispatch.
-
+    # load enough metadata to display schema and sources
     if (!exists $self->_site_conf_cache->{dispatch}) {
         my $dispatch = {};
         foreach my $backend ($self->_enumerate_backends($c)) {
@@ -37,7 +34,9 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
             $dispatch = Catalyst::Utils::merge_hashes($dispatch, $new_dispatch);
         }
         $self->_site_conf_cache->{dispatch} = $dispatch;
+        $c->log->debug("autocrud: generated global dispatch table") if $c->debug;
     }
+
     $c->stash->{cpac}->{dispatch} = $self->_site_conf_cache->{dispatch};
 }
 
@@ -139,6 +138,19 @@ sub do_meta : Private {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_source'), [$site, $db] )]);
         }
     }
+
+    # can now lazily load the remaining metadata for this schema into our cache
+    # it's the whole schema, because related table data is also required.
+    if (!exists $self->_site_conf_cache->{meta}->{$db}) {
+        $self->_site_conf_cache->{meta}->{$db} =
+            $c->forward($c->stash->{cpac}->{dispatch}->{$db}->{backend}, 'schema_metadata');
+        $c->log->debug("autocrud: generated schema metadata for [$db]") if $c->debug;
+    }
+    else {
+        $c->log->debug("autocrud: retrieving cached schema metadata for [$db]") if $c->debug;
+    }
+
+    $c->stash->{cpac}->{meta} = $self->_site_conf_cache->{meta}->{$db};
 }
 
 sub verboden : Private {
@@ -179,7 +191,7 @@ sub build_site_config : Private {
     # if we have it cached
     if (keys %{ $self->_site_conf_cache->{sites}->{$c->stash->{cpac_site}} }) {
         $c->stash->{cpac}->{conf} = $self->_site_conf_cache->{sites}->{$c->stash->{cpac_site}};
-        $c->log->debug(sprintf "autocrud: retreived cached config for site [%s]",
+        $c->log->debug(sprintf "autocrud: retrieving cached config for site [%s]",
             $c->stash->{cpac_site}) if $c->debug;
         return;
     }

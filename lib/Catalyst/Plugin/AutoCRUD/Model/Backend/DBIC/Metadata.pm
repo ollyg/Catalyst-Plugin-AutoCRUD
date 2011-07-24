@@ -6,8 +6,11 @@ use warnings FATAL => 'all';
 our @EXPORT;
 BEGIN {
     use base 'Exporter';
-    @EXPORT = qw/ dispatch_table source_dispatch_table /;
+    @EXPORT = qw/ dispatch_table source_dispatch_table source_metadata /;
 }
+
+use SQL::Translator;
+use SQL::Translator::Filter::AutoCRUD;
 
 use Scalar::Util qw(weaken);
 use Carp;
@@ -76,13 +79,13 @@ sub source_dispatch_table {
     # find the catalyst model supporting each result source
     my $schema_model = $c->model( $cache->{model} );
     foreach my $moniker ($schema_model->schema->sources) {
-        my $source_model = _moniker2model2($c, $cache->{model}, $moniker)
+        my $source_model = _find_source_model($c, $cache->{model}, $moniker)
             or die "unable to translate moniker [$moniker] into model";
         my $result_source = $c->model($source_model)->result_source;
-        my $path = _rs2path($result_source);
+        my $path = _make_path($result_source);
 
         $display->{$path} = {
-            display_name => _2title($path),
+            display_name => _make_label($path),
             editable =>
                 not eval { $result_source->isa('DBIx::Class::ResultSource::View') },
         };
@@ -103,16 +106,13 @@ sub source_dispatch_table {
 # also generate a cache of which App Model supports which schema.
 sub dispatch_table {
     my ($self, $c) = @_;
-    my ($cache, $display, %schema);
+    my ($display, %schema);
+    my $cache = {};
 
     # rebuild retval from cache
     if (exists $self->_schema_cache->{handles}) {
         $cache = $self->_schema_cache->{handles};
         return { map {($_ => $cache->{display_name})} keys %$cache };
-    }
-    # initialize new cache
-    else {
-        $cache = $self->_schema_cache->{handles} = {};
     }
 
     MODEL:
@@ -141,19 +141,47 @@ sub dispatch_table {
             $path = lc [ reverse split '::', $s ]->[0];
         }
 
-        $display->{$path} = { display_name => _2title($path) };
+        $display->{$path} = { display_name => _make_label($path) };
         $cache->{$path} = {
             model        => $s,
             display_name => $display->{$path}->{display_name},
         }
     }
 
-    # source_dispatch_table needs to see the cache so this is separate
+    # source_dispatch_table needs to see the class-data cache
+    $self->_schema_cache->{handles} = $cache;
+
+    # now get data for the sources in each schema
     foreach my $p(keys %$cache) {
         $display->{$p}->{sources} = $self->source_dispatch_table($c, $p);
     }
 
     return $display;
+}
+
+# generate SQLT Schema instance representing this data schema
+sub source_metadata {
+    my ($self, $c) = @_;
+    my $db = $c->stash->{cpac_db};
+
+    return $self->_schema_cache->{sqlt}->{$db}
+        if exists $self->_schema_cache->{sqlt}->{$db};
+
+    my $t = SQL::Translator->new(
+        parser => 'SQL::Translator::Parser::DBIx::Class',
+        parser_args => { package =>
+            $c->model(
+                $self->_schema_cache->{handles}->{$db}->{model}
+            )->schema
+        },
+        filters => ['SQL::Translator::Filter::AutoCRUD'],
+        producer => 'SQL::Translator::Producer::POD', # something cheap
+    ) or die SQL::Translator->error;
+
+    $t->translate() or die $t->error; # throw result away
+    $self->_schema_cache->{sqlt}->{$db} = $t->schema;
+
+    return $t->schema;
 }
 
 sub _build_table_info {
@@ -391,6 +419,16 @@ sub _ism2m {
 }
 
 # find best table name
+sub _make_path {
+    my $rs = shift;
+    return $rs->from if $rs->from =~ m/^\w+$/;
+
+    my $name = $rs->source_name;
+    $name =~ s/(\w)([A-Z][a-z0-9])/$1_$2/g;
+    return lc $name;
+}
+
+# find best table name
 sub _rs2path {
     my $rs = shift;
     return $rs->from if $rs->from =~ m/^\w+$/;
@@ -401,7 +439,7 @@ sub _rs2path {
 }
 
 # find catalyst model serving a DBIC *result source*
-sub _moniker2model2 {
+sub _find_source_model {
     my ($c, $parent_model, $moniker) = @_;
 
     foreach my $m ($c->models) {
@@ -427,6 +465,11 @@ sub _moniker2model {
         return $m if $test eq $moniker and $m =~ m/^${dbmodel}::/;
     }
     return undef;
+}
+
+# col/table name to human title
+sub _make_label {
+    return join ' ', map ucfirst, split /[\W_]+/, lc shift;
 }
 
 # col/table name to human title
