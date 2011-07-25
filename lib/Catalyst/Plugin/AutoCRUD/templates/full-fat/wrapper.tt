@@ -56,7 +56,7 @@
                         [% cpac.dispatch.$cpac_db.display_name %]</a> &gt;
                 [% END %]
                 [% IF cpac.dispatch.$cpac_db.sources.keys.size == 1 %]
-                    [% cpac.main.display_name %]
+                    [% cpac.dispatch.$cpac_db.sources.$cpac_table.display_name %]
                 [% ELSE %]
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
                       [% FOREACH tpath IN cpac.dispatch.$cpac_db.sources.keys.sort %]

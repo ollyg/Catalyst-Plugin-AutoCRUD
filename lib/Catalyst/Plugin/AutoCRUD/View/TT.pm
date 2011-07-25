@@ -17,7 +17,7 @@ __PACKAGE__->config(
     INCLUDE_PATH => "$directory../templates",
     CATALYST_VAR => 'c',
     WRAPPER => 'wrapper.tt',
-    # STRICT => 1,
+    ($ENV{TT_STRICT} ? (STRICT => 1) : ()),
 );
 
 sub process {

@@ -1,4 +1,4 @@
-<h3>Welcome to AutoCRUD, an automagic web interface for data sources</h3>
+<h3>Welcome to AutoCRUD, an automagic web interface for databases</h3>
 <br />
 
 [% IF cpac.dispatch.keys.size == 0 %]
@@ -74,4 +74,3 @@
 
     [% END %]
 [% END %]
-

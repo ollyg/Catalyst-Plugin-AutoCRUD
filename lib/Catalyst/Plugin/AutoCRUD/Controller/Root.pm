@@ -92,7 +92,9 @@ sub no_source : Chained('schema') PathPart('') Args(0) {
 sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
-    $c->stash->{cpac_title} = $c->stash->{cpac}->{main}->{display_name} .' List';
+    $c->stash->{cpac_title} = $c->stash->{cpac}->{dispatch}
+        ->{$c->stash->{cpac_db}}
+        ->{sources}->{$c->stash->{cpac_table}}->{display_name} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{cpac_frontend} ||= $c->stash->{cpac}->{conf}->{frontend};
@@ -119,7 +121,6 @@ sub do_meta : Private {
         or !exists $c->stash->{cpac}->{dispatch}->{$db}->{sources}->{$table};
 
     $c->forward('build_site_config');
-    $c->stash->{cpac}->{main} = $c->stash->{cpac}->{dispatch}->{$db}->{sources}->{$table};
 
     # ACLs on the schema and source from site config
     if ($c->stash->{cpac}->{conf}->{$db}->{hidden} eq 'yes') {
@@ -172,7 +173,7 @@ sub _enumerate_backends {
 # we know only the schema or no schema, or there is a problem
 sub err_message : Private {
     my ($self, $c) = @_;
-    $c->forward('build_site_config') if !exists $c->stash->{cpac}->{conf};
+    $c->forward('build_site_config');
 
     # if there's only one schema, then we choose it and skip straight to
     # the tables display.
@@ -203,6 +204,7 @@ sub build_site_config : Private {
         delete_allowed => 'yes',
         dumpmeta_allowed => 'no',
         hidden => 'no',
+        html_charset => 'utf-8',
     );
     $defaults{dumpmeta_allowed} = 'yes' if $ENV{AUTOCRUD_TESTING};
 
@@ -280,6 +282,8 @@ sub build_site_config : Private {
 
 sub helloworld : Chained('base') Args(0) {
     my ($self, $c) = @_;
+    $c->forward('build_site_config');
+    $c->stash->{cpac_title} = 'Hello World';
     $c->stash->{template} = 'helloworld.tt';
 }
 

@@ -167,7 +167,7 @@ sub schema_metadata {
     return $self->_schema_cache->{sqlt}->{$db}
         if exists $self->_schema_cache->{sqlt}->{$db};
 
-    my $t = SQL::Translator->new(
+    my $sqlt = SQL::Translator->new(
         parser => 'SQL::Translator::Parser::DBIx::Class',
         parser_args => { package =>
             $c->model(
@@ -178,10 +178,19 @@ sub schema_metadata {
         producer => 'SQL::Translator::Producer::POD', # something cheap
     ) or die SQL::Translator->error;
 
-    $t->translate() or die $t->error; # throw result away
-    $self->_schema_cache->{sqlt}->{$db} = $t->schema;
+    $sqlt->translate() or die $sqlt->error; # throw result away
 
-    return $t->schema;
+    # add an ordered list of columns, placing PKs first
+    foreach my $tbl ($sqlt->schema->get_tables, $sqlt->schema->get_views) {
+        $tbl->extra->{col_order} = [
+            map {$_->name}
+                (sort grep {$_->is_primary_key}     $tbl->fields),
+                (sort grep {not $_->is_primary_key} $tbl->fields),
+        ];
+    }
+
+    $self->_schema_cache->{sqlt}->{$db} = $sqlt->schema;
+    return $sqlt->schema;
 }
 
 sub _build_table_info {
