@@ -146,17 +146,42 @@ sub do_meta : Private {
     }
 
     # can now lazily load the remaining metadata for this schema into our cache
-    # it's the whole schema, because related table data is also required.
+    # NB it's the whole schema, because related table data is also required.
     if (!exists $self->_site_conf_cache->{meta}->{$db}) {
         $self->_site_conf_cache->{meta}->{$db} =
             $c->forward($c->stash->{cpac}->{dispatch}->{$db}->{backend}, 'schema_metadata');
+        $c->stash->{cpac}->{meta} = $self->_site_conf_cache->{meta}->{$db};
         $c->log->debug("autocrud: generated schema metadata for [$db]") if $c->debug;
+
+        # import various helpful data into the site conf for easy use by f/end
+        foreach my $sc (keys %{ $c->stash->{cpac}->{conf} }) {
+            next unless $sc eq $db; # only lazily install for current schema
+            next unless ref $c->stash->{cpac}->{conf}->{$sc} eq ref {};
+
+            foreach my $so (keys %{ $c->stash->{cpac}->{conf}->{$sc} }) {
+                next unless ref $c->stash->{cpac}->{conf}->{$sc}->{$so} eq ref {};
+
+                my $ptr = $c->stash->{cpac}->{conf}->{$sc}->{$so};
+                my $sqlt_tbl = $c->stash->{cpac}->{meta}->get_table($so);
+
+                if (scalar @{ $ptr->{columns} } == 0) {
+                    $ptr->{columns} = $sqlt_tbl->extra('col_order');
+                }
+
+                # copy columns list as hashref for ease of lookups
+                $ptr->{col_keys} = { map {$_ => 1} @{ $ptr->{columns} } };
+
+                foreach my $col (@{ $ptr->{columns} }) {
+                    $ptr->{headings}->{$col} ||=
+                        $sqlt_tbl->get_field($col)->extra('display_name');
+                }
+            }
+        }
     }
     else {
-        $c->log->debug("autocrud: retrieving cached schema metadata for [$db]") if $c->debug;
+        $c->stash->{cpac}->{meta} = $self->_site_conf_cache->{meta}->{$db};
+        $c->log->debug("autocrud: retrieved cached schema metadata for [$db]") if $c->debug;
     }
-
-    $c->stash->{cpac}->{meta} = $self->_site_conf_cache->{meta}->{$db};
 }
 
 sub verboden : Private {
@@ -243,35 +268,7 @@ sub build_site_config : Private {
                 $site->{$sc}->{$so}->{delete_allowed} = 'no';
             }
 
-            # back-compat work for list_returns
-            if (exists $site->{$sc}->{$so}->{list_returns} and
-                    (!exists $site->{$sc}->{$so}->{headings} and !exists $site->{$sc}->{$so}->{columns})) {
-
-                $c->log->warn("AutoCRUD: 'list_returns' is deprecated for site config. ".
-                    "Please migrate to using 'columns' and 'headings' as shown in the Documentation.");
-
-                $site->{$sc}->{$so}->{headings} = delete $site->{$sc}->{$so}->{list_returns};
-
-                # promote arrayref into hashref
-                if (ref $site->{$sc}->{$so}->{headings} eq 'ARRAY') {
-                    $site->{$sc}->{$so}->{headings} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{headings}} };
-                }
-
-                # prettify the column headings 
-                $site->{$sc}->{$so}->{headings}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
-                    for keys %{ $site->{$sc}->{$so}->{headings} };
-
-                # columns generated from old list_returns
-                $site->{$sc}->{$so}->{columns} = [ keys %{ $site->{$sc}->{$so}->{headings} } ];
-            }
-
-            # copy columns list as hashref for ease of lookups
-            if (exists $site->{$sc}->{$so}->{columns}
-                    and ref $site->{$sc}->{$so}->{columns} eq 'ARRAY') {
-                $site->{$sc}->{$so}->{col_keys} = { map {$_ => 1} @{$site->{$sc}->{$so}->{columns}} };
-            }
-
-            # need stubs for TT
+            # need stubs (which may be populated later)
             $site->{$sc}->{$so}->{columns}  ||= [];
             $site->{$sc}->{$so}->{col_keys} ||= {};
             $site->{$sc}->{$so}->{headings} ||= {};
