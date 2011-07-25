@@ -78,10 +78,10 @@ sub list_stringified : Chained('base') Args(0) {
 # send our generated config back in JSON for debugging
 sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->stash->{json_data} = {
-        cpac => $c->stash->{cpac_meta},
-        site_conf => $c->stash->{site_conf},
-    };
+    $c->stash->{json_data} = { cpac => {
+        meta => $c->stash->{cpac}->{meta},
+        conf => $c->stash->{cpac}->{conf},
+    } };
 
     return $self;
 }

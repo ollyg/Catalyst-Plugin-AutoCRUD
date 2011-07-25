@@ -180,13 +180,19 @@ sub schema_metadata {
 
     $sqlt->translate() or die $sqlt->error; # throw result away
 
-    # add an ordered list of columns, placing PKs first
     foreach my $tbl ($sqlt->schema->get_tables, $sqlt->schema->get_views) {
-        $tbl->extra->{col_order} = [
+        # add an ordered list of columns, placing PKs first
+        $tbl->extra(col_order => [
             map {$_->name}
-                (sort grep {$_->is_primary_key}     $tbl->fields),
-                (sort grep {not $_->is_primary_key} $tbl->fields),
-        ];
+                (sort grep {$_->is_primary_key}     $tbl->get_fields),
+                (sort grep {not $_->is_primary_key} $tbl->get_fields),
+        ]);
+
+        # set extjs_xtype on columns
+        foreach my $col ($tbl->get_fields) {
+            $col->extra(extjs_xtype =>
+                $xtype_for{ lc $col->data_type });
+        }
     }
 
     $self->_schema_cache->{sqlt}->{$db} = $sqlt->schema;

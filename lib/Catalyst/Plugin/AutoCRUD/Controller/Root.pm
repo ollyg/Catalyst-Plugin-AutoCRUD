@@ -98,8 +98,12 @@ sub source : Chained('schema') PathPart Args(1) {
 
     # allow frontend override in non-default site (default will be full-fat)
     $c->stash->{cpac_frontend} ||= $c->stash->{cpac}->{conf}->{frontend};
-    $c->forward('Controller::AutoCRUD::'. ucfirst $c->stash->{cpac_frontend})
-        if $c->controller('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend});
+    my $fend = 'Controller::AutoCRUD::'. ucfirst $c->stash->{cpac_frontend};
+    if ($c->controller($fend)) {
+        $c->log->debug(sprintf 'autocrud: forwarding to f/end %s', $fend)
+            if $c->debug;
+        $c->forward($fend);
+    }
 }
 
 # for AJAX calls
@@ -166,7 +170,7 @@ sub _enumerate_backends {
     my ($self, $c) = @_;
 
     my @backends = @{ $c->config->{'Plugin::AutoCRUD'}->{backends} };
-    $c->log->debug(join ':', 'Backends are', ' ', @backends) if $c->debug;
+    $c->log->debug('autocrud: backends are '. join ',', @backends) if $c->debug;
     return @backends;
 }
 
@@ -276,7 +280,7 @@ sub build_site_config : Private {
     $self->_site_conf_cache->{sites}->{$c->stash->{cpac_site}} = $site;
     $c->stash->{cpac}->{conf} = $self->_site_conf_cache->{sites}->{$c->stash->{cpac_site}};
 
-    $c->log->debug(sprintf "autocrud: cached the config for site [%s]",
+    $c->log->debug(sprintf "autocrud: loaded config for site [%s]",
             $c->stash->{cpac_site}) if $c->debug;
 }
 

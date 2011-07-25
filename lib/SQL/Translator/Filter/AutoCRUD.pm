@@ -58,20 +58,21 @@ sub filter {
         $local_table = $schema->get_table($local_table)
             if not blessed $local_table;
 
-        $local_table->extra->{display_name} = make_label($local_table->name);
-        $local_table->extra->{path_part} = make_path($local_table->name);
+        $local_table->extra(display_name => make_label($local_table->name));
+        $local_table->extra(path_part    => make_path($local_table->name));
 
         foreach my $local_field ($local_table->get_fields) {
             $local_field = $local_table->get_field($local_field)
                 if not blessed $local_field;
 
-            $local_field->extra->{display_name} = make_label($local_field->name);
-            $local_field->extra->{path_part} = make_path($local_field->name);
+            $local_field->extra(display_name => make_label($local_field->name));
+            $local_field->extra(path_part    => make_path($local_field->name));
         }
 
+        $local_table->extra('seen' => {});
         foreach my $c ($local_table->get_constraints) {
             next unless $c->type eq FOREIGN_KEY;
-            next if $local_table->extra->{seen}->{$c->name}++;
+            next if $local_table->extra('seen')->{$c->name}++;
 
             my $remote_table = $c->reference_table;
             $remote_table = $schema->get_table($remote_table)
@@ -140,9 +141,9 @@ sub filter {
         $table = $schema->get_table($table)
             if not blessed $table;
 
-        next unless exists $table->extra->{_relationships};
-        $table->add_constraint($_) for values %{ $table->extra->{_relationships} };
-        delete $table->extra->{_relationships};
+        next unless defined scalar $table->extra('_relationships');
+        $table->add_constraint($_) for values %{ $table->extra('_relationships') };
+        $table->remove_extra('_relationships');
     }
 } # sub filter
 

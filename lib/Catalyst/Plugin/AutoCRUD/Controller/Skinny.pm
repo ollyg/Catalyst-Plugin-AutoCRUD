@@ -39,7 +39,7 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
     $limit = 20 if !defined $limit or ($limit ne 'all' and $limit !~ m/^\d+$/);
     $c->stash->{cpac_skinny_limit} = $limit;
   
-    # XXX we don't call the stash var sort, as that upsets TT
+    # we don't call the stash var sort, as that upsets TT
     my $sortby = $c->req->params->{'sort'};
     $sortby = $c->stash->{cpac_meta}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
     $c->stash->{cpac_skinny_sortby} = $sortby;
@@ -70,7 +70,9 @@ sub browse : Chained('base') Args(0) {
     $pager->current_page($c->stash->{cpac_skinny_page});
 
     $c->stash->{cpac_skinny_pager} = $pager;
-    $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' Browser';
+    $c->stash->{cpac_title} = $c->stash->{cpac}->{dispatch}
+        ->{$c->stash->{cpac_db}}
+        ->{sources}->{$c->stash->{cpac_table}}->{display_name} .' List';
     $c->stash->{template} = 'list.tt';
 
     $c->forward('/autocrud/root/end');
