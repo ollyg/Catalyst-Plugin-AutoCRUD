@@ -110,6 +110,7 @@ sub source : Chained('schema') PathPart Args(1) {
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('do_meta');
+    $c->stash->{cpac_backend} = $c->stash->{cpac}->{dispatch}->{$c->stash->{cpac_db}}->{backend};
 }
 
 # =====================================================================
