@@ -1,4 +1,4 @@
-package SQL::Translator::Filter::AutoCRUD;
+package SQL::Translator::Filter::AutoCRUD::ReverseRelations;
 
 use strict;
 use warnings FATAL => 'all';
@@ -19,36 +19,36 @@ sub make_path {
     return lc $item;
 }
 
-sub add_to_rels_at {
-    my ($loc, $config) = @_;
+sub add_to_fields_at {
+    my ($extra, $field) = @_;
+    my $name = $field->{name};
 
-    my $constraint = SQL::Translator::Schema::Constraint->new($config);
-    my $name = $config->{name};
-
-    if ($config->{extra}->{dbic_type} =~ m/^(?:has_many|many_to_many)$/) {
+    if ($field->{extra}->{rel_type} =~ m/^(?:has_many|many_to_many)$/) {
         $name = Lingua::EN::Inflect::Number::to_PL($name);
-        $constraint->name($name);
+        $field->{name} = $name;
     }
 
-    if ($loc->{seen}->{$name}++
-        and $config->{extra}->{dbic_type} ne 'many_to_many') {
+    if ($extra->{seen}->{$name}++
+        and $field->{extra}->{rel_type} ne 'many_to_many') {
         # we have multiple rels between same two tables
         # rename each to refer to the rel on which it is based
 
-        if (exists $loc->{_relationships}->{$name}) {
-            my $uniq_name = $name .'_via_'. $loc->{_relationships}->{$name}->{extra}->{via};
-            $loc->{_relationships}->{$name}->name($uniq_name);
-            $loc->{_relationships}->{$name}->{extra}->{display_name} = make_label($uniq_name);
-            $loc->{_relationships}->{$uniq_name} = delete $loc->{_relationships}->{$name};
+        if (exists $extra->{_new_fields}->{$name}) {
+            my $uniq_name = $name .'_via_'. $extra->{_new_fields}->{$name}->{extra}->{via};
+            $extra->{_new_fields}->{$name}->{name} = $uniq_name;
+            $extra->{_new_fields}->{$name}->{extra}->{display_name} = make_label($uniq_name);
+            $extra->{_new_fields}->{$uniq_name} = delete $extra->{_new_fields}->{$name};
         }
 
-        $name = $name .'_via_'. $config->{extra}->{via};
-        $constraint->name($name);
+        $name = $name .'_via_'. $field->{extra}->{via};
+        $field->{name} = $name;
     }
 
-    $constraint->extra->{is_reverse} = 1;
-    $constraint->extra->{display_name} = make_label($name);
-    $loc->{_relationships}->{$name} = $constraint;
+    $field->{data_type} = 'text';
+    $field->{is_foreign_key} = 1;
+    $field->{extra}->{is_reverse} = 1;
+    $field->{extra}->{display_name} = make_label($name);
+    $extra->{_new_fields}->{$name} = $field;
 }
 
 sub filter {
@@ -93,14 +93,13 @@ sub filter {
                 my $p = Algorithm::Permute->new(\@remote_names, 2);
 
                 while ( my ($left, $right) = $p->next ) {
-                    add_to_rels_at(scalar $schema->get_table($left)->extra, {
+                    add_to_fields_at(scalar $schema->get_table($left)->extra, {
                         name => $right,
                         reference_table => $right,
                         reference_fields => [$schema->get_table($right)->primary_key->fields],
                         extra => {
-                            dbic_type => 'many_to_many',
+                            rel_type => 'many_to_many',
                             via => $c->name,
-                            from => $local_table->name,
                         },
                     });
                 }
@@ -109,26 +108,24 @@ sub filter {
                 if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
                     # all FK are unique so is one-to-one
                     # but we cannot distinguish has_one/might_have
-                    add_to_rels_at(scalar $remote_table->extra, {
+                    add_to_fields_at(scalar $remote_table->extra, {
                         name => $local_table->name,
                         reference_table => $local_table->name,
                         reference_fields => [$c->fields],
                         extra => {
-                            dbic_type => 'might_have',
+                            rel_type => 'might_have',
                             via => $c->name,
-                            from => $local_table->name,
                         }
                     });
                 }
                 else {
-                    add_to_rels_at(scalar $remote_table->extra, {
+                    add_to_fields_at(scalar $remote_table->extra, {
                         name => $local_table->name,
                         reference_table => $local_table->name,
                         reference_fields => [$c->fields],
                         extra => {
-                            dbic_type => 'has_many',
+                            rel_type => 'has_many',
                             via => $c->name,
-                            from => $local_table->name,
                         }
                     });
                 }
@@ -136,14 +133,15 @@ sub filter {
         } # constraints
     } # tables
 
-    # install these new types of relation as normal SQLT Schema Constraints
+    # install these reverse relations as regular SQLT fields
     foreach my $table ($schema->get_tables) {
         $table = $schema->get_table($table)
             if not blessed $table;
 
-        next unless defined scalar $table->extra('_relationships');
-        $table->add_constraint($_) for values %{ $table->extra('_relationships') };
-        $table->remove_extra('_relationships');
+        next unless defined scalar $table->extra('_new_fields');
+        $table->add_field(%$_) for values %{ $table->extra('_new_fields') };
+        $table->remove_extra('_new_fields');
+        $table->remove_extra('seen');
     }
 } # sub filter
 

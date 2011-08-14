@@ -10,50 +10,12 @@ BEGIN {
 }
 
 use SQL::Translator;
-use SQL::Translator::Filter::AutoCRUD;
+use SQL::Translator::Filter::AutoCRUD::ReverseRelations;
+use SQL::Translator::Filter::AutoCRUD::ExtJSxType;;
+use SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;;
 
 use Scalar::Util qw(weaken);
 use Carp;
-
-my %xtype_for = (
-    boolean => 'checkbox',
-);
-
-$xtype_for{$_} = 'numberfield' for (
-    'bigint',
-    'bigserial',
-    'dec',
-    'decimal',
-    'double precision',
-    'float',
-    'int',
-    'integer',
-    'mediumint',
-    'money',
-    'numeric',
-    'real',
-    'smallint',
-    'serial',
-    'tinyint',
-    'year',
-);
-
-$xtype_for{$_} = 'timefield' for ( 
-    'time',
-    'time without time zone',
-    'time with time zone',
-);
-
-$xtype_for{$_} = 'datefield' for ( 
-    'date',
-);
-
-$xtype_for{$_} = 'xdatetime' for (
-    'datetime',
-    'timestamp',
-    'timestamp without time zone',
-    'timestamp with time zone',
-);
 
 # return mapping of url path part to friendly display names
 # for each result source within a given schema.
@@ -109,10 +71,14 @@ sub dispatch_table {
     my ($display, %schema);
     my $cache = {};
 
-    # rebuild retval from cache
+    # rebuild retval from cache (copy)
     if (exists $self->_schema_cache->{handles}) {
         $cache = $self->_schema_cache->{handles};
-        return { map {($_ => $cache->{display_name})} keys %$cache };
+
+        return { map {{
+            display_name => $cache->{$_}->{display_name},
+            t => $self->source_dispatch_table($c, $_),
+        }} keys %$cache };
     }
 
     MODEL:
@@ -152,8 +118,8 @@ sub dispatch_table {
     $self->_schema_cache->{handles} = $cache;
 
     # now get data for the sources in each schema
-    foreach my $p(keys %$cache) {
-        $display->{$p}->{sources} = $self->source_dispatch_table($c, $p);
+    foreach my $p (keys %$cache) {
+        $display->{$p}->{t} = $self->source_dispatch_table($c, $p);
     }
 
     return $display;
@@ -174,234 +140,223 @@ sub schema_metadata {
                 $self->_schema_cache->{handles}->{$db}->{model}
             )->schema
         },
-        filters => ['SQL::Translator::Filter::AutoCRUD'],
+        filters => [qw/
+            SQL::Translator::Filter::AutoCRUD::ReverseRelations
+            SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs
+            SQL::Translator::Filter::AutoCRUD::ExtJSxType
+        /],
         producer => 'SQL::Translator::Producer::POD', # something cheap
     ) or die SQL::Translator->error;
 
     $sqlt->translate() or die $sqlt->error; # throw result away
 
-    foreach my $tbl ($sqlt->schema->get_tables, $sqlt->schema->get_views) {
-        # add an ordered list of columns, placing PKs first
-        $tbl->extra(col_order => [
-            map {$_->name}
-                (sort grep {$_->is_primary_key}     $tbl->get_fields),
-                (sort grep {not $_->is_primary_key} $tbl->get_fields),
-        ]);
-
-        # set extjs_xtype on columns
-        foreach my $col ($tbl->get_fields) {
-            $col->extra(extjs_xtype =>
-                $xtype_for{ lc $col->data_type });
-        }
-    }
-
     $self->_schema_cache->{sqlt}->{$db} = $sqlt->schema;
     return $sqlt->schema;
 }
 
-sub _build_table_info {
-    my ($c, $cpac, $model, $tab) = @_;
-
-    my $ti = $cpac->{table_info}->{ $model } = {};
-    if ($tab == 1) {
-        # convenience reference to the main table info, for the templates
-        $cpac->{main} = $ti; weaken $cpac->{main};
-    }
-
-    my $source = $c->model($model)->result_source;
-    $ti->{path}    = _rs2path($source);
-    $ti->{title}   = _2title($ti->{path});
-    $ti->{moniker} = $source->source_name;
-    $cpac->{tab_order}->{ $model } = $tab;
-
-    # column and relation info for this table
-    my (%mfks, %sfks, %fks);
-    my @cols = $source->columns;
-
-    my @rels = $source->relationships;
-    foreach my $r (@rels) {
-        my $rel_info = $source->relationship_info($r);
-
-        if ($rel_info->{attrs}->{accessor} eq 'multi') {
-            $mfks{$r} = $source->relationship_info($r);
-            next;
-        }
-
-        # if the self column in the relation condition is a FK, then the
-        # relation type is belongs_to, otherwise it's has_one/might_have
-
-        (my $self_col = (values %{$rel_info->{cond}})[0]) =~ s/^self\.//;
-        my $col_info = $source->column_info($self_col);
-
-        if (exists $col_info->{is_foreign_key} and $col_info->{is_foreign_key} == 1) {
-            # is belongs_to type relation
-            # need to deal with custom accessor name
-            $fks{$r} = $rel_info;
-            @cols = grep {$_ ne $self_col} @cols;
-            $ti->{cols}->{$r}->{masked_col} = $self_col;
-
-            # emit warning about belongs_to relations which are is_nullable
-            # but that do not have a join_type set
-            if (exists $col_info->{is_nullable} and $col_info->{is_nullable} == 1
-                    and !exists $rel_info->{attrs}->{join_type}) {
-                $c->log->error( sprintf(
-                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
-                    'and is_nullable, but has no join_type set. You will not see '.
-                    'all your data!', $source->source_name, $r
-                ));
-            }
-
-            # emit warning if belongs_to is using a column which does not have
-            # an inflator set. this is caused by belongs_to being issued
-            # before [the last] add_column in the result source.
-            if ($ti->{cols}->{$r}->{masked_col} eq $r
-                    and !exists $col_info->{_inflate_info}) {
-                $c->log->error( sprintf(
-                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
-                    'but the column [%s] does not have a row inflator. This means '.
-                    'you will not see related row data. Likely cause is belongs_to '.
-                    'being issued before add_column in your result source definition.',
-                        $source->source_name, $r, $self_col
-                ));
-            }
-        }
-        else {
-            # is has_one or might_have type relation
-            # need to grab the FK from the related source
-            $sfks{$r} = $rel_info;
-            (my $foreign_col = (keys %{$rel_info->{cond}})[0]) =~ s/^foreign\.//;
-            $ti->{cols}->{$r}->{foreign_col} = $foreign_col;
-
-            # emit warning about belongs_to relations which refer to columns
-            # without is_foreign_key set (triggers discovery as has_one or
-            # might_have)
-            if (not scalar grep {$_ eq $self_col} $source->primary_columns) {
-                $c->log->error( sprintf(
-                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
-                    'but is_foreign_key has not been set on column [%s]. You will '.
-                    'have incorrect column data from AutoCRUD until this is fixed!',
-                        $source->source_name, $r, $self_col
-                ));
-            }
-        }
-    }
-
-    # mas_many cols
-    # make friendly human readable title for related tables
-    foreach my $t (keys %mfks) {
-        my $target = _ism2m($source, $t);
-        if ($target) {
-            my $target_source
-                = $source->related_source($t)->related_source($target)->source_name;
-            eval "use Lingua::EN::Inflect::Number";
-            $target_source = Lingua::EN::Inflect::Number::to_PL($target_source)
-                if not $@;
-            $ti->{mfks}->{$t} = _2title( $target_source );
-            $ti->{m2m}->{$t} = $target;
-        }
-        else {
-            $ti->{mfks}->{$t} = _2title( $t );
-        }
-    }
-
-    $ti->{pk} = ($source->primary_columns)[0] || $cols[0];
-    $ti->{col_order} = [
-        $ti->{pk},                                           # primary key
-        (grep {!exists $fks{$_} and $_ ne $ti->{pk}} @cols), # ordinary cols
-    ];
-
-    # consider table columns
-    foreach my $col (@cols) {
-        my $info = $source->column_info($col);
-        next unless defined $info;
-
-        $ti->{cols}->{$col} = {
-            heading      => _2title($col),
-            editable     => ($info->{is_auto_increment} ? 0 : 1),
-            required     => ((exists $info->{is_nullable}
-                                 and $info->{is_nullable} == 0) ? 1 : 0),
-        };
-
-        $ti->{cols}->{$col}->{default_value} = $info->{default_value}
-            if ($info->{default_value} and $ti->{cols}->{$col}->{editable});
-
-        $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
-            if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
-
-        $ti->{cols}->{$col}->{extjs_xtype} = 'textfield'
-            if !exists $ti->{cols}->{$col}->{extjs_xtype}
-                and defined $info->{size} and $info->{size} <= 40;
-    }
-
-    # and FIXME do the same for the FKs which are masking hidden cols
-    foreach my $col (keys %fks) {
-        next unless exists $ti->{cols}->{$col}->{masked_col};
-        my $info = $source->column_info($ti->{cols}->{$col}->{masked_col});
-        next unless defined $info;
-
-        $ti->{cols}->{$col} = {
-            %{$ti->{cols}->{$col}},
-            heading      => _2title($col),
-            editable     => ($info->{is_auto_increment} ? 0 : 1),
-            required     => ((exists $info->{is_nullable}
-                                 and $info->{is_nullable} == 0) ? 1 : 0),
-        };
-
-        $ti->{cols}->{$col}->{default_value} = $info->{default_value}
-            if ($info->{default_value} and $ti->{cols}->{$col}->{editable});
-
-        $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
-            if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
-
-        $ti->{cols}->{$col}->{extjs_xtype} = 'textfield'
-            if !exists $ti->{cols}->{$col}->{extjs_xtype}
-                and defined $info->{size} and $info->{size} <= 40;
-    }
-
-    # extra data for foreign key columns
-    foreach my $col (keys %fks, keys %sfks) {
-
-        # eval to avoid dieing in the presence of dangling rels
-        $ti->{cols}->{$col}->{fk_model}
-            = eval { _moniker2model( $c, $cpac, $c->stash->{cpac_db}, $source->related_source($col)->source_name )};
-        next if !defined $ti->{cols}->{$col}->{fk_model};
-
-        # override the heading for this col to be the foreign table name
-        $ti->{cols}->{$col}->{heading} =
-            _2title( _rs2path( $c->model( $ti->{cols}->{$col}->{fk_model} )->result_source ));
-
-        # all gets a bit complex here, as there are a lot of cases to handle
-
-        # we want to see relation columns unless they're the same as our PK
-        # (which has already been added to the col_order list)
-        push @{$ti->{col_order}}, $col if $col ne $ti->{pk};
-
-        if (exists $sfks{$col}) {
-        # has_one or might_have cols are reverse relations, so pass hint
-            $ti->{cols}->{$col}->{is_rr} = 1;
-        }
-        else {
-        # otherwise mark as a foreign key
-            $ti->{cols}->{$col}->{is_fk} = 1;
-        }
-
-        # relations where the foreign table is the main table are not editable
-        # because the template/extjs will complete the field automatically
-        if ($source->related_source($col)->source_name
-                eq $cpac->{main}->{moniker}) {
-            $ti->{cols}->{$col}->{editable} = 0;
-        }
-        else {
-        # otherwise it's editable, and also let's call ourselves again for FT
-            $ti->{cols}->{$col}->{editable} = 1;
-
-            if ([caller(1)]->[3] !~ m/::_build_table_info$/) {
-                _build_table_info(
-                    $c, $cpac, $ti->{cols}->{$col}->{fk_model}, ++$tab);
-            }
-        }
-    }
-}
+#sub _build_table_info {
+#    my ($c, $cpac, $model, $tab) = @_;
+#
+#    my $ti = $cpac->{table_info}->{ $model } = {};
+#    if ($tab == 1) {
+#        # convenience reference to the main table info, for the templates
+#        $cpac->{main} = $ti; weaken $cpac->{main};
+#    }
+#
+#    my $source = $c->model($model)->result_source;
+#    $ti->{path}    = _rs2path($source);
+#    $ti->{title}   = _2title($ti->{path});
+#    $ti->{moniker} = $source->source_name;
+#    $cpac->{tab_order}->{ $model } = $tab;
+#
+#    # column and relation info for this table
+#    my (%mfks, %sfks, %fks);
+#    my @cols = $source->columns;
+#
+#    my @rels = $source->relationships;
+#    foreach my $r (@rels) {
+#        my $rel_info = $source->relationship_info($r);
+#
+#        if ($rel_info->{attrs}->{accessor} eq 'multi') {
+#            $mfks{$r} = $source->relationship_info($r);
+#            next;
+#        }
+#
+#        # if the self column in the relation condition is a FK, then the
+#        # relation type is belongs_to, otherwise it's has_one/might_have
+#
+#        (my $self_col = (values %{$rel_info->{cond}})[0]) =~ s/^self\.//;
+#        my $col_info = $source->column_info($self_col);
+#
+#        if (exists $col_info->{is_foreign_key} and $col_info->{is_foreign_key} == 1) {
+#            # is belongs_to type relation
+#            # need to deal with custom accessor name
+#            $fks{$r} = $rel_info;
+#            @cols = grep {$_ ne $self_col} @cols;
+#            $ti->{cols}->{$r}->{masked_col} = $self_col;
+#
+#            # emit warning about belongs_to relations which are is_nullable
+#            # but that do not have a join_type set
+#            if (exists $col_info->{is_nullable} and $col_info->{is_nullable} == 1
+#                    and !exists $rel_info->{attrs}->{join_type}) {
+#                $c->log->error( sprintf(
+#                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
+#                    'and is_nullable, but has no join_type set. You will not see '.
+#                    'all your data!', $source->source_name, $r
+#                ));
+#            }
+#
+#            # emit warning if belongs_to is using a column which does not have
+#            # an inflator set. this is caused by belongs_to being issued
+#            # before [the last] add_column in the result source.
+#            if ($ti->{cols}->{$r}->{masked_col} eq $r
+#                    and !exists $col_info->{_inflate_info}) {
+#                $c->log->error( sprintf(
+#                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
+#                    'but the column [%s] does not have a row inflator. This means '.
+#                    'you will not see related row data. Likely cause is belongs_to '.
+#                    'being issued before add_column in your result source definition.',
+#                        $source->source_name, $r, $self_col
+#                ));
+#            }
+#        }
+#        else {
+#            # is has_one or might_have type relation
+#            # need to grab the FK from the related source
+#            $sfks{$r} = $rel_info;
+#            (my $foreign_col = (keys %{$rel_info->{cond}})[0]) =~ s/^foreign\.//;
+#            $ti->{cols}->{$r}->{foreign_col} = $foreign_col;
+#
+#            # emit warning about belongs_to relations which refer to columns
+#            # without is_foreign_key set (triggers discovery as has_one or
+#            # might_have)
+#            if (not scalar grep {$_ eq $self_col} $source->primary_columns) {
+#                $c->log->error( sprintf(
+#                    'AutoCRUD CAUTION!: Relation [%s]->[%s] is of type belongs_to '.
+#                    'but is_foreign_key has not been set on column [%s]. You will '.
+#                    'have incorrect column data from AutoCRUD until this is fixed!',
+#                        $source->source_name, $r, $self_col
+#                ));
+#            }
+#        }
+#    }
+#
+#    # mas_many cols
+#    # make friendly human readable title for related tables
+#    foreach my $t (keys %mfks) {
+#        my $target = _ism2m($source, $t);
+#        if ($target) {
+#            my $target_source
+#                = $source->related_source($t)->related_source($target)->source_name;
+#            eval "use Lingua::EN::Inflect::Number";
+#            $target_source = Lingua::EN::Inflect::Number::to_PL($target_source)
+#                if not $@;
+#            $ti->{mfks}->{$t} = _2title( $target_source );
+#            $ti->{m2m}->{$t} = $target;
+#        }
+#        else {
+#            $ti->{mfks}->{$t} = _2title( $t );
+#        }
+#    }
+#
+#    $ti->{pk} = ($source->primary_columns)[0] || $cols[0];
+#    $ti->{col_order} = [
+#        $ti->{pk},                                           # primary key
+#        (grep {!exists $fks{$_} and $_ ne $ti->{pk}} @cols), # ordinary cols
+#    ];
+#
+#    # consider table columns
+#    foreach my $col (@cols) {
+#        my $info = $source->column_info($col);
+#        next unless defined $info;
+#
+#        $ti->{cols}->{$col} = {
+#            heading      => _2title($col),
+#            editable     => ($info->{is_auto_increment} ? 0 : 1),
+#            required     => ((exists $info->{is_nullable}
+#                                 and $info->{is_nullable} == 0) ? 1 : 0),
+#        };
+#
+#        $ti->{cols}->{$col}->{default_value} = $info->{default_value}
+#            if ($info->{default_value} and $ti->{cols}->{$col}->{editable});
+#
+#        $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
+#            if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
+#
+#        $ti->{cols}->{$col}->{extjs_xtype} = 'textfield'
+#            if !exists $ti->{cols}->{$col}->{extjs_xtype}
+#                and defined $info->{size} and $info->{size} <= 40;
+#    }
+#
+#    # and FIXME do the same for the FKs which are masking hidden cols
+#    foreach my $col (keys %fks) {
+#        next unless exists $ti->{cols}->{$col}->{masked_col};
+#        my $info = $source->column_info($ti->{cols}->{$col}->{masked_col});
+#        next unless defined $info;
+#
+#        $ti->{cols}->{$col} = {
+#            %{$ti->{cols}->{$col}},
+#            heading      => _2title($col),
+#            editable     => ($info->{is_auto_increment} ? 0 : 1),
+#            required     => ((exists $info->{is_nullable}
+#                                 and $info->{is_nullable} == 0) ? 1 : 0),
+#        };
+#
+#        $ti->{cols}->{$col}->{default_value} = $info->{default_value}
+#            if ($info->{default_value} and $ti->{cols}->{$col}->{editable});
+#
+#        $ti->{cols}->{$col}->{extjs_xtype} = $xtype_for{ lc($info->{data_type}) }
+#            if (exists $info->{data_type} and exists $xtype_for{ lc($info->{data_type}) });
+#
+#        $ti->{cols}->{$col}->{extjs_xtype} = 'textfield'
+#            if !exists $ti->{cols}->{$col}->{extjs_xtype}
+#                and defined $info->{size} and $info->{size} <= 40;
+#    }
+#
+#    # extra data for foreign key columns
+#    foreach my $col (keys %fks, keys %sfks) {
+#
+#        # eval to avoid dieing in the presence of dangling rels
+#        $ti->{cols}->{$col}->{fk_model}
+#            = eval { _moniker2model( $c, $cpac, $c->stash->{cpac_db}, $source->related_source($col)->source_name )};
+#        next if !defined $ti->{cols}->{$col}->{fk_model};
+#
+#        # override the heading for this col to be the foreign table name
+#        $ti->{cols}->{$col}->{heading} =
+#            _2title( _rs2path( $c->model( $ti->{cols}->{$col}->{fk_model} )->result_source ));
+#
+#        # all gets a bit complex here, as there are a lot of cases to handle
+#
+#        # we want to see relation columns unless they're the same as our PK
+#        # (which has already been added to the col_order list)
+#        push @{$ti->{col_order}}, $col if $col ne $ti->{pk};
+#
+#        if (exists $sfks{$col}) {
+#        # has_one or might_have cols are reverse relations, so pass hint
+#            $ti->{cols}->{$col}->{is_rr} = 1;
+#        }
+#        else {
+#        # otherwise mark as a foreign key
+#            $ti->{cols}->{$col}->{is_fk} = 1;
+#        }
+#
+#        # relations where the foreign table is the main table are not editable
+#        # because the template/extjs will complete the field automatically
+#        if ($source->related_source($col)->source_name
+#                eq $cpac->{main}->{moniker}) {
+#            $ti->{cols}->{$col}->{editable} = 0;
+#        }
+#        else {
+#        # otherwise it's editable, and also let's call ourselves again for FT
+#            $ti->{cols}->{$col}->{editable} = 1;
+#
+#            if ([caller(1)]->[3] !~ m/::_build_table_info$/) {
+#                _build_table_info(
+#                    $c, $cpac, $ti->{cols}->{$col}->{fk_model}, ++$tab);
+#            }
+#        }
+#    }
+#}
 
 # is this col really part of a many to many?
 # test checks for related source having two belongs_to rels *only*,
