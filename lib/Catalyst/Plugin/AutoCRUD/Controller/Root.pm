@@ -294,6 +294,21 @@ sub do_meta : Private {
     $c->stash->{cpac}->{m} = $self->_site_conf_cache->{meta}->{$db};
     $c->log->debug("autocrud: retrieved cached schema metadata for [$db]") if $c->debug;
 
+    foreach my $so (keys %{ $c->stash->{cpac}->{c}->{$db}->{t} }) {
+        my $user = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$site}->{$db}->{$so} || {};
+        my $source = $c->stash->{cpac}->{c}->{$db}->{t}->{$so};
+
+        # columns from the user conf can be loaded (for current db only - lazy)
+        $source->{cols} =
+            $user->{columns} || $c->stash->{cpac}->{m}->t->{$so}->extra('col_order');
+
+        # headings from the user conf can be loaded (for current db only - lazy)
+        foreach my $f ($c->stash->{cpac}->{m}->t->{$so}->get_fields) {
+            $source->{headings}->{$f->name} =
+                $user->{headings}->{$f->name} || $f->extra('display_name');
+        }
+    }
+
     # set up helper for templates
     $c->stash->{cpac}->{t} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
 }
