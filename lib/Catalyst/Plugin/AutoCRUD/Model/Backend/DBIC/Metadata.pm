@@ -11,8 +11,8 @@ BEGIN {
 
 use SQL::Translator;
 use SQL::Translator::Filter::AutoCRUD::ReverseRelations;
-use SQL::Translator::Filter::AutoCRUD::ExtJSxType;;
-use SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;;
+use SQL::Translator::Filter::AutoCRUD::ExtJSxType;
+use SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
 
 use Scalar::Util qw(weaken);
 use Carp;

@@ -49,8 +49,15 @@ sub filter {
     foreach my $tbl ($schema->get_tables, $schema->get_views) {
         # set extjs_xtype on columns
         foreach my $col ($tbl->get_fields) {
-            $col->extra(extjs_xtype =>
-                $xtype_for{ lc $col->data_type });
+            if (exists $xtype_for{ lc $col->data_type }) {
+                $col->extra(extjs_xtype => $xtype_for{ lc $col->data_type });
+            }
+            elsif (scalar $col->size <= 40) {
+                $col->extra(extjs_xtype => 'textfield');
+            }
+            else {
+                $col->extra(extjs_xtype => 'textarea');
+            }
         }
     }
 }
