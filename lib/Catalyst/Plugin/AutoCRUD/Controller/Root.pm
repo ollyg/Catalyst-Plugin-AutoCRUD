@@ -324,6 +324,10 @@ sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
     my $frontend = $c->stash->{cpac_frontend} || 'full-fat';
 
+    $c->stash->{cpac}->{g} = merge_hashes(
+        $c->stash->{cpac}->{g},
+        _one_level_of($c->config->{'Plugin::AutoCRUD'}));
+
     my $tt_path = $c->config->{'Plugin::AutoCRUD'}->{tt_path};
     $tt_path = (defined $tt_path ? (ref $tt_path eq '' ? [$tt_path] : $tt_path ) : [] );
 

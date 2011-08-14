@@ -8,9 +8,8 @@ use Test::More 'no_plan';
 
 # application loads
 BEGIN { use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp" }
-my $mech = Test::WWW::Mechanize::Catalyst->new;
-
 $Catalyst::Plugin::AutoCRUD::VERSION ||= 'TESTING';
+my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get basic template, no Metadata
 $mech->get_ok('/helloworld', 'Get Hello World page');
