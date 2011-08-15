@@ -58,17 +58,6 @@ sub filter {
         $local_table = $schema->get_table($local_table)
             if not blessed $local_table;
 
-        $local_table->extra(display_name => make_label($local_table->name));
-        $local_table->extra(path_part    => make_path($local_table->name));
-
-        foreach my $local_field ($local_table->get_fields) {
-            $local_field = $local_table->get_field($local_field)
-                if not blessed $local_field;
-
-            $local_field->extra(display_name => make_label($local_field->name));
-            $local_field->extra(path_part    => make_path($local_field->name));
-        }
-
         $local_table->extra('seen' => {});
         foreach my $c ($local_table->get_constraints) {
             next unless $c->type eq FOREIGN_KEY;

@@ -11,6 +11,7 @@ BEGIN {
     $ENV{AUTOCRUD_CONFIG} = 't/lib/columns_extjs.conf';
     use_ok "Test::WWW::Mechanize::Catalyst::AJAX" => "TestAppCustomConfig";
 }
+$Catalyst::Plugin::AutoCRUD::VERSION ||= 'TESTING';
 my $mech = Test::WWW::Mechanize::Catalyst::AJAX->new;
 
 $mech->get_ok("/autocrud/dbic/album/browse", "Get HTML for album table");

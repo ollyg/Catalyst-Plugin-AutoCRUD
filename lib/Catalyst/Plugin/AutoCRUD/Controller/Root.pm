@@ -299,8 +299,8 @@ sub do_meta : Private {
         my $source = $c->stash->{cpac}->{c}->{$db}->{t}->{$so};
 
         # columns from the user conf can be loaded (for current db only - lazy)
-        $source->{cols} =
-            $user->{columns} || $c->stash->{cpac}->{m}->t->{$so}->extra('col_order');
+        $source->{cols} = ((ref $user->{columns} eq ref []) and scalar @{$user->{columns}})
+            ? $user->{columns} : $c->stash->{cpac}->{m}->t->{$so}->extra('col_order');
 
         # headings from the user conf can be loaded (for current db only - lazy)
         foreach my $f ($c->stash->{cpac}->{m}->t->{$so}->get_fields) {
