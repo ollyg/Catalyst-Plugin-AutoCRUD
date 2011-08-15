@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=[% cpac.conf.html_charset OR 'utf-8' | html %]" />
+<meta http-equiv="Content-Type" content="text/html; charset=[% cpac.g.html_charset OR 'utf-8' | html %]" />
 <title>[% cpac_title %][% ' - Powered by ' IF cpac_title %][% cpac_version %]</title>
 
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny_body.css" ) %]" />
@@ -15,30 +15,30 @@
     <span id="cpac_banner_icons">
         [% IF cpac_site == 'default' %]
             <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]"
-            title ="[% cpac.dispatch.$cpac_db.display_name %] Table Picker">
+            title ="[% cpac.c.$cpac_db.display_name %] Table Picker">
                 <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
-                    alt="[% cpac.dispatch.$cpac_db.display_name %] Table Picker" />
+                    alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
             </a>
 
-            [% IF c.action.name.match('browse') AND cpac.conf.frontend != 'skinny' %]
+            [% IF c.action.name.match('browse') AND cpac_frontend != 'skinny' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db], cpac_table ) %]"
                 title ="Full-feature JS View">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
-                        alt="[% cpac.dispatch.$cpac_db.display_name %] Table Picker" />
+                        alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
                 </a>
             [% END %]
         [% ELSE %]
             <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]"
-            title ="[% cpac.dispatch.$cpac_db.display_name %] Table Picker">
+            title ="[% cpac.c.$cpac_db.display_name %] Table Picker">
                 <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
-                    alt="[% cpac.dispatch.$cpac_db.display_name %] Table Picker" />
+                    alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
             </a>
 
-            [% IF c.action.name.match('browse') AND cpac.conf.frontend != 'skinny' %]
+            [% IF c.action.name.match('browse') AND cpac_frontend != 'skinny' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db], cpac_table ) %]"
-                title ="[% cpac.dispatch.$cpac_db.display_name %] Table Picker">
+                title ="[% cpac.c.$cpac_db.display_name %] Table Picker">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
-                        alt="[% cpac.dispatch.$cpac_db.display_name %] Table Picker" />
+                        alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
                 </a>
             [% END %]
         [% END %]

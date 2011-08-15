@@ -11,7 +11,7 @@ sub filter {
         $tbl->extra(col_order => [
             map {$_->name}
                 (sort grep {$_->is_primary_key} $tbl->get_fields),
-                (sort grep {not $_->is_primary_key
+                (sort grep {not $_->is_primary_key and not $_->extra('is_reverse')
                             and not $_->is_foreign_key} $tbl->get_fields),
                 (sort grep {$_->is_foreign_key
                             and not $_->extra('is_reverse')} $tbl->get_fields),
