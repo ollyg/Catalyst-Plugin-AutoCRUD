@@ -22,7 +22,7 @@ sub acl : Private {
     my $action = [split m{/}, $c->action]->[-1];
     my $acl = $acl_for->{ $action } or return;
 
-    if ($c->stash->{site_conf}->{$db}->{$table}->{$acl} ne 'yes') {
+    if ($c->stash->{cpac}->{c}->{$db}->{t}->{$table}->{$acl} ne 'yes') {
         my $msg = "Access forbidden by configuration to [$site]->[$db]->[$table]->[$action]";
         $c->log->debug($msg) if $c->debug;
 
@@ -78,9 +78,19 @@ sub list_stringified : Chained('base') Args(0) {
 # send our generated config back in JSON for debugging
 sub dumpmeta : Chained('base') Args(0) {
     my ($self, $c) = @_;
+
+    # strip the SQLT objects
+    my $meta = scalar $c->stash->{cpac}->{m}->extra;
+    foreach my $t (values %{$c->stash->{cpac}->{m}->t}) {
+        $meta->{t}->{$t->name} = scalar $t->extra;
+        foreach my $f (values %{$t->f}) {
+            $meta->{t}->{$t->name}->{f}->{$f->name} = scalar $f->extra;
+        }
+    }
+
     $c->stash->{json_data} = { cpac => {
-        meta => $c->stash->{cpac}->{meta},
-        conf => $c->stash->{cpac}->{conf},
+        meta => $meta,
+        conf => $c->stash->{cpac}->{c},
     } };
 
     return $self;
