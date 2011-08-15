@@ -11,6 +11,7 @@ BEGIN {
     $ENV{AUTOCRUD_CONFIG} = 't/lib/html_charset.conf';
     use_ok "Test::WWW::Mechanize::Catalyst" => "TestAppCustomConfig"
 }
+$Catalyst::Plugin::AutoCRUD::VERSION ||= 'TESTING';
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get basic template, no Metadata

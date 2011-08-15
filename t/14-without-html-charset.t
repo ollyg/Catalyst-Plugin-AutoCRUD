@@ -10,6 +10,7 @@ use Test::More 'no_plan';
 BEGIN {
     use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp"
 }
+$Catalyst::Plugin::AutoCRUD::VERSION ||= 'TESTING';
 my $mech = Test::WWW::Mechanize::Catalyst->new;
 
 # get basic template, no Metadata
