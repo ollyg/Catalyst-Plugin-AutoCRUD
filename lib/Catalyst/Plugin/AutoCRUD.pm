@@ -7,6 +7,7 @@ use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
 our $this_package = __PACKAGE__; # so it can be used in hash keys
+our $VERSION ||= 'TESTING';
 
 sub setup_components {
     my $class = shift;
@@ -116,17 +117,29 @@ sub setup_components {
 # we subvert the pretty print error screen for dumpmeta
 sub dump_these {
     my $c = shift;
+
     my $params = {
             map {$_ => $c->stash->{$_}}
                 grep {ref $c->stash->{$_} eq ''}
                 grep {$_ =~ m/^cpac_/}
                      keys %{$c->stash},
     };
+
+    # strip the SQLT objects
+    #my $meta = scalar $c->stash->{cpac}->{m}->extra;
+    #foreach my $t (values %{$c->stash->{cpac}->{m}->t}) {
+    #    $meta->{t}->{$t->name} = scalar $t->extra;
+    #    foreach my $f (values %{$t->f}) {
+    #        $meta->{t}->{$t->name}->{f}->{$f->name} = scalar $f->extra;
+    #    }
+    #}
+
     if ($c->stash->{dumpmeta}) {
         return (
             [ 'CPAC Parameters' => $params ],
-            [ 'Site Configuration' => $c->stash->{cpac}->{conf} ],
-            [ 'Storage Metadata'   => $c->stash->{cpac}->{meta} ],
+            [ 'Global Configuration' => $c->stash->{cpac}->{g} ],
+            [ 'Site Configuration' => $c->stash->{cpac}->{c} ],
+            #[ 'Storage Metadata' => $meta ],
             [ 'Response' => $c->response ], # only to pacify log_request
         );
     }
