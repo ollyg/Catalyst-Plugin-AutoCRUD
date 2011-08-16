@@ -13,7 +13,7 @@ use SQL::Translator;
 use SQL::Translator::Filter::AutoCRUD::ReverseRelations;
 use SQL::Translator::Filter::AutoCRUD::ExtJSxType;
 use SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
-use SQL::Translator::Filter::AutoCRUD::NamesAndPaths;
+use SQL::Translator::Filter::AutoCRUD::DisplayName;
 
 use Scalar::Util qw(weaken);
 use Carp;
@@ -143,7 +143,7 @@ sub schema_metadata {
         },
         filters => [qw/
             SQL::Translator::Filter::AutoCRUD::ReverseRelations
-            SQL::Translator::Filter::AutoCRUD::NamesAndPaths
+            SQL::Translator::Filter::AutoCRUD::DisplayName
             SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs
             SQL::Translator::Filter::AutoCRUD::ExtJSxType
         /],
