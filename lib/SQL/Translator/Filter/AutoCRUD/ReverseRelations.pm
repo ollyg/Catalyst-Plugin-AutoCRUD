@@ -127,10 +127,11 @@ sub filter {
         $table = $schema->get_table($table)
             if not blessed $table;
 
+        $table->remove_extra('seen');
         next unless defined scalar $table->extra('_new_fields');
+
         $table->add_field(%$_) for values %{ $table->extra('_new_fields') };
         $table->remove_extra('_new_fields');
-        $table->remove_extra('seen');
     }
 } # sub filter
 

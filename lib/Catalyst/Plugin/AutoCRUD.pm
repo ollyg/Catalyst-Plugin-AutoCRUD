@@ -126,20 +126,23 @@ sub dump_these {
     };
 
     # strip the SQLT objects
-    #my $meta = scalar $c->stash->{cpac}->{m}->extra;
-    #foreach my $t (values %{$c->stash->{cpac}->{m}->t}) {
-    #    $meta->{t}->{$t->name} = scalar $t->extra;
-    #    foreach my $f (values %{$t->f}) {
-    #        $meta->{t}->{$t->name}->{f}->{$f->name} = scalar $f->extra;
-    #    }
-    #}
+    my $meta = undef;
+    if (exists $c->stash->{cpac}->{m}) {
+        $meta = scalar $c->stash->{cpac}->{m}->extra;
+        foreach my $t (values %{$c->stash->{cpac}->{m}->t}) {
+            $meta->{t}->{$t->name} = scalar $t->extra;
+            foreach my $f (values %{$t->f}) {
+                $meta->{t}->{$t->name}->{f}->{$f->name} = scalar $f->extra;
+            }
+        }
+    }
 
     if ($c->stash->{dumpmeta}) {
         return (
             [ 'CPAC Parameters' => $params ],
             [ 'Global Configuration' => $c->stash->{cpac}->{g} ],
             [ 'Site Configuration' => $c->stash->{cpac}->{c} ],
-            #[ 'Storage Metadata' => $meta ],
+            [ 'Storage Metadata' => $meta ],
             [ 'Response' => $c->response ], # only to pacify log_request
         );
     }
