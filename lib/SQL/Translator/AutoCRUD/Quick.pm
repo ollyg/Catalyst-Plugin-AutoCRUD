@@ -4,7 +4,8 @@ use strict;
 use warnings FATAL => 'all';
 
 {
-    package SQL::Translator::AutoCRUD::Quick::Source;
+    package # hide from toolchain
+        SQL::Translator::AutoCRUD::Quick::Source;
 
     sub new {
         my ($class, $self) = @_;
