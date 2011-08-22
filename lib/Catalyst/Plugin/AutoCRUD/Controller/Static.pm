@@ -7,6 +7,7 @@ use base 'Catalyst::Controller';
 
 use File::stat;
 use File::Basename;
+use File::Slurp;
 
 my %mime = (
     css => 'text/css',
@@ -47,7 +48,7 @@ sub static : Chained('/autocrud/root/base') Args(1) {
             return 0;
         }
 
-        my $content = do { local (@ARGV, $/) = $path; <> };
+        my $content = read_file( $path, binmode => ':raw' );
         $c->res->headers->content_type($mime{$ext});
         $c->res->headers->content_length( $stat->size );
         $c->res->headers->last_modified( $stat->mtime );
@@ -55,8 +56,8 @@ sub static : Chained('/autocrud/root/base') Args(1) {
         if ( $c->config->{static}->{no_logs} && $c->log->can('abort') ) {
            $c->log->abort( 1 );
         }
-        $c->log->debug(qq{Serving file "$file" as }
-            . $c->res->headers->content_type) if $c->debug;
+        $c->log->debug(sprintf "Serving file [%s] of size [%s] as [%s]",
+            $file, $stat->size, $c->res->headers->content_type) if $c->debug;
         $c->res->status(200);
         return 1;
     }
