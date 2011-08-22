@@ -7,7 +7,7 @@ use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
 our $this_package = __PACKAGE__; # so it can be used in hash keys
-our $VERSION ||= 'TESTING';
+our $VERSION ||= '0.00031412';
 
 sub setup_components {
     my $class = shift;
