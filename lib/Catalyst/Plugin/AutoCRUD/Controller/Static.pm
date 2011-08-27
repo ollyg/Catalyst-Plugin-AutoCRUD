@@ -11,6 +11,7 @@ use File::Slurp;
 
 my %mime = (
     css => 'text/css',
+    gif => 'image/gif',
     png => 'image/png',
     js  => 'application/x-javascript',
 );
@@ -19,8 +20,11 @@ my %mime = (
 # cheap. there are a couple of nice icons we want to make sure the users have
 # but it'd be too much hassle to ask them to install, so we bundle them.
 #
-sub static : Chained('/autocrud/root/base') Args(1) {
-    my ($self, $c, $file) = @_;
+sub static : Chained('/autocrud/root/base') Args {
+    my ($self, $c, @target) = @_;
+    my $file = join '/', @target;
+    $c->log->debug("Static request for file [$file], generated from parts")
+        if scalar @target > 1 and $c->debug;
 
     (my $pkg_path = __PACKAGE__) =~ s{::}{/}g;
     my (undef, $directory, undef) = fileparse(
@@ -29,7 +33,7 @@ sub static : Chained('/autocrud/root/base') Args(1) {
 
     my $path = "$directory../static/$file";
 
-    if ( ($file =~ m/^\w+\.(\w{2,3})$/i) and (-f $path) ) {
+    if ( ($file =~ m/\w+\.(\w{2,3})$/i) and (-f $path) ) {
         my $ext = $1;
         my $stat = stat($path);
 
@@ -62,7 +66,7 @@ sub static : Chained('/autocrud/root/base') Args(1) {
         return 1;
     }
 
-    $c->log->debug(qq{Failed to serve file "$file"}) if $c->debug;
+    $c->log->debug(qq{Failed to serve file [$file] from [$path]}) if $c->debug;
     $c->res->status(404);
     return 0;
 }
