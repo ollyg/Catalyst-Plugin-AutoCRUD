@@ -52,7 +52,7 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
         if !defined $dir or $dir !~ m/^\w+$/g;
     $c->stash->{cpac_skinny_dir} = $dir;
 
-    $c->stash->{cpac_frontend} = 'skinny';
+    $c->stash->{cpac}->{g}->{frontend} = 'skinny';
 }
 
 # pull in data by forwarding to JSON .../list, then send page and render
@@ -74,9 +74,9 @@ sub browse : Chained('base') Args(0) {
     $pager->current_page($c->stash->{cpac_skinny_page});
 
     $c->stash->{cpac_skinny_pager} = $pager;
-    $c->stash->{cpac_title} = $c->stash->{cpac}->{c}
-        ->{$c->stash->{cpac_db}}
-        ->{t}->{$c->stash->{cpac_table}}->{display_name} .' List';
+    $c->stash->{cpac}->{g}->{title} = $c->stash->{cpac}->{c}
+        ->{$c->stash->{cpac}->{g}->{db}}
+        ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
     $c->stash->{template} = 'list.tt';
 
     $c->forward('/autocrud/root/end');

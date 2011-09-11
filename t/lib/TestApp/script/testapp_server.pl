@@ -1,4 +1,4 @@
-#!C:\strawberry\perl\bin\perl.exe
+#!/usr/bin/perl
 
 BEGIN {
     $ENV{CATALYST_SCRIPT_GEN} = 40;

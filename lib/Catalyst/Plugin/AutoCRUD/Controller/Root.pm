@@ -19,12 +19,12 @@ my (undef, $directory, undef) = fileparse(
 sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     my ($self, $c) = @_;
 
-    $c->stash->{current_view} = 'AutoCRUD::TT';
-    $c->stash->{cpac_version} = 'CPAC v'
-        . $Catalyst::Plugin::AutoCRUD::VERSION;
-    $c->stash->{cpac_site} = 'default';
-    $c->stash->{template} = 'list.tt';
     $c->stash->{cpac} = {};
+    $c->stash->{template} = 'list.tt';
+    $c->stash->{current_view} = 'AutoCRUD::TT';
+    $c->stash->{cpac}->{g}->{version} = 'CPAC v'
+        . $Catalyst::Plugin::AutoCRUD::VERSION;
+    $c->stash->{cpac}->{g}->{site} = 'default';
 
     # load enough metadata to display schema and sources
     if (!exists $self->_site_conf_cache->{dispatch}) {
@@ -82,7 +82,7 @@ sub table : Chained('db') PathPart('') Args(1) {
 
 sub site : Chained('base') PathPart CaptureArgs(1) {
     my ($self, $c, $site) = @_;
-    $c->stash->{cpac_site} = $site;
+    $c->stash->{cpac}->{g}->{site} = $site;
 }
 
 sub no_schema : Chained('site') PathPart('') Args(0) {
@@ -92,7 +92,7 @@ sub no_schema : Chained('site') PathPart('') Args(0) {
 
 sub schema : Chained('site') PathPart CaptureArgs(1) {
     my ($self, $c, $db) = @_;
-    $c->stash->{cpac_db} = $db;
+    $c->stash->{cpac}->{g}->{db} = $db;
 }
 
 sub no_source : Chained('schema') PathPart('') Args(0) {
@@ -105,13 +105,12 @@ sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
     $c->forward('bootstrap');
 
-    $c->stash->{cpac_title} = $c->stash->{cpac}->{c}
-        ->{$c->stash->{cpac_db}}
-        ->{t}->{$c->stash->{cpac_table}}->{display_name} .' List';
+    $c->stash->{cpac}->{g}->{title} = $c->stash->{cpac}->{c}
+        ->{$c->stash->{cpac}->{g}->{db}}
+        ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
-    $c->stash->{cpac_frontend} ||= $c->stash->{cpac}->{g}->{frontend};
-    my $fend = 'Controller::AutoCRUD::'. ucfirst $c->stash->{cpac_frontend};
+    my $fend = 'Controller::AutoCRUD::'. ucfirst $c->stash->{cpac}->{g}->{frontend};
     if ($c->controller($fend)) {
         $c->log->debug(sprintf 'autocrud: forwarding to f/end %s', $fend)
             if $c->debug;
@@ -123,7 +122,7 @@ sub source : Chained('schema') PathPart Args(1) {
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('bootstrap');
-    $c->stash->{cpac_backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac_db}}->{backend};
+    $c->stash->{cpac}->{g}->{backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # =====================================================================
@@ -136,17 +135,16 @@ sub err_message : Private {
     # if there's only one schema, then we choose it and skip straight to
     # the tables display.
     if (scalar keys %{$c->stash->{cpac}->{c}} == 1) {
-        $c->stash->{cpac_db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
+        $c->stash->{cpac}->{g}->{db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
     }
 
-    $c->stash->{cpac_frontend} ||= $c->stash->{cpac}->{g}->{frontend};
     $c->stash->{template} = 'tables.tt';
 }
 
 # just to factor out the pulling of conf and meta from package caches
 sub bootstrap : Private {
     my ($self, $c, $table) = @_;
-    $c->stash->{cpac_table} = $table;
+    $c->stash->{cpac}->{g}->{table} = $table;
 
     $c->forward('build_site_config');
     $c->forward('acl');
@@ -156,7 +154,7 @@ sub bootstrap : Private {
 # build site config for filtering the frontend
 sub build_site_config : Private {
     my ($self, $c) = @_;
-    my $current = $c->stash->{cpac_site};
+    my $current = $c->stash->{cpac}->{g}->{site};
 
     # if we have it cached
     if (scalar keys %{ $self->_site_conf_cache->{sites}->{$current} }) {
@@ -166,7 +164,8 @@ sub build_site_config : Private {
         $c->stash->{cpac}->{c} = merge_hashes(
             $c->stash->{cpac}->{c},
             $self->_site_conf_cache->{sites}->{$current});
-        $c->stash->{cpac}->{g} = delete $c->stash->{cpac}->{c}->{cpac_general};
+        $c->stash->{cpac}->{g} = merge_hashes($c->stash->{cpac}->{g},
+            delete $c->stash->{cpac}->{c}->{cpac_general});
         return;
     }
 
@@ -217,10 +216,11 @@ sub build_site_config : Private {
 
     $self->_site_conf_cache->{sites}->{$current} = $site;
     $c->stash->{cpac}->{c} = merge_hashes($c->stash->{cpac}->{c}, $site);
-    $c->stash->{cpac}->{g} = delete $c->stash->{cpac}->{c}->{cpac_general};
+    $c->stash->{cpac}->{g} = merge_hashes($c->stash->{cpac}->{g},
+        delete $c->stash->{cpac}->{c}->{cpac_general});
 
     $c->log->debug(sprintf "autocrud: loaded config for site [%s]",
-            $c->stash->{cpac_site}) if $c->debug;
+            $c->stash->{cpac}->{g}->{site}) if $c->debug;
 }
 
 # returns a new hash containing only defined SCALAR values of $hash
@@ -243,9 +243,9 @@ sub _one_level_of {
 sub acl : Private {
     my ($self, $c) = @_;
 
-    my $site = $c->stash->{cpac_site};
-    my $db = $c->stash->{cpac_db};
-    my $table = $c->stash->{cpac_table};
+    my $site = $c->stash->{cpac}->{g}->{site};
+    my $db = $c->stash->{cpac}->{g}->{db};
+    my $table = $c->stash->{cpac}->{g}->{table};
 
     # ACLs on the schema and source from site config
     if ($c->stash->{cpac}->{c}->{$db}->{hidden} eq 'yes') {
@@ -277,9 +277,9 @@ sub verboden : Private {
 sub do_meta : Private {
     my ($self, $c) = @_;
 
-    my $site = $c->stash->{cpac_site};
-    my $db = $c->stash->{cpac_db};
-    my $table = $c->stash->{cpac_table};
+    my $site = $c->stash->{cpac}->{g}->{site};
+    my $db = $c->stash->{cpac}->{g}->{db};
+    my $table = $c->stash->{cpac}->{g}->{table};
 
     $c->detach('err_message') if !exists $c->stash->{cpac}->{c}->{$db}
         or !exists $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
@@ -316,13 +316,13 @@ sub do_meta : Private {
 sub helloworld : Chained('base') Args(0) {
     my ($self, $c) = @_;
     $c->forward('build_site_config');
-    $c->stash->{cpac_title} = 'Hello World';
+    $c->stash->{cpac}->{g}->{title} = 'Hello World';
     $c->stash->{template} = 'helloworld.tt';
 }
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{cpac_frontend} || 'full-fat';
+    my $frontend = $c->stash->{cpac}->{g}->{frontend} || 'full-fat';
 
     $c->stash->{cpac}->{g} = merge_hashes(
         $c->stash->{cpac}->{g},

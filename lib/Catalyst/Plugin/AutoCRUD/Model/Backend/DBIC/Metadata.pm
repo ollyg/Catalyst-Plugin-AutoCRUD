@@ -129,7 +129,7 @@ sub dispatch_table {
 # generate SQLT Schema instance representing this data schema
 sub schema_metadata {
     my ($self, $c) = @_;
-    my $db = $c->stash->{cpac_db};
+    my $db = $c->stash->{cpac}->{g}->{db};
 
     return $self->_schema_cache->{sqlt}->{$db}
         if exists $self->_schema_cache->{sqlt}->{$db};

@@ -8,9 +8,9 @@ use base 'Catalyst::Controller';
 # we're going to check that calls to this RPC operation are allowed
 sub acl : Private {
     my ($self, $c) = @_;
-    my $site = $c->stash->{cpac_site};
-    my $db = $c->stash->{cpac_db};
-    my $table = $c->stash->{cpac_table};
+    my $site = $c->stash->{cpac}->{g}->{site};
+    my $db = $c->stash->{cpac}->{g}->{db};
+    my $table = $c->stash->{cpac}->{g}->{table};
 
     my $acl_for = {
         create   => 'create_allowed',
@@ -39,7 +39,7 @@ sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
 
     my $page   = $c->req->params->{'page'}  || 1;
     my $limit  = $c->req->params->{'limit'} || 10;
-    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac_meta}->{main}->{pk};
+    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac}->{g}->{meta}->{main}->{pk};
     (my $dir   = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
 
     @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /}
@@ -52,27 +52,27 @@ sub end : ActionClass('RenderView') {}
 
 sub create : Chained('base') Args(0) {
     my ($self, $c) = @_; 
-    $c->forward($c->stash->{cpac_backend}, 'create');
+    $c->forward($c->stash->{cpac}->{g}->{backend}, 'create');
 }
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend}, 'list');
+    $c->forward($c->stash->{cpac}->{g}->{backend}, 'list');
 }
 
 sub update : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend}, 'update');
+    $c->forward($c->stash->{cpac}->{g}->{backend}, 'update');
 }
 
 sub delete : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend}, 'delete');
+    $c->forward($c->stash->{cpac}->{g}->{backend}, 'delete');
 }
 
 sub list_stringified : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    $c->forward($c->stash->{cpac_backend}, 'list_stringified');
+    $c->forward($c->stash->{cpac}->{g}->{backend}, 'list_stringified');
 }
 
 # send our generated config back in JSON for debugging
@@ -99,7 +99,7 @@ sub dumpmeta : Chained('base') Args(0) {
 # send our generated config back to the user in HTML
 sub dumpmeta_html : Chained('base') Args(0) {
     my ($self, $c) = @_;
-    my $msg = $c->stash->{cpac_version} . ' Metadata Debug Output';
+    my $msg = $c->stash->{cpac}->{g}->{version} . ' Metadata Debug Output';
 
     $c->debug(1);
     $c->error([ $msg ]);
