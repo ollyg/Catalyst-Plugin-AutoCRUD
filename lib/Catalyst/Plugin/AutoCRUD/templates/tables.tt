@@ -8,11 +8,11 @@
 [% ELSE %]
     [% IF cpac.c.exists( cpac_db ) %]
         [% IF cpac.c.$cpac_db.hidden == 'yes' %]
-            [% IF cpac_site == 'default' %]
+            [% IF cpac.g.site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">
                     Home</a> to select another database.</p>
             [% ELSE %]
-                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac_site] ) %]">
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac.g.site] ) %]">
                     Home</a> to select another database.</p>
             [% END %]
             [% RETURN %]
@@ -27,11 +27,11 @@
         [% FOREACH t IN cpac.c.$cpac_db.t.keys.sort %]
             [% NEXT IF cpac.c.$cpac_db.t.$t.hidden == 'yes' %]
             <li>
-            [% IF cpac_site == 'default' %]
+            [% IF cpac.g.site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], t ) %]">
                     [% cpac.c.$cpac_db.t.$t.display_name %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site, cpac_db], t ) %]">
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site, cpac_db], t ) %]">
                     [% cpac.c.$cpac_db.t.$t.display_name %]</a>
             [% END %]
             </li>
@@ -41,11 +41,11 @@
 
         [% IF cpac.c.keys.size > 1 %]
             <br />
-            [% IF cpac_site == 'default' %]
+            [% IF cpac.g.site == 'default' %]
                 <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">
                     Home</a> to select another database.</p>
             [% ELSE %]
-                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac_site] ) %]">
+                <p>Return <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac.g.site] ) %]">
                     Home</a> to select another database.</p>
             [% END %]
         [% END %]
@@ -60,11 +60,11 @@
         [% FOREACH d IN cpac.c.keys.sort %]
             [% NEXT IF cpac.c.$d.hidden == 'yes' %]
             <li>
-            [% IF cpac_site == 'default' %]
+            [% IF cpac.g.site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [d] ) %]">
                     [% cpac.c.$d.display_name %]</a>
             [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site, d] ) %]">
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac.g.site, d] ) %]">
                     [% cpac.c.$d.display_name %]</a>
             [% END %]
             </li>

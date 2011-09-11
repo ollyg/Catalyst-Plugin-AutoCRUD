@@ -137,6 +137,7 @@ sub err_message : Private {
     # the tables display.
     if (scalar keys %{$c->stash->{cpac}->{c}} == 1) {
         $c->stash->{cpac}->{g}->{db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
+        $c->stash->{cpac_db} = $c->stash->{cpac}->{g}->{db};
     }
 
     $c->stash->{template} = 'tables.tt';
@@ -310,7 +311,9 @@ sub do_meta : Private {
         }
     }
 
-    # set up helpers for templates
+    # set up helper variables for templates
+    $c->stash->{cpac_db} = $db;
+    $c->stash->{cpac_table} = $table;
     $c->stash->{cpac}->{tm} = $c->stash->{cpac}->{m}->t->{$table};
     $c->stash->{cpac}->{tc} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
     weaken $c->stash->{cpac}->{tm};

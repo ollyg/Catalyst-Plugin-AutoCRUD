@@ -1,6 +1,6 @@
 <table class="cpac_table">
     <tr>
-    [% FOR col IN cpac.t.cols %]
+    [% FOR col IN cpac.tc.cols %]
         <th class="cpac_table_header">
         [% SET qp = "?sort=" _ col %]
         [% SET qp = qp _ "&page=" _ cpac_skinny_pager.current_page IF cpac_skinny_pager %]
@@ -8,7 +8,7 @@
         [% SET qp = qp _ "&limit=" _ cpac_skinny_limit IF cpac_skinny_limit %]
 
         <a class="cpac_link" href="[% qp %]">
-            [% cpac.t.headings.$col %]
+            [% cpac.tc.headings.$col %]
         </a>
 
         [% IF cpac_skinny_sortby %]
