@@ -7,6 +7,7 @@ use base 'Catalyst::Controller';
 use Catalyst::Utils;
 use SQL::Translator::AutoCRUD::Quick;
 use File::Basename;
+use Scalar::Util 'weaken';
 
 __PACKAGE__->mk_classdata(_site_conf_cache => {});
 
@@ -309,8 +310,11 @@ sub do_meta : Private {
         }
     }
 
-    # set up helper for templates
-    $c->stash->{cpac}->{t} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
+    # set up helpers for templates
+    $c->stash->{cpac}->{tm} = $c->stash->{cpac}->{m}->t->{$table};
+    $c->stash->{cpac}->{tc} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
+    weaken $c->stash->{cpac}->{tm};
+    weaken $c->stash->{cpac}->{tc};
 }
 
 sub helloworld : Chained('base') Args(0) {
