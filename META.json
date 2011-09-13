@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.200000, CPAN::Meta::Converter version 2.102400",
+   "generated_by" : "Dist::Zilla version 4.200012, CPAN::Meta::Converter version 2.110930001",
    "license" : [
       "perl_5"
    ],
@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "6.31"
+            "ExtUtils::MakeMaker" : "6.30"
          }
       },
       "runtime" : {
@@ -35,7 +35,6 @@
             "Devel::InnerPackage" : 0,
             "File::Basename" : 0,
             "File::stat" : 0,
-            "JSON::XS" : 0,
             "List::Util" : 0,
             "MRO::Compat" : 0,
             "Scalar::Util" : 0,
@@ -51,6 +50,7 @@
             "DBIx::Class::Schema" : 0,
             "Data::Dumper" : 0,
             "File::Temp" : 0,
+            "JSON::XS" : 0,
             "Lingua::EN::Inflect::Number" : 0,
             "Storable" : 0,
             "Test::More" : 0,
@@ -70,6 +70,6 @@
          "web" : "https://github.com/ollyg/Catalyst-Plugin-AutoCRUD"
       }
    },
-   "version" : "1.110731"
+   "version" : "1.112560"
 }
 

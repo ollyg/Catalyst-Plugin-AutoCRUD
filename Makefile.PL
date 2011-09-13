@@ -4,7 +4,7 @@ use warnings;
 
 
 
-use ExtUtils::MakeMaker 6.31;
+use ExtUtils::MakeMaker 6.30;
 
 
 
@@ -19,13 +19,14 @@ my %WriteMakefileArgs = (
     'DBIx::Class::Schema' => '0',
     'Data::Dumper' => '0',
     'File::Temp' => '0',
+    'JSON::XS' => '0',
     'Lingua::EN::Inflect::Number' => '0',
     'Storable' => '0',
     'Test::More' => '0',
     'Test::WWW::Mechanize::Catalyst' => '0'
   },
   'CONFIGURE_REQUIRES' => {
-    'ExtUtils::MakeMaker' => '6.31'
+    'ExtUtils::MakeMaker' => '6.30'
   },
   'DISTNAME' => 'Catalyst-Plugin-AutoCRUD',
   'EXE_FILES' => [],
@@ -46,13 +47,12 @@ my %WriteMakefileArgs = (
     'Devel::InnerPackage' => '0',
     'File::Basename' => '0',
     'File::stat' => '0',
-    'JSON::XS' => '0',
     'List::Util' => '0',
     'MRO::Compat' => '0',
     'Scalar::Util' => '0',
     'overload' => '0'
   },
-  'VERSION' => '1.110731',
+  'VERSION' => '1.112560',
   'test' => {
     'TESTS' => 't/*.t'
   }

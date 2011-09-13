@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Static;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Controller::Static::VERSION = '1.110731';
+  $Catalyst::Plugin::AutoCRUD::Controller::Static::VERSION = '1.112560';
 }
 
 use strict;

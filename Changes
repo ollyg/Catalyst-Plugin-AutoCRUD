@@ -1,3 +1,11 @@
+1.112560  2011-09-13 10:30:26 Europe/London
+
+  * Removed View::JSON::encode_json to output Unicode. If you want latin1, set
+        <Catalyst::Plugin::AutoCRUD::View::JSON>
+            encoding = latin1
+        </Catalyst::Plugin::AutoCRUD::View::JSON>
+    Thanks to Okko and abraxxa from #catalyst for assistance with this.
+
 1.110731  2011-03-14 20:14:06 Europe/London
 
   * Fix example DemoApp to hide package name from PAUSE
