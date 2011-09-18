@@ -77,11 +77,9 @@ sub browse : Chained('base') Args(0) {
     $c->stash->{cpac}->{g}->{title} = $c->stash->{cpac}->{c}
         ->{$c->stash->{cpac}->{g}->{db}}
         ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
-    $c->stash->{template} = 'list.tt';
 
+    $c->stash->{template} = 'list.tt';
     $c->forward('/autocrud/root/end');
 }
 
 1;
-
-__END__

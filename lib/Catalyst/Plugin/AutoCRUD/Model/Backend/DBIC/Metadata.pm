@@ -9,6 +9,9 @@ BEGIN {
     @EXPORT = qw/ dispatch_table source_dispatch_table schema_metadata /;
 }
 
+# dispatch_table (and source_dispatch_table) end up in stash->cpac->c
+# schema_metadata ends up in stash->cpac->m
+
 use SQL::Translator;
 use SQL::Translator::Filter::AutoCRUD::ReverseRelations;
 use SQL::Translator::Filter::AutoCRUD::ExtJSxType;
@@ -131,19 +134,19 @@ sub schema_metadata {
     return $self->_schema_cache->{sqlt}->{$db}
         if exists $self->_schema_cache->{sqlt}->{$db};
 
+    my $schema = $c->model(
+        $self->_schema_cache->{handles}->{$db}->{model})->schema;
     my $sqlt = SQL::Translator->new(
         parser => 'SQL::Translator::Parser::DBIx::Class',
-        parser_args => { package =>
-            $c->model(
-                $self->_schema_cache->{handles}->{$db}->{model}
-            )->schema
-        },
-        filters => [qw/
-            SQL::Translator::Filter::AutoCRUD::ReverseRelations
-            SQL::Translator::Filter::AutoCRUD::DisplayName
-            SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs
-            SQL::Translator::Filter::AutoCRUD::ExtJSxType
-        /],
+        parser_args => { package => $schema },
+        filters => [
+            'SQL::Translator::Filter::AutoCRUD::ReverseRelations',
+            'SQL::Translator::Filter::AutoCRUD::DisplayName',
+            'SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs',
+            'SQL::Translator::Filter::AutoCRUD::ExtJSxType',
+            ['SQL::Translator::Filter::AutoCRUD::CatalystModel',
+                $self->_schema_cache->{handles}->{$db}->{sources}],
+        ],
         producer => 'SQL::Translator::Producer::POD', # something cheap
     ) or die SQL::Translator->error;
 
