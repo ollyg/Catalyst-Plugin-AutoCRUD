@@ -16,7 +16,11 @@ sub filter {
                 (sort grep {$_->is_foreign_key
                             and not $_->extra('is_reverse')} $tbl->get_fields),
                 (sort grep {$_->extra('is_reverse')
-                            and $_->extra('rel_type') ne 'many_to_many'} $tbl->get_fields),
+                            and $_->extra('rel_type') eq 'might_have'} $tbl->get_fields),
+                (sort grep {$_->extra('is_reverse')
+                            and $_->extra('rel_type') eq 'has_many'} $tbl->get_fields),
+                (sort grep {$_->extra('is_reverse')
+                            and $_->extra('rel_type') eq 'many_to_many'} $tbl->get_fields),
         ]);
 
         # SQLT's primary_key() returns the constraint, not names

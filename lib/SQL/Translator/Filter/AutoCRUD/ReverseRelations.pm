@@ -43,13 +43,17 @@ sub add_to_fields_at {
         $field->{name} = $name;
     }
 
-    $field->{extra}->{ref_fields} = [map {$_->name} @{$field->{reference_fields}}]
-        if $field->{extra}->{rel_type}  eq 'might_have';
+    if ($field->{extra}->{rel_type} ne 'many_to_many') {
+        $field->{extra}->{ref_fields} = [map {$_->name} @{$field->{reference_fields}}];
+        $field->{extra}->{ref_table} = $field->{reference_table};
+    }
 
     $field->{data_type} = 'text';
     $field->{is_foreign_key} = 1;
     $field->{extra}->{is_reverse} = 1;
     $field->{extra}->{display_name} = make_label($name);
+
+    delete $field->{extra}->{via};
     $extra->{_new_fields}->{$name} = $field;
 }
 
@@ -69,7 +73,32 @@ sub filter {
             $remote_table = $schema->get_table($remote_table)
                 if not blessed $remote_table;
 
-            # start by checking whether we're on m2m link table
+            if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
+                # all FK are unique so is one-to-one
+                # but we cannot distinguish has_one/might_have
+                add_to_fields_at(scalar $remote_table->extra, {
+                    name => $local_table->name,
+                    reference_table => $local_table->name,
+                    reference_fields => [$c->fields],
+                    extra => {
+                        rel_type => 'might_have',
+                        via => $c->name,
+                    }
+                });
+            }
+            else {
+                add_to_fields_at(scalar $remote_table->extra, {
+                    name => $local_table->name,
+                    reference_table => $local_table->name,
+                    reference_fields => [$c->fields],
+                    extra => {
+                        rel_type => 'has_many',
+                        via => $c->name,
+                    }
+                });
+            }
+
+            # check whether there are additional rels for a m2m link
             my @remote_names = ();
 
             foreach my $rel ($local_table->get_constraints) {
@@ -92,32 +121,6 @@ sub filter {
                             rel_type => 'many_to_many',
                             via => $c->name,
                         },
-                    });
-                }
-            }
-            else {
-                if (scalar (grep {not ($_->is_unique or $_->is_primary_key)} $c->fields) == 0) {
-                    # all FK are unique so is one-to-one
-                    # but we cannot distinguish has_one/might_have
-                    add_to_fields_at(scalar $remote_table->extra, {
-                        name => $local_table->name,
-                        reference_table => $local_table->name,
-                        reference_fields => [$c->fields],
-                        extra => {
-                            rel_type => 'might_have',
-                            via => $c->name,
-                        }
-                    });
-                }
-                else {
-                    add_to_fields_at(scalar $remote_table->extra, {
-                        name => $local_table->name,
-                        reference_table => $local_table->name,
-                        reference_fields => [$c->fields],
-                        extra => {
-                            rel_type => 'has_many',
-                            via => $c->name,
-                        }
                     });
                 }
             }
