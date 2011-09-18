@@ -8,7 +8,7 @@ use Scalar::Util 'blessed';
 sub make_label { return join ' ', map ucfirst, split /[\W_]+/, lc shift }
 
 sub filter {
-    my ($schema, %args) = @_;
+    my ($schema, @args) = @_;
 
     $schema->extra(display_name => make_label($schema->name));
 

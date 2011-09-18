@@ -4,7 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 
 sub filter {
-    my ($schema, %args) = @_;
+    my ($schema, @args) = @_;
 
     foreach my $tbl ($schema->get_tables, $schema->get_views) {
         # add an ordered list of columns, placing PKs first

@@ -5,7 +5,6 @@ use warnings FATAL => 'all';
 
 use Scalar::Util 'blessed';
 use Lingua::EN::Inflect::Number;
-use SQL::Translator::Schema::Constraint;
 use SQL::Translator::Schema::Constants 'FOREIGN_KEY';
 use Algorithm::Permute;
 
@@ -44,6 +43,9 @@ sub add_to_fields_at {
         $field->{name} = $name;
     }
 
+    $field->{extra}->{ref_fields} = [map {$_->name} @{$field->{reference_fields}}]
+        if $field->{extra}->{rel_type}  eq 'might_have';
+
     $field->{data_type} = 'text';
     $field->{is_foreign_key} = 1;
     $field->{extra}->{is_reverse} = 1;
@@ -52,7 +54,7 @@ sub add_to_fields_at {
 }
 
 sub filter {
-    my ($schema, %args) = @_;
+    my ($schema, @args) = @_;
 
     foreach my $local_table ($schema->get_tables) {
         $local_table = $schema->get_table($local_table)

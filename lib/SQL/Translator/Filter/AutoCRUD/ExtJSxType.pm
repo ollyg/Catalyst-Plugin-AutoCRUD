@@ -44,7 +44,7 @@ $xtype_for{$_} = 'xdatetime' for (
 );
 
 sub filter {
-    my ($schema, %args) = @_;
+    my ($schema, @args) = @_;
 
     foreach my $tbl ($schema->get_tables, $schema->get_views) {
         # set extjs_xtype on columns
