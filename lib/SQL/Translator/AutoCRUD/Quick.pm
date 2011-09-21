@@ -19,13 +19,15 @@ use warnings FATAL => 'all';
         return $self->{cpac_f};
     }
 
-    package SQL::Translator::AutoCRUD::Quick::Table;
+    package # hide from toolchain
+        SQL::Translator::AutoCRUD::Quick::Table;
     use base qw/SQL::Translator::AutoCRUD::Quick::Source
         SQL::Translator::Schema::Table/;
 
     sub is_view { 0 }
 
-    package SQL::Translator::AutoCRUD::Quick::View;
+    package # hide from toolchain
+        SQL::Translator::AutoCRUD::Quick::View;
     use base qw/SQL::Translator::AutoCRUD::Quick::Source
         SQL::Translator::Schema::View/;
 
