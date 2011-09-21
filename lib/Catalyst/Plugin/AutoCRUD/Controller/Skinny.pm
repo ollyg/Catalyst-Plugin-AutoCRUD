@@ -43,7 +43,7 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
   
     # we don't call the stash var sort, as that upsets TT
     my $sortby = $c->req->params->{'sort'};
-    $sortby = $c->stash->{cpac}->{t}->{columns}->[0]
+    $sortby = $c->stash->{cpac}->{tm}->extra('pks')->[0]
         if !defined $sortby or $sortby !~ m/^\w+$/;
     $c->stash->{cpac_skinny_sortby} = $sortby;
 

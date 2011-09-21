@@ -89,47 +89,37 @@ sub create {
 
 sub list {
     my ($self, $c) = @_;
-    my $site = $c->stash->{cpac_site};
+    my $site = $c->stash->{cpac}->{g}->{site};
     my $db = $c->stash->{cpac_db};
     my $table = $c->stash->{cpac_table};
 
-    my $cpac = $c->stash->{cpac_meta};
-    my $info = $cpac->{main};
+    my $cpac = $c->stash->{cpac}->{tc};
+    my $info = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
+    my @columns = @{ $info->extra('col_order') };
 
     my ($page, $limit, $sort, $dir) =
         @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /};
     my $filter = {}; my $search_opts = {};
 
+    # sanity check the sort param
+    $sort = $info->extra('pks')->[0] if $sort !~ m/^[\w ]+$/ or !exists $info->f->{$sort};
+
     # we want to prefetch all related data for _sfy
-    foreach my $rel (keys %{$info->{cols}}) {
-        next unless ($info->{cols}->{$rel}->{is_fk} or $info->{cols}->{$rel}->{is_rr});
-        #my $join_to = $cpac->{table_info}->{$info->{cols}->{$rel}->{fk_model}}->{path};
+    foreach my $rel (@columns) {
+        next unless ($info->f->{$rel}->is_foreign_key or $info->f->{$rel}->extra('is_reverse'));
+        next if $info->f->{$rel}->extra('rel_type') and $info->f->{$rel}->extra('rel_type') eq 'many_to_many';
         push @{$search_opts->{prefetch}}, $rel;
     }
-
-    # FIXME waiting on multiple *_many support from DBIx::Class
-    #foreach my $rel (keys %{$info->{mfks}}) {
-    #    if (exists $info->{m2m}->{$rel}) {
-    #        my $target = $info->{m2m}->{$rel};
-    #        push @{$search_opts->{prefetch}}, { $rel => $target };
-    #    }
-    #    else {
-    #        push @{$search_opts->{prefetch}}, $rel;
-    #    }
-    #}
-
-    # sanity check the sort param
-    $sort = $info->{pk} if $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
 
     # before setting up the paging and sorting, we need to check whether
     # the FK params are legit PK vals in the related schema
     my %delay_page_sort = ();
     foreach my $p (keys %{$c->req->params}) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
-        next unless exists $info->{cols}->{$col}
-            and ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr});
-        my $rs = $c->model($cpac->{model})
+        next unless exists $info->f->{$col}
+            and ($info->f->{$col}->is_foreign_key or $info->f->{$col}->extra('is_reverse'));
+        my $rs = $c->model($info->extra('model'))
                     ->result_source->related_source($col)->resultset;
         # cannot page or sort this col in the DB if it's not a legit PK val
         $delay_page_sort{$col} += 1
@@ -139,28 +129,28 @@ sub list {
     # find filter fields in UI form that can be passed to DB
     foreach my $p (keys %{$c->req->params}) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
-        next unless exists $info->{cols}->{$col};
+        next unless exists $info->f->{$col};
         next if exists $delay_page_sort{$col};
 
         # search for exact match on FK value (checked above)
-        if ($info->{cols}->{$col}->{is_fk}) {
-            my $masked_col = (exists $info->{cols}->{$col}->{masked_col}
-                ? $info->{cols}->{$col}->{masked_col} : $col);
-            $filter->{"me.$masked_col"} = $c->req->params->{"search.$col"};
+        if ($info->f->{$col}->is_foreign_key) {
+            # XXX masked col (using 'accessor' or rel name) will not work
+            $filter->{"me.$col"} = $c->req->params->{"search.$col"};
             next;
         }
 
-        if ($info->{cols}->{$col}->{is_rr}) {
-            next if !exists $info->{cols}->{$col}->{foreign_col};
-            my $foreign_col = $info->{cols}->{$col}->{foreign_col};
+        if ($info->f->{$col}->extra('is_reverse')) {
+            next unless scalar $info->f->{$col}->extra('ref_fields');
+            # XXX have to just take the first col even if there are more
+            my $foreign_col = $info->f->{$col}->extra('ref_fields')->[0];
             push @{$search_opts->{join}}, $col;
             $filter->{"$col.$foreign_col"} = $c->req->params->{"search.$col"};
             next;
         }
 
         # for numberish types the case insensitive functions may not work
-        if (exists $info->{cols}->{$col}->{extjs_xtype}
-            and $info->{cols}->{$col}->{extjs_xtype} eq 'numberfield') {
+        if ($info->f->{$col}->extra('extjs_xtype')
+            and $info->f->{$col}->extra('extjs_xtype') eq 'numberfield') {
             $filter->{"me.$col"} = $c->req->params->{"search.$col"};
             next;
         }
@@ -168,21 +158,21 @@ sub list {
         # construct search clause if any of the filter fields were filled in UI
         $filter->{"me.$col"} = {
             # find whether this DMBS supports ILIKE or just LIKE
-            _likeop_for($c->model($cpac->{model}))
+            _likeop_for($c->model($info->extra('model')))
                 => '%'. $c->req->params->{"search.$col"} .'%'
         };
     }
 
     # any sort on FK -must- disable DB-side paging, unless we already know the
     # supplied filter is a legitimate PK of the related table
-    if (($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})
+    if (($info->f->{$sort}->is_foreign_key or $info->f->{$sort}->extra('is_reverse'))
             and not (exists $c->req->params->{"search.$sort"} and not exists $delay_page_sort{$sort})) {
         $delay_page_sort{$sort} += 1;
     }
 
     # sort col which can be passed to the db
     if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}
-        and not ($info->{cols}->{$sort}->{is_fk} or $info->{cols}->{$sort}->{is_rr})) {
+        and not ($info->f->{$sort}->is_foreign_key or $info->f->{$sort}->extra('is_reverse'))) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
@@ -195,11 +185,10 @@ sub list {
     #use Data::Dumper;
     #$c->log->debug( Dumper [$filter, $search_opts] );
 
-    my $rs = $c->model($cpac->{model})->search($filter, $search_opts);
-    my @columns = keys %{ $info->{cols} };
+    my $rs = $c->model($info->extra('model'))->search($filter, $search_opts);
     $response->{rows} ||= [];
 
-    #$c->model($cpac->{model})->result_source->storage->debug(1)
+    #$c->model($info->extra('model'))->result_source->storage->debug(1)
     #    if $c->debug;
 
     # make data structure for JSON output
@@ -208,18 +197,30 @@ sub list {
         my $data = {};
         # process regular cols + one-to-one relations
         foreach my $col (@columns) {
-            if ($info->{cols}->{$col}->{is_fk} or $info->{cols}->{$col}->{is_rr}) {
-                # here assume table names are sane perl identifiers
-                $data->{$col} = _sfy($row->$col);
+            if ($info->f->{$col}->is_foreign_key or $info->f->{$col}->extra('is_reverse')) {
+                if ($info->f->{$col}->extra('rel_type') and $info->f->{$col}->extra('rel_type') =~ m/_many$/) {
+                    # FIXME what is this doing?
+                    #if (exists $info->{m2m}->{$m}) {
+                    #    my $target = $info->{m2m}->{$m};
+                    #    $data->{$m} = [ map { _sfy($_) } map {$_->$target} $row->$m->all ];
+                    #}
+                    #else {
+                    #    # avoid dieing in the present of dangling rels
+                    #    $data->{$m} = eval { [ map { _sfy($_) } $row->$m->all ] } || [];
+                    #}
+                }
+                else {
+                    # here assume table names are sane perl identifiers
+                    $data->{$col} = _sfy($row->$col);
 
-                # check filter on FK, might want to skip further processing/storage
-                # woo-hoo, *massive* optimization here :-)
-                if (exists $c->req->params->{"search.$col"}
-                        and exists $delay_page_sort{$col}) {
-                    my $p_val = $c->req->params->{"search.$col"};
-                    my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
+                    # check filter on FK, might want to skip further processing/storage
+                    if (exists $c->req->params->{"search.$col"}
+                            and exists $delay_page_sort{$col}) {
+                        my $p_val = $c->req->params->{"search.$col"};
+                        my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
 
-                    next DBIC_ROW if $data->{$col} !~ m/$fk_match/;
+                        next DBIC_ROW if $data->{$col} !~ m/$fk_match/;
+                    }
                 }
             }
             else {
@@ -232,30 +233,19 @@ sub list {
                 }
             }
 
-            if (exists $info->{cols}->{$col}->{extjs_xtype}
-                and exists $filter_for{ $info->{cols}->{$col}->{extjs_xtype} }) {
+            if ($info->f->{$col}->extra('extjs_xtype')
+                and exists $filter_for{ $info->f->{$col}->extra('extjs_xtype') }) {
                 $data->{$col} =
-                    $filter_for{ $info->{cols}->{$col}->{extjs_xtype} }->{from_db}->(
+                    $filter_for{ $info->f->{$col}->extra('extjs_xtype') }->{from_db}->(
                         $data->{$col});
             }
         }
 
-        # process *_many columns
-        foreach my $m (keys %{ $info->{mfks} }) {
-            if (exists $info->{m2m}->{$m}) {
-                my $target = $info->{m2m}->{$m};
-                $data->{$m} = [ map { _sfy($_) } map {$_->$target} $row->$m->all ];
-            }
-            else {
-                # avoid dieing in the present of dangling rels
-                $data->{$m} = eval { [ map { _sfy($_) } $row->$m->all ] } || [];
-            }
-        }
         push @{$response->{rows}}, $data;
     }
 
     #$c->log->debug( Dumper $response->{rows} );
-    #$c->model($cpac->{model})->result_source->storage->debug(0)
+    #$c->model($info->extra('model'))->result_source->storage->debug(0)
     #    if $c->debug;
 
     # sort col which cannot be passed to the DB
@@ -281,11 +271,10 @@ sub list {
 
     # sneak in a 'top' row for applying the filters
     my %searchrow = ();
-    foreach my $col (keys %{$info->{cols}}) {
-        my $ci = $info->{cols}->{$col};
+    foreach my $col (@columns) {
+        my $ci = $info->f->{$col}->extra;
 
-        if (exists $ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox') {
-
+        if ($ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox') {
             $searchrow{$col} = '';
         }
         else {
@@ -496,7 +485,7 @@ sub delete {
 
 sub list_stringified {
     my ($self, $c) = @_;
-    my $cpac = $c->stash->{cpac_meta};
+    my $info = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
 
     my $page  = $c->req->params->{'page'}   || 1;
@@ -509,15 +498,15 @@ sub list_stringified {
     my $query_re = ($query ? qr/\Q$query\E/i : qr/./);
 
     if (!$fk
-        or !exists $cpac->{main}->{cols}->{$fk}
-        or not ($cpac->{main}->{cols}->{$fk}->{is_fk}
-            or $cpac->{main}->{cols}->{$fk}->{is_rr})) {
+        or !exists $info->f->{$fk}
+        or not ($info->f->{$fk}->is_foriegn_key
+            or $info->f->{$fk}->{is_reverse})) {
 
         $c->stash->{json_data} = {total => 0, rows => []};
         return $self;
     }
     
-    my $rs = $c->model($cpac->{model})
+    my $rs = $c->model($info->extra('model'))
                 ->result_source->related_source($fk)->resultset;
     my @data = ();
 

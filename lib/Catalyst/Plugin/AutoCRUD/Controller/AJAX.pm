@@ -39,7 +39,7 @@ sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
 
     my $page   = $c->req->params->{'page'}  || 1;
     my $limit  = $c->req->params->{'limit'} || 10;
-    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac}->{tm}->extra->{pks}->[0];
+    my $sortby = $c->req->params->{'sort'}  || $c->stash->{cpac}->{tm}->extra('pks')->[0];
     (my $dir   = $c->req->params->{'dir'}   || 'ASC') =~ s/\s//g;
 
     @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /}
