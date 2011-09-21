@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=[% cpac.g.html_charset OR 'utf-8' | html %]" />
-<title>[% cpac_title %][% ' - Powered by ' IF cpac_title %][% cpac_version %]</title>
+<title>[% cpac.g.title %][% ' - Powered by ' IF cpac.g.title %][% cpac.g.version %]</title>
 
 [% IF NOT cpac.g.extjs2 %]
 <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />
@@ -43,16 +43,16 @@
     </noscript>
 
     <div id="cpac_header">
-        [% IF cpac_title %]
+        [% IF cpac.g.title %]
         <div class="cpac_top">
             <div class="cpac_left">
-                [% IF cpac_site == 'default' %]
+                [% IF cpac.g.site == 'default' %]
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_db') ) %]">Home</a> &gt;
                     <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]">
-                        [% cpac.dispatch.$cpac_db.display_name %]</a> &gt;
+                        [% cpac.c.$cpac_db.display_name %]</a> &gt;
                 [% ELSE %]
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac_site] ) %]">Home</a> &gt;
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]">
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_schema'), [cpac.g.site] ) %]">Home</a> &gt;
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac.g.site,cpac_db] ) %]">
                         [% cpac.c.$cpac_db.display_name %]</a> &gt;
                 [% END %]
                 [% IF cpac.c.$cpac_db.t.keys.size == 1 %]
@@ -61,22 +61,22 @@
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
                       [% FOREACH tpath IN cpac.c.$cpac_db.t.keys.sort %]
                         [% NEXT IF cpac.c.$cpac_db.$tpath.hidden == 'yes' %]
-                        [% IF cpac_site == 'default' %]
+                        [% IF cpac.g.site == 'default' %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], tpath ) %]"
                         [% ELSE %]
-                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site,cpac_db], tpath ) %]"
+                            <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site,cpac_db], tpath ) %]"
                         [% END %]
                                 [% ' selected="selected"' IF tpath == cpac_table %]>
-                                [% cpac.c.$cpac_db.t.tpath.display_name %]</option>
+                                [% cpac.c.$cpac_db.t.$tpath.display_name %]</option>
                       [% END %]
                     </select>
                 [% END %]
             </div>
             <div class="cpac_right">
-              [% IF cpac_site == 'default' %]
+              [% IF cpac.g.site == 'default' %]
                 <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], cpac_table, 'browse' ) %]"
               [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site,cpac_db], cpac_table, 'browse' ) %]"
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site,cpac_db], cpac_table, 'browse' ) %]"
               [% END %]
                     title="Skinny (non-JS) Browser">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "application_view_detail.png" ) %]"
@@ -91,13 +91,13 @@
     </div>
     
     <div id="cpac_content">
-        [% IF cpac_title %]
+        [% IF cpac.g.title %]
             [% content %]
         [% END %]
     </div>
     
     <div id="cpac_footer">
-        Powered by [% cpac_version %]
+        Powered by [% cpac.g.version %]
     </div>
 </div> <!-- box -->
 
