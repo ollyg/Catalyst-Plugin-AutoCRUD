@@ -99,7 +99,7 @@
       [% FOREACH col IN cpac.tc.cols %]
         [% ',' IF NOT loop.first %]{
           header: '[% cpac.tc.headings.$col %]'
-          [% ',hidden: true' IF NOT cpac.tc.hidden_cols.exists(col) %]
+          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) %]
           [% IF cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
             [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
             ,dataIndex: 'cpac-multi-column'

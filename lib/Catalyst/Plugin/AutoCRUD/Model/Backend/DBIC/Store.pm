@@ -94,7 +94,7 @@ sub list {
     my $table = $c->stash->{cpac_table};
 
     my $cpac = $c->stash->{cpac}->{tc};
-    my $info = $c->stash->{cpac}->{tm};
+    my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
     my @columns = @{$cpac->{cols}};
 
@@ -103,12 +103,12 @@ sub list {
     my $filter = {}; my $search_opts = {};
 
     # sanity check the sort param
-    $sort = $info->extra('pks')->[0] if $sort !~ m/^[\w ]+$/ or !exists $info->f->{$sort};
+    $sort = $meta->extra('pks')->[0] if $sort !~ m/^[\w ]+$/ or !exists $meta->f->{$sort};
 
     # we want to prefetch all related data for _sfy
     foreach my $rel (@columns) {
-        next unless ($info->f->{$rel}->is_foreign_key or $info->f->{$rel}->extra('is_reverse'));
-        next if $info->f->{$rel}->extra('rel_type') and $info->f->{$rel}->extra('rel_type') eq 'many_to_many';
+        next unless ($meta->f->{$rel}->is_foreign_key or $meta->f->{$rel}->extra('is_reverse'));
+        next if $meta->f->{$rel}->extra('rel_type') and $meta->f->{$rel}->extra('rel_type') eq 'many_to_many';
         push @{$search_opts->{prefetch}}, $rel;
     }
 
@@ -117,9 +117,9 @@ sub list {
     my %delay_page_sort = ();
     foreach my $p (keys %{$c->req->params}) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
-        next unless exists $info->f->{$col}
-            and ($info->f->{$col}->is_foreign_key or $info->f->{$col}->extra('is_reverse'));
-        my $rs = $c->model($info->extra('model'))
+        next unless exists $meta->f->{$col}
+            and ($meta->f->{$col}->is_foreign_key or $meta->f->{$col}->extra('is_reverse'));
+        my $rs = $c->model($meta->extra('model'))
                     ->result_source->related_source($col)->resultset;
         # cannot page or sort this col in the DB if it's not a legit PK val
         $delay_page_sort{$col} += 1
@@ -129,28 +129,28 @@ sub list {
     # find filter fields in UI form that can be passed to DB
     foreach my $p (keys %{$c->req->params}) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
-        next unless exists $info->f->{$col};
+        next unless exists $meta->f->{$col};
         next if exists $delay_page_sort{$col};
 
         # search for exact match on FK value (checked above)
-        if ($info->f->{$col}->is_foreign_key) {
+        if ($meta->f->{$col}->is_foreign_key) {
             # XXX masked col (using 'accessor' or rel name) will not work
             $filter->{"me.$col"} = $c->req->params->{"search.$col"};
             next;
         }
 
-        if ($info->f->{$col}->extra('is_reverse')) {
-            next unless scalar $info->f->{$col}->extra('ref_fields');
+        if ($meta->f->{$col}->extra('is_reverse')) {
+            next unless scalar $meta->f->{$col}->extra('ref_fields');
             # XXX have to just take the first col even if there are more
-            my $foreign_col = $info->f->{$col}->extra('ref_fields')->[0];
+            my $foreign_col = $meta->f->{$col}->extra('ref_fields')->[0];
             push @{$search_opts->{join}}, $col;
             $filter->{"$col.$foreign_col"} = $c->req->params->{"search.$col"};
             next;
         }
 
         # for numberish types the case insensitive functions may not work
-        if ($info->f->{$col}->extra('extjs_xtype')
-            and $info->f->{$col}->extra('extjs_xtype') eq 'numberfield') {
+        if ($meta->f->{$col}->extra('extjs_xtype')
+            and $meta->f->{$col}->extra('extjs_xtype') eq 'numberfield') {
             $filter->{"me.$col"} = $c->req->params->{"search.$col"};
             next;
         }
@@ -158,21 +158,21 @@ sub list {
         # construct search clause if any of the filter fields were filled in UI
         $filter->{"me.$col"} = {
             # find whether this DMBS supports ILIKE or just LIKE
-            _likeop_for($c->model($info->extra('model')))
+            _likeop_for($c->model($meta->extra('model')))
                 => '%'. $c->req->params->{"search.$col"} .'%'
         };
     }
 
     # any sort on FK -must- disable DB-side paging, unless we already know the
     # supplied filter is a legitimate PK of the related table
-    if (($info->f->{$sort}->is_foreign_key or $info->f->{$sort}->extra('is_reverse'))
+    if (($meta->f->{$sort}->is_foreign_key or $meta->f->{$sort}->extra('is_reverse'))
             and not (exists $c->req->params->{"search.$sort"} and not exists $delay_page_sort{$sort})) {
         $delay_page_sort{$sort} += 1;
     }
 
     # sort col which can be passed to the db
     if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}
-        and not ($info->f->{$sort}->is_foreign_key or $info->f->{$sort}->extra('is_reverse'))) {
+        and not ($meta->f->{$sort}->is_foreign_key or $meta->f->{$sort}->extra('is_reverse'))) {
         $search_opts->{order_by} = \"me.$sort $dir";
     }
 
@@ -185,10 +185,10 @@ sub list {
     #use Data::Dumper;
     #$c->log->debug( Dumper [$filter, $search_opts] );
 
-    my $rs = $c->model($info->extra('model'))->search($filter, $search_opts);
+    my $rs = $c->model($meta->extra('model'))->search($filter, $search_opts);
     $response->{rows} ||= [];
 
-    #$c->model($info->extra('model'))->result_source->storage->debug(1)
+    #$c->model($meta->extra('model'))->result_source->storage->debug(1)
     #    if $c->debug;
 
     # make data structure for JSON output
@@ -197,17 +197,18 @@ sub list {
         my $data = {};
         # process regular cols + one-to-one relations
         foreach my $col (@columns) {
-            if ($info->f->{$col}->is_foreign_key or $info->f->{$col}->extra('is_reverse')) {
-                if ($info->f->{$col}->extra('rel_type') and $info->f->{$col}->extra('rel_type') =~ m/_many$/) {
+            if ($meta->f->{$col}->is_foreign_key or $meta->f->{$col}->extra('is_reverse')) {
+                if ($meta->f->{$col}->extra('rel_type') and $meta->f->{$col}->extra('rel_type') =~ m/_many$/) {
                     # FIXME what is this doing?
-                    #if (exists $info->{m2m}->{$m}) {
-                    #    my $target = $info->{m2m}->{$m};
+                    #if (exists $meta->{m2m}->{$m}) {
+                    #    my $target = $meta->{m2m}->{$m};
                     #    $data->{$m} = [ map { _sfy($_) } map {$_->$target} $row->$m->all ];
                     #}
                     #else {
                     #    # avoid dieing in the present of dangling rels
                     #    $data->{$m} = eval { [ map { _sfy($_) } $row->$m->all ] } || [];
                     #}
+                    $data->{$col} = [];
                 }
                 else {
                     # here assume table names are sane perl identifiers
@@ -233,10 +234,10 @@ sub list {
                 }
             }
 
-            if ($info->f->{$col}->extra('extjs_xtype')
-                and exists $filter_for{ $info->f->{$col}->extra('extjs_xtype') }) {
+            if ($meta->f->{$col}->extra('extjs_xtype')
+                and exists $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }) {
                 $data->{$col} =
-                    $filter_for{ $info->f->{$col}->extra('extjs_xtype') }->{from_db}->(
+                    $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }->{from_db}->(
                         $data->{$col});
             }
         }
@@ -245,7 +246,7 @@ sub list {
     }
 
     #$c->log->debug( Dumper $response->{rows} );
-    #$c->model($info->extra('model'))->result_source->storage->debug(0)
+    #$c->model($meta->extra('model'))->result_source->storage->debug(0)
     #    if $c->debug;
 
     # sort col which cannot be passed to the DB
@@ -272,9 +273,9 @@ sub list {
     # sneak in a 'top' row for applying the filters
     my %searchrow = ();
     foreach my $col (@columns) {
-        my $ci = $info->f->{$col}->extra;
+        my $ci = $meta->f->{$col};
 
-        if ($ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox') {
+        if ($ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox') {
             $searchrow{$col} = '';
         }
         else {
