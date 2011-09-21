@@ -1,6 +1,7 @@
 <table class="cpac_table">
     <tr>
     [% FOR col IN cpac.tc.cols %]
+        [% NEXT IF cpac.tc.hidden_cols.exists(col) %]
         <th class="cpac_table_header">
         [% SET qp = "?sort=" _ col %]
         [% SET qp = qp _ "&page=" _ cpac_skinny_pager.current_page IF cpac_skinny_pager %]
@@ -19,7 +20,7 @@
               &uarr;
             [% END %]
           [% END %]
-        [% ELSIF col == cpac.t.cols.first %]
+        [% ELSIF col == cpac.tm.extra('pks').first %]
               &darr;
         [% END %]
 
@@ -32,4 +33,3 @@
         [% PROCESS row.tt %]
     [% END %]
 </table>
-

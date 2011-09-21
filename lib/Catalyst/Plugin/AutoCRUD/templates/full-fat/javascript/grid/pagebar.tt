@@ -62,8 +62,8 @@
                     // changed via UI that it *reconfigures* the col, hence us
                     // doing this manually in a loop for each col index.
                     [% SET colidx = 0 %]
-                    [% FOREACH col IN cpac.tm.extra('col_order') %]
-                        [% IF cpac.tc.cols.size > 0 AND NOT cpac.tc.headings.exists(col) %]
+                    [% FOREACH col IN cpac.tc.cols %]
+                        [% IF cpac.tc.hidden_cols.exists(col) %]
                             cm.setHidden([% colidx %], true);
                         [% ELSE %]
                             cm.setHidden([% colidx %], false);

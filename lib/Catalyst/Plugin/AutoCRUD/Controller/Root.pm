@@ -298,16 +298,23 @@ sub do_meta : Private {
 
     foreach my $so (keys %{ $c->stash->{cpac}->{c}->{$db}->{t} }) {
         my $user = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$site}->{$db}->{$so} || {};
-        my $source = $c->stash->{cpac}->{c}->{$db}->{t}->{$so};
+        my $conf = $c->stash->{cpac}->{c}->{$db}->{t}->{$so};
+        my $meta = $c->stash->{cpac}->{m}->t->{$so};
 
         # columns from the user conf can be loaded (for current db only - lazy)
-        $source->{cols} = ((ref $user->{columns} eq ref []) and scalar @{$user->{columns}})
-            ? $user->{columns} : $c->stash->{cpac}->{m}->t->{$so}->extra('col_order');
+        # XXX user could supply junk and break things
+        my $visible = ((ref $user->{columns} eq ref []) and scalar @{$user->{columns}})
+            ? $user->{columns} : $meta->extra('fields');
+        my %col_seen = map {$_ => 1} @$visible;
+        my $hidden = [ grep {!exists $col_seen{$_}} @{$meta->extra('fields')} ];
+
+        $conf->{cols} = [ @$visible, @$hidden ];
+        $conf->{hidden_cols} = { map {$_ => 1} @$hidden };
 
         # headings from the user conf can be loaded (for current db only - lazy)
-        foreach my $f ($c->stash->{cpac}->{m}->t->{$so}->get_fields) {
-            $source->{headings}->{$f->name} =
-                $user->{headings}->{$f->name} || $f->extra('display_name');
+        foreach my $f (@{$meta->extra('fields')}) {
+            $conf->{headings}->{$f} =
+                $user->{headings}->{$f} || $meta->f->{$f}->extra('display_name');
         }
     }
 

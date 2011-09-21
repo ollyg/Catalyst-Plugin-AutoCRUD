@@ -98,12 +98,8 @@
     var cm = new Ext.grid.ColumnModel([
       [% FOREACH col IN cpac.tc.cols %]
         [% ',' IF NOT loop.first %]{
-          [% IF cpac.tc.headings.exists(col) AND cpac.tc.headings.defined(col) %]
-            header: '[% cpac.tc.headings.$col %]'
-          [% ELSE %]
-            header: '[% cpac.tm.f.$col.display_name %]'
-          [% END %]
-            [% ',hidden: true' IF NOT cpac.tc.headings.exists(col) %]
+          header: '[% cpac.tc.headings.$col %]'
+          [% ',hidden: true' IF NOT cpac.tc.hidden_cols.exists(col) %]
           [% IF cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
             [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
             ,dataIndex: 'cpac-multi-column'
@@ -115,9 +111,9 @@
                 if (rowindex === 0 || record.get('[% col %]').join('') === '') { return '' }
                 else {
                     metadata.css += 'half-grey';
-                    metadata.attr += 'ext:qtitle="[% cpac.tm.f.$col.extra('display_name') %]" ext:qtip="'
+                    metadata.attr += 'ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
                         + record.get('[% col %]').join('<br />') + '"';
-                    return '<img ext:qtitle="[% cpac.tm.f.$col.extra('display_name') %]" ext:qtip="'
+                    return '<img ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
                         + record.get('[% col %]').join('<br />')
                         + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
                         + ' Show';

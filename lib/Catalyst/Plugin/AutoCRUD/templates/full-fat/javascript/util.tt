@@ -1,6 +1,6 @@
     // toolkit for checkbox cols
     var CheckTable = new Array();
-    [% FOREACH col IN cpac.tm.extra('col_order') %]
+    [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.extra('extjs_xtype') == 'checkbox' %]
       CheckTable['[% col %]'] = 1;
     [% END %]
@@ -10,7 +10,7 @@
 
     // toolkit for checking for foreign keys
     var FKTable = new Array();
-    [% FOREACH col IN cpac.tm.extra('col_order') %]
+    [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
       FKTable['[% col %]'] = 1;
     [% END %]

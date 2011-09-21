@@ -8,7 +8,7 @@ sub filter {
 
     foreach my $tbl ($schema->get_tables, $schema->get_views) {
         # add an ordered list of columns, placing PKs first
-        $tbl->extra(col_order => [
+        $tbl->extra(fields => [
             map {$_->name}
                 (sort grep {$_->is_primary_key} $tbl->get_fields),
                 (sort grep {not $_->is_primary_key and not $_->extra('is_reverse')
@@ -25,8 +25,8 @@ sub filter {
 
         # SQLT's primary_key() returns the constraint, not names
         $tbl->extra(pks => [
-            map {$_->name}
-                (sort grep {$_->is_primary_key} $tbl->get_fields),
+            sort map  {$_->name}
+                 grep {$_->is_primary_key} $tbl->get_fields,
         ]);
     }
 }

@@ -1,6 +1,6 @@
     // create a data record
     var rowRecord = Ext.data.Record.create([
-      [% FOREACH col IN cpac.tm.extra('col_order') %]
+      [% FOREACH col IN cpac.tc.cols %]
         [% ',' IF NOT loop.first %]
         { name: '[% col %]' }
       [% END %]

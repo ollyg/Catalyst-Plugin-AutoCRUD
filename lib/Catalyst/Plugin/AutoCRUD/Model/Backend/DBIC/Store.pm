@@ -96,7 +96,7 @@ sub list {
     my $cpac = $c->stash->{cpac}->{tc};
     my $info = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
-    my @columns = @{ $info->extra('col_order') };
+    my @columns = @{$cpac->{cols}};
 
     my ($page, $limit, $sort, $dir) =
         @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /};
