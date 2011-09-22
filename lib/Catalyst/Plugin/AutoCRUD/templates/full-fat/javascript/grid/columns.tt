@@ -25,71 +25,71 @@
 
     // create the combo instances
     [% FOREACH col IN cpac.tc.cols %]
-      [% IF cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
-        var fk_combo_[% col %] = new Ext.form.ComboBox ({
-            valueField: 'dbid'
-            ,displayField: 'stringified'
-            ,hiddenName: 'combobox.[% col %]'
-            ,hiddenId: 'fk_combo_[% col %]'
-            ,loadingText: 'Searching...'
-            ,forceSelection: true
-            ,selectOnFocus: true
-            ,typeAhead: false
-            ,pageSize: 10
-            ,triggerAction: 'all'
-            ,lazyRender: true
-            ,listClass: 'x-combo-list-small'
-            ,lastQuery: ''
-            ,store: new Ext.data.JsonStore ({
-                url: '[% c.uri_for(
-                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
-                            [cpac.g.site,cpac_db,cpac_table]
-                     ) %]'
-                ,root: 'rows'
-                ,totalProperty: 'total'
-                ,fields: [ 'dbid', 'stringified' ]
-                ,listeners: {
-                    beforeload: function(store, options) {
-                        var start = options.params.start;
-                        var limit = options.params.limit;
-                        options.params.page = Math.floor(start / limit) + 1;
-                        options.params.fkname = '[% col %]';
-                        if (fk_combo_[% col %].getRawValue() && (options.params.page === 1)) {
-                            // so that we can hack in an extra row
-                            options.params.limit = 9;
-                        }
-                        return true;
-                    }
-                    ,load: function(store, records, options) {
-                        var queryText = fk_combo_[% col %].getRawValue();
-                        if (queryText.length && (options.params.page === 1)) {
-                            // be sure not to accidentally add a 2nd copy of fk_combo_comment
-                            if (queryText.indexOf(fk_combo_comment) !== -1) {
-                                queryText = queryText.replace(fk_combo_comment,'');
-                            }
-                            // insert an extra row with full-text-search option
-                            store.insert(0, new sfyRecord({
-                                dbid: queryText
-                                ,stringified: queryText + fk_combo_comment
-                            }));
-                        }
-                    }
-                }
-            })
-            ,listeners: {
-                // delete the previous query in the beforequery event or set
-                // combo.lastQuery = null (this will reload the store the next time it expands)
-                beforequery: function(qe) {
-                    delete qe.combo.lastQuery;
-                }
-                ,blur : function() {
-                    if (this.allowBlank && this.getRawValue() === '') {
-                        this.clearValue();
-                    }
-                }
-            }
-        });
-      [% END %]
+      [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
+      [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+      var fk_combo_[% col %] = new Ext.form.ComboBox ({
+          valueField: 'dbid'
+          ,displayField: 'stringified'
+          ,hiddenName: 'combobox.[% col %]'
+          ,hiddenId: 'fk_combo_[% col %]'
+          ,loadingText: 'Searching...'
+          ,forceSelection: true
+          ,selectOnFocus: true
+          ,typeAhead: false
+          ,pageSize: 10
+          ,triggerAction: 'all'
+          ,lazyRender: true
+          ,listClass: 'x-combo-list-small'
+          ,lastQuery: ''
+          ,store: new Ext.data.JsonStore ({
+              url: '[% c.uri_for(
+                          c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                          [cpac.g.site,cpac_db,cpac_table]
+                   ) %]'
+              ,root: 'rows'
+              ,totalProperty: 'total'
+              ,fields: [ 'dbid', 'stringified' ]
+              ,listeners: {
+                  beforeload: function(store, options) {
+                      var start = options.params.start;
+                      var limit = options.params.limit;
+                      options.params.page = Math.floor(start / limit) + 1;
+                      options.params.fkname = '[% col %]';
+                      if (fk_combo_[% col %].getRawValue() && (options.params.page === 1)) {
+                          // so that we can hack in an extra row
+                          options.params.limit = 9;
+                      }
+                      return true;
+                  }
+                  ,load: function(store, records, options) {
+                      var queryText = fk_combo_[% col %].getRawValue();
+                      if (queryText.length && (options.params.page === 1)) {
+                          // be sure not to accidentally add a 2nd copy of fk_combo_comment
+                          if (queryText.indexOf(fk_combo_comment) !== -1) {
+                              queryText = queryText.replace(fk_combo_comment,'');
+                          }
+                          // insert an extra row with full-text-search option
+                          store.insert(0, new sfyRecord({
+                              dbid: queryText
+                              ,stringified: queryText + fk_combo_comment
+                          }));
+                      }
+                  }
+              }
+          })
+          ,listeners: {
+              // delete the previous query in the beforequery event or set
+              // combo.lastQuery = null (this will reload the store the next time it expands)
+              beforequery: function(qe) {
+                  delete qe.combo.lastQuery;
+              }
+              ,blur : function() {
+                  if (this.allowBlank && this.getRawValue() === '') {
+                      this.clearValue();
+                  }
+              }
+          }
+      });
     [% END %]
 
     // we first process the main, ordinary cols (pk and others)
@@ -125,6 +125,7 @@
             ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %]) // pass combo instance to reusable renderer
             [% END %]
           [% ELSE %]
+            ,dataIndex: '[% col %]'
             ,editor: new Ext.form.TextField({})
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
               [% IF cpac.tm.f.$col.extra('extjs_xtype') == 'checkbox' %]
