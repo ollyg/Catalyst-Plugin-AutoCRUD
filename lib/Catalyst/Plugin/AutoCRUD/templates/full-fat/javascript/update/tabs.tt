@@ -5,57 +5,63 @@
     // most of the messing about is to get the right form field types
     // also readonly, validation
 
+    [% SET tab_order = [ cpac_table ] %]
+    [% FOREACH col IN cpac.tc.cols %]
+      [% NEXT UNLESS cpac.tm.f.$col.extra('is_reverse')
+              AND cpac.tm.f.$col.extra('rel_type') == 'might_have' %]
+      [% tab_order.push(col) %]
+    [% END %]
+
     var tabs = [
-      [% FOREACH tname IN cpac_meta.tab_order.nsort %]
-        [% SET info = cpac_meta.table_info.$tname %]
-        [% SET tbl = info.path %]
-        [% NEXT IF NOT loop.first AND site_conf.$cpac_db.$tbl.create_allowed == 'no' %]
-        [% ',' IF cpac_meta.tab_order.keys.size > 1 AND NOT loop.first %]{
-            [% IF cpac_meta.tab_order.item(tname) == 1 %]
-              title: '[% cpac_meta.main.title %]'
+      [% FOREACH tbl IN tab_order %]
+        [% SET conf = cpac.c.$cpac_db.t.$tbl %]
+        [% SET meta = cpac.m.t.$tbl %]
+        [% NEXT IF conf.create_allowed == 'no' OR conf.update_allowed == 'no' %]
+        [% ',' IF tbl != cpac_table %]{
+            [% IF tbl == cpac_table %]
+              title: '[% conf.display_name %]'
             [% ELSE %]
-              title: 'New [% info.title %]'
+              title: 'New [% conf.display_name %]'
               ,xtype: 'fieldset'
               ,checkboxToggle: true
-              ,checkboxName: 'checkbox.[% info.path %]'
+              ,checkboxName: 'checkbox.[% tbl %]'
               ,collapsed: true
             [% END %]
 
             ,items: [
               [% SET count = 1 %]
-              [% FOREACH field IN info.col_order %]
-              [% NEXT IF info.cols.$field.is_rr %]
+              [% FOREACH field IN conf.cols %]
+              [% NEXT IF meta.f.$field.extra('is_reverse') %]
                 [% ',' IF count > 1 %]{
                 [% SET count = count + 1 %]
-                  [% IF cpac_meta.tab_order.item(tname) == 1 %]
+                  [% IF tbl == cpac_table %]
                     name: '[% field %]'
                     ,id: '[% field %]'
                   [% ELSE %]
-                    name: '[% info.path %].[% field %]'
-                    ,id: '[% info.path %].[% field %]'
+                    name: '[% tbl %].[% field %]'
+                    ,id: '[% tbl %].[% field %]'
                   [% END %]
 
-                  [% IF site_conf.$cpac_db.$tbl.headings.exists(field) AND site_conf.$cpac_db.$tbl.headings.defined(field) %]
-                    ,fieldLabel: '[% site_conf.$cpac_db.$tbl.headings.$field %]'
-                  [% ELSE %]
-                    ,fieldLabel: '[% info.cols.$field.heading %]'
-                  [% END %]
+                    ,fieldLabel: '[% conf.headings.$field %]'
                     ,anchor: '-20'
                     ,autoHeight: true
                   
-                  [% IF info.cols.$field.default_value %]
-                    ,value: '[% info.cols.$field.default_value | replace('\'', '\\\'') %]'
+                  [% IF meta.f.$field.default_value %]
+                    ,value: '[% meta.f.$field.default_value | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% UNLESS info.cols.$field.editable %]
+                  [% IF meta.f.$field.is_auto_increment
+                        OR (meta.f.$field.is_foreign_key
+                            AND meta.f.$field.foreign_key_reference.reference_table == cpac_table) %]
                     ,readOnly: true
                     ,cls: 'x-item-disabled'
                     //,disabled: true // argh, prevents submit :-( so use cls
-                  [% ELSIF info.cols.$field.required %]
+                  [% ELSIF NOT meta.f.$field.is_nullable %]
                     ,allowBlank: false
                   [% END %]
 
-                  [% IF info.cols.$field.is_fk AND info.cols.$field.editable %]
+                  [% IF meta.f.$field.is_foreign_key
+                        AND meta.f.$field.foreign_key_reference.reference_table != cpac_table %]
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
@@ -67,7 +73,10 @@
                     ,pageSize: 5
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
-                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,cpac_db,info.path] ) %]'
+                        url: '[% c.uri_for(
+                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            [cpac_site,cpac_db,info.path]
+                        ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]
@@ -90,7 +99,7 @@
                         }
                     }
                   [% ELSE %]
-                    [% SET localxtype = info.cols.$field.extjs_xtype OR "textarea" %]
+                    [% SET localxtype = meta.f.$field.extra('extjs_xtype') OR "textarea" %]
                     ,xtype: '[% localxtype %]'
 
                     [% SWITCH localxtype %]

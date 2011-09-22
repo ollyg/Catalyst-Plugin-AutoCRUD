@@ -58,7 +58,10 @@
                             if (btn == 'yes') {
                                 grid.loadMask.el.mask();
                                 Ext.Ajax.request({
-                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [cpac.g.site,cpac_db,cpac_table] ) %]'
+                                    url: '[% c.uri_for(
+                                        c.controller('AutoCRUD::AJAX').action_for('delete'),
+                                        [cpac.g.site,cpac_db,cpac_table]
+                                    ) %]'
                                     ,params: {
                                         key: data
                                     }
