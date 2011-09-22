@@ -28,7 +28,7 @@
     [% END %]
     </tr>
 
-    [% SET count = 0 %]
+    [% SET stripe = 0 %]
     [% FOR item IN json_data.rows %]
         [% PROCESS row.tt %]
     [% END %]
