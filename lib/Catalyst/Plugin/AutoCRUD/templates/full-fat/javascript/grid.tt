@@ -116,15 +116,24 @@
                     // fill in reverse relations
                     mainform.setValues({
                       [% SET count = 1 %]
-                      [% FOREACH tbl IN cpac_meta.tab_order.keys %]
-                      [% NEXT IF cpac_meta.tab_order.item(tbl) == 1 %]
-                        [% FOREACH col IN cpac_meta.table_info.$tbl.cols.keys %]
-                        [% NEXT UNLESS cpac_meta.table_info.$tbl.cols.$col.is_fk
-                                AND NOT cpac_meta.table_info.$tbl.cols.$col.editable %]
-                          [% ',' IF count > 1 %]
-                            '[% cpac_meta.table_info.$tbl.path %].[% col %]': rec.data['[% cpac_meta.main.pk %]']
-                          [% SET count = count + 1 %]
+                      [% FOREACH col IN cpac.tc.cols %]
+                        [% NEXT UNLESS cpac.tm.f.$col.extra('is_reverse')
+                                AND cpac.tm.f.$col.extra('rel_type') == 'might_have' %]
+                        [% SET ft = cpac.tm.f.$col.extra('ref_table') %]
+                        [% SET anyfk = cpac.tm.f.$col.extra('ref_fields').first %]
+
+                        [%# work around SQLT's broken contextual return %]
+                        [% IF cpac.tm.extra('pks').size > 1 %]
+                          [% FOREACH fk IN cpac.m.t.$ft.f.$anyfk.foreign_key_reference.fields %]
+                            [% SET idx = loop.index %]
+                            '[% ft %].[% fk %]': rec.data['[% cpac.m.t.$ft.f.$fk.foreign_key_reference.reference_fields.$idx %]']
+                          [% END %]
+                        [% ELSE %]
+                          '[% ft %].[% anyfk %]': rec.data['[% cpac.tm.extra('pks').first %]']
                         [% END %]
+
+                        [% ',' IF count > 1 %]
+                        [% SET count = count + 1 %]
                       [% END %]
                     });
                 }
