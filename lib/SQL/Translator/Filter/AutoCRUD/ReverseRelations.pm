@@ -33,19 +33,14 @@ sub add_to_fields_at {
         # rename each to refer to the rel on which it is based
 
         if (exists $extra->{_new_fields}->{$name}) {
-            my $uniq_name = $name .'_via_'. $extra->{_new_fields}->{$name}->{extra}->{via};
+            my $uniq_name = $name .'_'. join '_', @{$extra->{_new_fields}->{$name}->{ref_fields}};
             $extra->{_new_fields}->{$name}->{name} = $uniq_name;
             $extra->{_new_fields}->{$name}->{extra}->{display_name} = make_label($uniq_name);
             $extra->{_new_fields}->{$uniq_name} = delete $extra->{_new_fields}->{$name};
         }
 
-        $name = $name .'_via_'. $field->{extra}->{via};
+        $name = $name .'_'. join '_', @{$field->{ref_fields}};
         $field->{name} = $name;
-    }
-
-    if ($field->{extra}->{rel_type} ne 'many_to_many') {
-        $field->{extra}->{ref_fields} = [map {$_->name} @{$field->{reference_fields}}];
-        $field->{extra}->{ref_table} = $field->{reference_table};
     }
 
     $field->{data_type} = 'text';
@@ -53,7 +48,6 @@ sub add_to_fields_at {
     $field->{extra}->{is_reverse} = 1;
     $field->{extra}->{display_name} = make_label($name);
 
-    delete $field->{extra}->{via};
     $extra->{_new_fields}->{$name} = $field;
 }
 
@@ -78,48 +72,50 @@ sub filter {
                 # but we cannot distinguish has_one/might_have
                 add_to_fields_at(scalar $remote_table->extra, {
                     name => $local_table->name,
-                    reference_table => $local_table->name,
-                    reference_fields => [$c->fields],
                     extra => {
+                        ref_table => $local_table->name,
+                        ref_fields => [map {"$_"} @{$c->fields}],
                         rel_type => 'might_have',
-                        via => $c->name,
                     }
                 });
             }
             else {
                 add_to_fields_at(scalar $remote_table->extra, {
                     name => $local_table->name,
-                    reference_table => $local_table->name,
-                    reference_fields => [$c->fields],
                     extra => {
+                        ref_table => $local_table->name,
+                        ref_fields => [map {"$_"} @{$c->fields}],
                         rel_type => 'has_many',
-                        via => $c->name,
                     }
                 });
             }
 
             # check whether there are additional rels for a m2m link
-            my @remote_names = ();
+            my %remote_names = ();
 
             foreach my $rel ($local_table->get_constraints) {
                 next unless $rel->type eq FOREIGN_KEY;
                 next unless scalar (grep {$_->is_nullable} $rel->fields) == 0;
-                push @remote_names, $rel->reference_table.'';
+                # FIXME configurable reject of tables with non link columns
+                $remote_names{$rel->reference_table.''} = [map {"$_"} $rel->fields];
             }
 
             # we don't make a hash as it could be a many_to_many to same table
             # but it must be at least two relations, for this heuristic to work
-            if (scalar @remote_names >= 2) {
-                my $p = Algorithm::Permute->new(\@remote_names, 2);
+            if (scalar keys %remote_names >= 2) {
+                my $p = Algorithm::Permute->new([keys %remote_names], 2);
 
                 while ( my ($left, $right) = $p->next ) {
                     add_to_fields_at(scalar $schema->get_table($left)->extra, {
                         name => $right,
-                        reference_table => $right,
-                        reference_fields => [$schema->get_table($right)->primary_key->fields],
                         extra => {
+                            ref_table => $right,
+                            ref_fields => [map {"$_"} $schema->get_table($right)->primary_key->fields],
                             rel_type => 'many_to_many',
-                            via => $c->name,
+                            via => [
+                                Lingua::EN::Inflect::Number::to_PL($local_table->name),
+                                @{$remote_names{$right}}
+                            ],
                         },
                     });
                 }
