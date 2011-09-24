@@ -75,7 +75,7 @@
                     ,store: new Ext.data.JsonStore ({
                         url: '[% c.uri_for(
                             c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
-                            [cpac_site,cpac_db,info.path]
+                            [cpac.g.site,cpac_db,cpac_table]
                         ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'
