@@ -22,10 +22,8 @@ sub filter {
             $local_field = $local_table->get_field($local_field)
                 if not blessed $local_field;
 
-            if ($local_field->is_foreign_key and not $local_field->extra('is_reverse')) {
-                $local_field->extra(display_name => make_label($local_field->foreign_key_reference->reference_table));
-            }
-            else {
+            # avoid reverse relationships, they should have been named already
+            if (not $local_field->extra('is_reverse')) {
                 $local_field->extra(display_name => make_label($local_field->name));
             }
         }

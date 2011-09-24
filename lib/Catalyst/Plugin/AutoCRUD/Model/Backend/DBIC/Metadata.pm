@@ -9,14 +9,7 @@ BEGIN {
     @EXPORT = qw/ dispatch_table source_dispatch_table schema_metadata /;
 }
 
-# dispatch_table (and source_dispatch_table) end up in stash->cpac->c
-# schema_metadata ends up in stash->cpac->m
-
 use SQL::Translator;
-use SQL::Translator::Filter::AutoCRUD::ReverseRelations;
-use SQL::Translator::Filter::AutoCRUD::ExtJSxType;
-use SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
-use SQL::Translator::Filter::AutoCRUD::DisplayName;
 
 # return mapping of url path part to friendly display names
 # for each result source within a given schema.
@@ -140,11 +133,11 @@ sub schema_metadata {
         parser => 'SQL::Translator::Parser::DBIx::Class',
         parser_args => { package => $schema },
         filters => [
-            'SQL::Translator::Filter::AutoCRUD::ReverseRelations',
-            'SQL::Translator::Filter::AutoCRUD::DisplayName',
-            'SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs',
-            'SQL::Translator::Filter::AutoCRUD::ExtJSxType',
-            ['SQL::Translator::Filter::AutoCRUD::CatalystModel',
+            ['AutoCRUD::Backend::DBIC::Relationships', $schema],
+            'AutoCRUD::DisplayName',
+            'AutoCRUD::ColumnsAndPKs',
+            'AutoCRUD::ExtJSxType',
+            ['AutoCRUD::CatalystModel',
                 $self->_schema_cache->{handles}->{$db}->{sources}],
         ],
         producer => 'SQL::Translator::Producer::POD', # something cheap
