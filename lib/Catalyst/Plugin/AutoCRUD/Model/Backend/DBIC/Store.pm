@@ -11,7 +11,7 @@ BEGIN {
 
 use Data::Page;
 use List::Util qw(first);
-use List::MoreUtils qw(zip);
+use List::MoreUtils qw(zip uniq);
 use Scalar::Util qw(blessed);
 use overload ();
 
@@ -216,8 +216,7 @@ sub list {
 
                     my $link = $meta->f->{$col}->extra('via')->[0];
                     my $target = $meta->f->{$col}->extra('via')->[1];
-                    # FIXME try ref_table if installed for composite key
-                    $data->{$col} = [ map { _sfy($_) } map {$_->$target} $row->$link->all ];
+                    $data->{$col} = [ uniq sort map { _sfy($_) } map {$_->$target} $row->$link->all ];
                 }
                 elsif ($meta->f->{$col}->extra('rel_type')
                        and $meta->f->{$col}->extra('rel_type') =~ m/has_many$/) {
