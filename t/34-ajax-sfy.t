@@ -16,15 +16,15 @@ my $default_artist_page = {
     'rows' => [
                 {
                   'stringified' => 'Adam Smith',
-                  'dbid' => 3
+                  'dbid' => "id\0003",
                 },
                 {
                   'stringified' => 'David Brown',
-                  'dbid' => 2
+                  'dbid' => "id\0002",
                 },
                 {
                   'stringified' => 'Mike Smith',
-                  'dbid' => 1
+                  'dbid' => "id\0001",
                 }
               ]
 };
@@ -57,7 +57,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/list_stringified', {fknam
     'rows' => [
                 {
                   'stringified' => 'SleeveNotes: id(1)',
-                  'dbid' => 1
+                  'dbid' => "id\0001",
                 }
               ]
 }, 'sfy rr');
