@@ -11,6 +11,7 @@ BEGIN {
 
 use Data::Page;
 use List::Util qw(first);
+use List::MoreUtils qw(zip);
 use Scalar::Util qw(blessed);
 use overload ();
 
@@ -70,6 +71,13 @@ sub _sfy {
     );
 }
 
+# create a unique identifier for this row from PKs
+sub _create_ID {
+    my $row = shift;
+    return join "\000\000",
+        map { "$_\000${\$row->get_column($_)}" } $row->primary_columns;
+}
+
 # find whether this DMBS supports ILIKE or just LIKE
 sub _likeop_for {
     my $model = shift;
@@ -93,10 +101,10 @@ sub list {
     my $db = $c->stash->{cpac_db};
     my $table = $c->stash->{cpac_table};
 
-    my $cpac = $c->stash->{cpac}->{tc};
+    my $conf = $c->stash->{cpac}->{tc};
     my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
-    my @columns = @{$cpac->{cols}};
+    my @columns = @{$conf->{cols}};
 
     my ($page, $limit, $sort, $dir) =
         @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /};
@@ -112,18 +120,15 @@ sub list {
         push @{$search_opts->{prefetch}}, $rel;
     }
 
-    # before setting up the paging and sorting, we need to check whether
-    # the FK params are legit PK vals in the related schema
+    # use of FK or RR partial text filter must disable the DB-side page/sort
     my %delay_page_sort = ();
     foreach my $p (keys %{$c->req->params}) {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
         next unless exists $meta->f->{$col}
             and ($meta->f->{$col}->is_foreign_key or $meta->f->{$col}->extra('is_reverse'));
-        my $rs = $c->model($meta->extra('model'))
-                    ->result_source->related_source($col)->resultset;
-        # cannot page or sort this col in the DB if it's not a legit PK val
+
         $delay_page_sort{$col} += 1
-            if !defined $rs->find( $c->req->params->{"search.$col"} );
+            if $c->req->params->{"search.$col"} !~ m/\000/;
     }
 
     # find filter fields in UI form that can be passed to DB
@@ -131,20 +136,27 @@ sub list {
         next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
         next unless exists $meta->f->{$col};
         next if exists $delay_page_sort{$col};
+        my $val = $c->req->params->{"search.$col"};
 
-        # search for exact match on FK value (checked above)
+        # exact match on FK value (checked above)
         if ($meta->f->{$col}->is_foreign_key) {
-            # XXX masked col (using 'accessor' or rel name) will not work
-            $filter->{"me.$col"} = $c->req->params->{"search.$col"};
+            my $const = $meta->f->{$col}->foreign_key_reference;
+            my %fmap = zip @{$const->reference_fields}, @{$const->fields};
+            foreach my $i (split m/\000\000/, $val) {
+                my ($k, $v) = split m/\000/, $i;
+                $filter->{"me.$fmap{$k}"} = $v;
+            }
             next;
         }
 
+        # exact match on RR value (checked above)
         if ($meta->f->{$col}->extra('is_reverse')) {
-            next unless scalar $meta->f->{$col}->extra('ref_fields');
-            # XXX have to just take the first col even if there are more
-            my $foreign_col = $meta->f->{$col}->extra('ref_fields')->[0];
+            next if $meta->f->{$col}->extra('rel_type') eq 'many_to_many';
             push @{$search_opts->{join}}, $col;
-            $filter->{"$col.$foreign_col"} = $c->req->params->{"search.$col"};
+            foreach my $i (split m/\000\000/, $val) {
+                my ($k, $v) = split m/\000/, $i;
+                $filter->{"$col.$k"} = $v;
+            }
             next;
         }
 
@@ -155,7 +167,7 @@ sub list {
             next;
         }
 
-        # construct search clause if any of the filter fields were filled in UI
+        # ordinary search clause if any of the filter fields were filled in UI
         $filter->{"me.$col"} = {
             # find whether this DMBS supports ILIKE or just LIKE
             _likeop_for($c->model($meta->extra('model')))
@@ -195,20 +207,22 @@ sub list {
     DBIC_ROW:
     while (my $row = $rs->next) {
         my $data = {};
-        # process regular cols + one-to-one relations
         foreach my $col (@columns) {
-            if ($meta->f->{$col}->is_foreign_key or $meta->f->{$col}->extra('is_reverse')) {
-                if ($meta->f->{$col}->extra('rel_type') and $meta->f->{$col}->extra('rel_type') =~ m/_many$/) {
-                    # FIXME what is this doing?
-                    #if (exists $meta->{m2m}->{$m}) {
-                    #    my $target = $meta->{m2m}->{$m};
-                    #    $data->{$m} = [ map { _sfy($_) } map {$_->$target} $row->$m->all ];
-                    #}
-                    #else {
-                    #    # avoid dieing in the present of dangling rels
-                    #    $data->{$m} = eval { [ map { _sfy($_) } $row->$m->all ] } || [];
-                    #}
-                    $data->{$col} = [];
+            if ($meta->f->{$col}->is_foreign_key
+                or $meta->f->{$col}->extra('is_reverse')) {
+
+                if ($meta->f->{$col}->extra('rel_type')
+                    and $meta->f->{$col}->extra('rel_type') =~ m/many_to_many$/) {
+
+                    my $link = $meta->f->{$col}->extra('via')->[0];
+                    my $target = $meta->f->{$col}->extra('via')->[1];
+                    # FIXME try ref_table if installed for composite key
+                    $data->{$col} = [ map { _sfy($_) } map {$_->$target} $row->$link->all ];
+                }
+                elsif ($meta->f->{$col}->extra('rel_type')
+                       and $meta->f->{$col}->extra('rel_type') =~ m/has_many$/) {
+                    $data->{$col} = $row->can($col) ?
+                        [ map { _sfy($_) } $row->$col->all ] : [];
                 }
                 else {
                     # here assume table names are sane perl identifiers
@@ -500,8 +514,8 @@ sub list_stringified {
 
     if (!$fk
         or !exists $info->f->{$fk}
-        or not ($info->f->{$fk}->is_foriegn_key
-            or $info->f->{$fk}->{is_reverse})) {
+        or not ($info->f->{$fk}->is_foreign_key
+            or $info->f->{$fk}->extra('is_reverse'))) {
 
         $c->stash->{json_data} = {total => 0, rows => []};
         return $self;
@@ -514,13 +528,13 @@ sub list_stringified {
     # first try a simple and quick primary key search
     if (my $single_result = eval{ $rs->find($query) }) {
         @data = ({
-            dbid => $single_result->id,
+            dbid => _create_ID($single_result),
             stringified => _sfy($single_result),
         });
     }
     else {
         # do the full text search
-        my @results =  map  { { dbid => $_->id, stringified => _sfy($_) } }
+        my @results =  map  { { dbid => _create_ID($_), stringified => _sfy($_) } }
                        grep { _sfy($_) =~ m/$query_re/ } $rs->all;
         @data = sort { $a->{stringified} cmp $b->{stringified} } @results;
     }
