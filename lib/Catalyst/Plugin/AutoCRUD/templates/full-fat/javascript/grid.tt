@@ -126,10 +126,12 @@
                         [% SET anyfk = cpac.tm.f.$col.extra('ref_fields').first %]
 
                         [%# work around SQLT's broken contextual return %]
+                        [%# need to carefully work through the SQLT methods to preseve ordering %]
                         [% IF cpac.tm.extra('pks').size > 1 %]
                           [% FOREACH fk IN cpac.m.t.$ft.f.$anyfk.foreign_key_reference.fields %]
                             [% SET idx = loop.index %]
-                            '[% ft %].[% fk %]': rec.data['[% cpac.m.t.$ft.f.$fk.foreign_key_reference.reference_fields.$idx %]']
+                            '[% ft %].[% fk %]':
+                                rec.data['[% cpac.m.t.$ft.f.$fk.foreign_key_reference.reference_fields.$idx %]']
                           [% END %]
                         [% ELSE %]
                           '[% ft %].[% anyfk %]': rec.data['[% cpac.tm.extra('pks').first %]']
