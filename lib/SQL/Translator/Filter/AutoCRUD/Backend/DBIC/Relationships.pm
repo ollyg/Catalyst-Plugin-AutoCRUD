@@ -13,7 +13,6 @@ sub add_to_fields_at {
         name => $data->{name},
         extra => { rel_type => $data->{rel_type} },
         data_type => 'text',
-        is_foreign_key => 1,
     };
 
     for (qw/ref_table ref_fields fields via/) {
@@ -29,16 +28,22 @@ sub add_to_fields_at {
     }
 
     if ($data->{rel_type} eq 'belongs_to') {
-        my $f = $table->get_field($field->{extra}->{fields}->[0]);
-        # col already exists, so update metadata
-        $f->extra($_ => $field->{extra}->{$_})
-            for keys %{$field->{extra}};
-        # and rename if this is a "masked col" relation
-        $f->name($field->{name}) if $f->name ne $field->{name};
+        if (my $f = $table->get_field($field->{name})) {
+            # col already exists, so update metadata
+            $f->extra($_ => $field->{extra}->{$_})
+                for keys %{$field->{extra}};
+        }
+        else {
+            $table->get_field($_)->extra('masked_by' => $field->{name})
+                for @{$field->{extra}->{fields}};
+            my $f = $table->add_field(%$field);
+            $f->{is_foreign_key} = 1;
+        }
     }
     else {
         $field->{extra}->{is_reverse} = 1;
-        $table->add_field(%$field);
+        my $f = $table->add_field(%$field);
+        $f->{is_foreign_key} = 1;
     }
 }
 

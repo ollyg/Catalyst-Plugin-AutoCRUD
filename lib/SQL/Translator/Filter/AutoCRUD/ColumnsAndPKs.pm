@@ -13,8 +13,8 @@ sub filter {
                 (sort grep {$_->is_primary_key} $tbl->get_fields),
                 (sort grep {not $_->is_primary_key and not $_->extra('is_reverse')
                             and not $_->is_foreign_key} $tbl->get_fields),
-                (sort grep {$_->is_foreign_key
-                            and not $_->extra('is_reverse')} $tbl->get_fields),
+                (sort grep {$_->is_foreign_key and not $_->extra('is_reverse')
+                            and not $_->extra('masked_by')} $tbl->get_fields),
                 (sort grep {$_->extra('is_reverse')
                             and $_->extra('rel_type') eq 'might_have'} $tbl->get_fields),
                 (sort grep {$_->extra('is_reverse')
