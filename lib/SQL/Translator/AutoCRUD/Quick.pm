@@ -5,7 +5,8 @@ use warnings FATAL => 'all';
 
 {
     package # hide from toolchain
-        SQL::Translator::AutoCRUD::Quick::Source;
+        SQL::Translator::AutoCRUD::Quick::Table;
+    use base 'SQL::Translator::Schema::Table';
 
     sub new {
         my ($class, $self) = @_;
@@ -18,20 +19,6 @@ use warnings FATAL => 'all';
         $self->{cpac_f} = { map {($_->name => $_)} ($self->get_fields) };
         return $self->{cpac_f};
     }
-
-    package # hide from toolchain
-        SQL::Translator::AutoCRUD::Quick::Table;
-    use base qw/SQL::Translator::AutoCRUD::Quick::Source
-        SQL::Translator::Schema::Table/;
-
-    sub is_view { 0 }
-
-    package # hide from toolchain
-        SQL::Translator::AutoCRUD::Quick::View;
-    use base qw/SQL::Translator::AutoCRUD::Quick::Source
-        SQL::Translator::Schema::View/;
-
-    sub is_view { 1 }
 }
 
 use base 'SQL::Translator::Schema';
@@ -47,8 +34,6 @@ sub t {
     $self->{cpac_t} = {
         (map {($_->name => SQL::Translator::AutoCRUD::Quick::Table->new($_))}
             $self->get_tables),
-        (map {($_->name => SQL::Translator::AutoCRUD::Quick::View->new($_))}
-            $self->get_views),
     };
     return $self->{cpac_t};
 }

@@ -4,8 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Lingua::EN::Inflect::Number;
-
-sub make_label { return join ' ', map ucfirst, split /[\W_]+/, lc shift }
+use SQL::Translator::AutoCRUD::Utils;
 
 sub add_to_fields_at {
     my ($table, $data) = @_;
@@ -32,6 +31,7 @@ sub add_to_fields_at {
             # col already exists, so update metadata
             $f->extra($_ => $field->{extra}->{$_})
                 for keys %{$field->{extra}};
+            $f->{is_foreign_key} = 1; # XXX for Views hack?
         }
         else {
             $table->get_field($_)->extra('masked_by' => $field->{name})
@@ -54,9 +54,10 @@ sub filter {
 
     foreach my $tbl_name ($schema->sources) {
         my $source = $schema->source($tbl_name);
-        my $sqlt_tbl = $sqlt->get_table($source->from)
+        my $from = make_path($source);
+        my $sqlt_tbl = $sqlt->get_table($from)
             or die "mismatched table name between SQLT and DBIC: [$tbl_name]\n";
-        my $new_cols = $rels->{$source->from} ||= {};
+        my $new_cols = $rels->{$from} ||= {};
 
         foreach my $r ($source->relationships) {
             my $rel_info = $source->relationship_info($r);
@@ -86,7 +87,7 @@ sub filter {
                 delete $new_cols->{$r};
                 next;
             }
-            $new_cols->{$r}->{ref_table} = $source->related_source($r)->from;
+            $new_cols->{$r}->{ref_table} = make_path($source->related_source($r));
 
             if ($rel_info->{attrs}->{accessor} eq 'multi') {
                 $new_cols->{$r}->{rel_type} = 'has_many';
@@ -104,8 +105,9 @@ sub filter {
     # second pass to install m2m rels
     foreach my $tbl_name ($schema->sources) {
         my $source = $schema->source($tbl_name);
-        my $sqlt_tbl = $sqlt->get_table($source->from);
-        my $new_cols = $rels->{$source->from};
+        my $from = make_path($source);
+        my $sqlt_tbl = $sqlt->get_table($from);
+        my $new_cols = $rels->{$from};
 
         foreach my $r (keys %$new_cols) {
             next unless $new_cols->{$r}->{rel_type} eq 'has_many';
@@ -115,7 +117,7 @@ sub filter {
                 and 2 == scalar grep {$_->{rel_type} eq 'belongs_to'} values %{$rels->{$link}};
 
             foreach my $lrel (keys %{$rels->{$link}}) {
-                next if $rels->{$link}->{$lrel}->{ref_table} eq $source->from;
+                next if $rels->{$link}->{$lrel}->{ref_table} eq $from;
                 $new_cols->{ $rels->{$link}->{$lrel}->{ref_table} } = {
                     name => $rels->{$link}->{$lrel}->{ref_table},
                     rel_type => 'many_to_many',

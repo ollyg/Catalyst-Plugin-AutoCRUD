@@ -4,27 +4,26 @@ use strict;
 use warnings FATAL => 'all';
 
 use Scalar::Util 'blessed';
-
-sub make_label { return join ' ', map ucfirst, split /[\W_]+/, lc shift }
+use SQL::Translator::AutoCRUD::Utils;
 
 sub filter {
     my ($schema, @args) = @_;
 
     $schema->extra(display_name => make_label($schema->name));
 
-    foreach my $local_table ($schema->get_tables) {
-        $local_table = $schema->get_table($local_table)
-            if not blessed $local_table;
+    foreach my $table ($schema->get_tables) {
+        $table = $schema->get_table($table)
+            if not blessed $table;
 
-        $local_table->extra(display_name => make_label($local_table->name));
+        $table->extra(display_name => make_label($table->name));
 
-        foreach my $local_field ($local_table->get_fields) {
-            $local_field = $local_table->get_field($local_field)
-                if not blessed $local_field;
+        foreach my $field ($table->get_fields) {
+            $field = $table->get_field($field)
+                if not blessed $field;
 
             # avoid reverse relationships, they should have been named already
-            if (not $local_field->extra('is_reverse')) {
-                $local_field->extra(display_name => make_label($local_field->name));
+            if (not $field->extra('is_reverse')) {
+                $field->extra(display_name => make_label($field->name));
             }
         }
     }

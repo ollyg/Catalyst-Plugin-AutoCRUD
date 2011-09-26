@@ -7,7 +7,7 @@ sub filter {
     my ($schema, @args) = @_;
     my $cache = shift @args;
 
-    foreach my $tbl ($schema->get_tables, $schema->get_views) {
+    foreach my $tbl ($schema->get_tables) {
         # set catalyst model serving this source
         $tbl->extra(model => $cache->{$tbl->name}->{model});
     }

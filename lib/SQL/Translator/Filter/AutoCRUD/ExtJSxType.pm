@@ -46,17 +46,17 @@ $xtype_for{$_} = 'xdatetime' for (
 sub filter {
     my ($schema, @args) = @_;
 
-    foreach my $tbl ($schema->get_tables, $schema->get_views) {
-        # set extjs_xtype on columns
-        foreach my $col ($tbl->get_fields) {
-            if (exists $xtype_for{ lc $col->data_type }) {
-                $col->extra(extjs_xtype => $xtype_for{ lc $col->data_type });
+    foreach my $tbl ($schema->get_tables) {
+        # set extjs_xtype on fieldumns
+        foreach my $field ($tbl->get_fields) {
+            if (exists $xtype_for{ lc $field->data_type }) {
+                $field->extra(extjs_xtype => $xtype_for{ lc $field->data_type });
             }
-            elsif (scalar $col->size <= 40) {
-                $col->extra(extjs_xtype => 'textfield');
+            elsif (scalar $field->size <= 40) {
+                $field->extra(extjs_xtype => 'textfield');
             }
             else {
-                $col->extra(extjs_xtype => 'textarea');
+                $field->extra(extjs_xtype => 'textarea');
             }
         }
     }
