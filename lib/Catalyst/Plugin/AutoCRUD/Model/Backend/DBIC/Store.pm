@@ -499,7 +499,7 @@ sub delete {
 
 sub list_stringified {
     my ($self, $c) = @_;
-    my $info = $c->stash->{cpac}->{tm};
+    my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
 
     my $page  = $c->req->params->{'page'}   || 1;
@@ -512,15 +512,15 @@ sub list_stringified {
     my $query_re = ($query ? qr/\Q$query\E/i : qr/./);
 
     if (!$fk
-        or !exists $info->f->{$fk}
-        or not ($info->f->{$fk}->is_foreign_key
-            or $info->f->{$fk}->extra('is_reverse'))) {
+        or !exists $meta->f->{$fk}
+        or not ($meta->f->{$fk}->is_foreign_key
+            or $meta->f->{$fk}->extra('is_reverse'))) {
 
         $c->stash->{json_data} = {total => 0, rows => []};
         return $self;
     }
     
-    my $rs = $c->model($info->extra('model'))
+    my $rs = $c->model($meta->extra('model'))
                 ->result_source->related_source($fk)->resultset;
     my @data = ();
 
