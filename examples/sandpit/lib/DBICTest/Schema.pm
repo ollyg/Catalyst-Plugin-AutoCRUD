@@ -7,8 +7,10 @@ no warnings qw/qw/;
 
 __PACKAGE__->load_classes(qw/
   Artist
+  ArtistGUID
   SequenceTest
   BindType
+  ComputedColumn
   Employee
   CD
   Genre
@@ -37,14 +39,12 @@ __PACKAGE__->load_classes(qw/
     'FourKeys_to_TwoKeys',
     'SelfRef',
     'ArtistUndirectedMap',
-    'ArtistSourceName',
-    'ArtistSubclass',
     'Producer',
     'CD_to_Producer',
   ),
-  qw/SelfRefAlias TreeLike TwoKeyTreeLike Event EventTZ NoPrimaryKey/,
+  qw/SelfRefAlias TreeLike TwoKeyTreeLike Event EventSmallDT NoPrimaryKey/,
   qw/Collection CollectionObject TypedObject Owners BooksInLibrary/,
-  qw/ForceForeign Encoded/,
+  qw/ForceForeign Encoded PunctuatedColumnName/,
 );
 
 1;

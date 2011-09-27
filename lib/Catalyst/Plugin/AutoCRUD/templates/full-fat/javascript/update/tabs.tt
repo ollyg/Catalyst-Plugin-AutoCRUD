@@ -35,11 +35,11 @@
                 [% ',' IF count > 1 %]{
                 [% SET count = count + 1 %]
                   [% IF tbl == cpac_table %]
-                    name: '[% field %]'
-                    ,id: '[% field %]'
+                    name: '[% field | replace('\'', '\\\'') %]'
+                    ,id: '[% field | replace('\'', '\\\'') %]'
                   [% ELSE %]
-                    name: '[% tbl %].[% field %]'
-                    ,id: '[% tbl %].[% field %]'
+                    name: '[% tbl %].[% field | replace('\'', '\\\'') %]'
+                    ,id: '[% tbl %].[% field | replace('\'', '\\\'') %]'
                   [% END %]
 
                     ,fieldLabel: '[% conf.headings.$field %]'
@@ -65,7 +65,7 @@
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
-                    ,hiddenName: 'combobox.[% field %]'
+                    ,hiddenName: 'combobox.[% field | replace('\'', '\\\'') %]'
                     ,loadingText: 'Searching...'
                     ,forceSelection: true
                     ,selectOnFocus: true

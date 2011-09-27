@@ -27,11 +27,11 @@
     [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
       [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
-      var fk_combo_[% col %] = new Ext.form.ComboBox ({
+      var fk_combo_[% col | replace('\'', '\\\'') %] = new Ext.form.ComboBox ({
           valueField: 'dbid'
           ,displayField: 'stringified'
-          ,hiddenName: 'combobox.[% col %]'
-          ,hiddenId: 'fk_combo_[% col %]'
+          ,hiddenName: 'combobox.[% col | replace('\'', '\\\'') %]'
+          ,hiddenId: 'fk_combo_[% col | replace('\'', '\\\'') %]'
           ,loadingText: 'Searching...'
           ,forceSelection: true
           ,selectOnFocus: true
@@ -54,15 +54,15 @@
                       var start = options.params.start;
                       var limit = options.params.limit;
                       options.params.page = Math.floor(start / limit) + 1;
-                      options.params.fkname = '[% col %]';
-                      if (fk_combo_[% col %].getRawValue() && (options.params.page === 1)) {
+                      options.params.fkname = '[% col | replace('\'', '\\\'') %]';
+                      if (fk_combo_[% col | replace('\'', '\\\'') %].getRawValue() && (options.params.page === 1)) {
                           // so that we can hack in an extra row
                           options.params.limit = 9;
                       }
                       return true;
                   }
                   ,load: function(store, records, options) {
-                      var queryText = fk_combo_[% col %].getRawValue();
+                      var queryText = fk_combo_[% col | replace('\'', '\\\'') %].getRawValue();
                       if (queryText.length && (options.params.page === 1)) {
                           // be sure not to accidentally add a 2nd copy of fk_combo_comment
                           if (queryText.indexOf(fk_combo_comment) !== -1) {
@@ -108,24 +108,24 @@
             ,menuDisabled: true
             ,tooltip: 'Hover mouse over a cell<br />to show related data'
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
-                if (rowindex === 0 || record.get('[% col %]').join('') === '') { return '' }
+                if (rowindex === 0 || record.get('[% col | replace('\'', '\\\'') %]').join('') === '') { return '' }
                 else {
                     metadata.css += 'half-grey';
                     metadata.attr += 'ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
-                        + record.get('[% col %]').join('<br />') + '"';
+                        + record.get('[% col | replace('\'', '\\\'') %]').join('<br />') + '"';
                     return '<img ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
-                        + record.get('[% col %]').join('<br />')
+                        + record.get('[% col | replace('\'', '\\\'') %]').join('<br />')
                         + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
                         + ' Show';
                 }
             }
             [% ELSE %]
-            ,dataIndex: '[% col %]'
-            ,editor: fk_combo_[% col %] //reference to combo instance
+            ,dataIndex: '[% col | replace('\'', '\\\'') %]'
+            ,editor: fk_combo_[% col | replace('\'', '\\\'') %] //reference to combo instance
             ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %]) // pass combo instance to reusable renderer
             [% END %]
           [% ELSE %]
-            ,dataIndex: '[% col %]'
+            ,dataIndex: '[% col | replace('\'', '\\\'') %]'
             ,editor: new Ext.form.TextField({})
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
               [% IF cpac.tm.f.$col.extra('extjs_xtype') == 'checkbox' %]
