@@ -7,13 +7,3 @@
     function isCheck (c) {
         return !! CheckTable[c];
     }
-
-    // toolkit for checking for foreign keys
-    var FKTable = new Array();
-    [% FOREACH col IN cpac.tc.cols %]
-      [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
-      FKTable['[% col %]'] = 1;
-    [% END %]
-    function isFK (c) {
-        return !! FKTable[c];
-    }
