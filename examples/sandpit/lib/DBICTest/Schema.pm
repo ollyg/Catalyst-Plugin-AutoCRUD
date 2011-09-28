@@ -7,10 +7,7 @@ no warnings qw/qw/;
 
 __PACKAGE__->load_classes(qw/
   Artist
-  ArtistGUID
-  SequenceTest
   BindType
-  ComputedColumn
   Employee
   CD
   Genre
@@ -21,13 +18,11 @@ __PACKAGE__->load_classes(qw/
   Year2000CDs
   Year1999CDs
   Money
-  TimestampPrimaryKey
   /,
   { 'DBICTest::Schema' => [qw/
     LinerNotes
     Artwork
     Artwork_to_Artist
-    Image
     Lyrics
     LyricVersion
     OneKey
@@ -42,8 +37,8 @@ __PACKAGE__->load_classes(qw/
     'Producer',
     'CD_to_Producer',
   ),
-  qw/SelfRefAlias TreeLike TwoKeyTreeLike Event EventSmallDT NoPrimaryKey/,
-  qw/Collection CollectionObject TypedObject Owners BooksInLibrary/,
+  qw/SelfRefAlias Event NoPrimaryKey/,
+  qw/Collection CollectionObject Owners BooksInLibrary/,
   qw/ForceForeign Encoded PunctuatedColumnName/,
 );
 

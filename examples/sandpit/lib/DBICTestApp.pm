@@ -4,16 +4,17 @@ use strict;
 use warnings FATAL => 'all';
 
 use DBI;
-use File::Temp;
+#use File::Temp;
 
-use Class::Data::Inheritable
-;__PACKAGE__->mk_classdata('__dbfile');
+#use Class::Data::Inheritable
+#;__PACKAGE__->mk_classdata('__dbfile');
 
 use Catalyst qw(AutoCRUD);
 
-my $dbfile = File::Temp->new( UNLINK => 1, EXLOCK => 0);
+#my $dbfile = File::Temp->new( UNLINK => 1, EXLOCK => 0);
 # need to stash the filename so File::Temp doesn't clean it immediately
-__PACKAGE__->__dbfile($dbfile);
+#__PACKAGE__->__dbfile($dbfile);
+my $dbfile = 'examples/sandpit/dbictest.sql';
 
 __PACKAGE__->config(
     'Plugin::AutoCRUD' => {
