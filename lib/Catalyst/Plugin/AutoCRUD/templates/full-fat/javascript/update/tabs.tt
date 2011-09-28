@@ -63,7 +63,7 @@
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
-                    ,hiddenName: 'combobox.[% field | replace('\'', '\\\'') %]'
+                    ,hiddenName: 'combobox.[% orig_col %].[% field | replace('\'', '\\\'') %]'
                     ,loadingText: 'Searching...'
                     ,forceSelection: true
                     ,selectOnFocus: true

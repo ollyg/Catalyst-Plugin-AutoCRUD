@@ -212,18 +212,22 @@ sub list {
     while (my $row = $rs->next) {
         my $data = {};
         foreach my $col (@columns) {
-            if ($meta->f->{$col}->is_foreign_key
-                or $meta->f->{$col}->extra('is_reverse')) {
+            if (($meta->f->{$col}->is_foreign_key
+                or $meta->f->{$col}->extra('is_reverse'))
+                and not $meta->f->{$col}->extra('masked_by')) {
 
                 if ($meta->f->{$col}->extra('rel_type')
                     and $meta->f->{$col}->extra('rel_type') =~ m/many_to_many$/) {
 
                     my $link = $meta->f->{$col}->extra('via')->[0];
                     my $target = $meta->f->{$col}->extra('via')->[1];
-                    $data->{$col} = [ uniq sort map { _sfy($_) } map {$_->$target} $row->$link->all ];
+
+                    $data->{$col} = $row->can($link) ?
+                        [ uniq sort map { _sfy($_) } map {$_->$target} $row->$link->all ] : [];
                 }
                 elsif ($meta->f->{$col}->extra('rel_type')
                        and $meta->f->{$col}->extra('rel_type') =~ m/has_many$/) {
+
                     $data->{$col} = $row->can($col) ?
                         [ uniq sort map { _sfy($_) } $row->$col->all ] : [];
                 }
@@ -260,13 +264,13 @@ sub list {
         }
 
         if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
-            $c->log->debug( Dumper $data );
+            $c->log->debug( Dumper ['item:', $data] );
         }
         push @{$response->{rows}}, $data;
     }
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
-        $c->log->debug( Dumper $response->{rows} );
+        $c->log->debug( Dumper ['rows:', $response->{rows}] );
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
     }
 

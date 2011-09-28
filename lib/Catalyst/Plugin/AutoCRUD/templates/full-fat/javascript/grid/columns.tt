@@ -26,7 +26,8 @@
     // create the combo instances
     [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
-      [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+      [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'has_many'
+              OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
       [% NEXT IF cpac.tm.f.$col.extra('masked_by') %]
       var fk_combo_[% col | replace('\'', '\\\'') %] = new Ext.form.ComboBox ({
           valueField: 'dbid'
