@@ -7,9 +7,10 @@
 
     [% SET tab_order = [ cpac_table ] %]
     [% FOREACH col IN cpac.tc.cols %]
-      [% NEXT UNLESS cpac.tm.f.$col.extra('is_reverse')
-              AND cpac.tm.f.$col.extra('rel_type') == 'might_have' %]
-      [% tab_order.push(col) %]
+      [% NEXT UNLESS cpac.tm.f.$col.extra('rel_type') == 'belongs_to' %]
+      [% SET ref_table = cpac.tm.f.$col.extra('ref_table') %]
+      [% tab_order.push( ref_table ) %]
+      [% SET tab_names.$ref_table = cpac.tm.f.$col.extra('display_name') %]
     [% END %]
 
     var tabs = [
@@ -21,7 +22,7 @@
             [% IF tbl == cpac_table %]
               title: '[% conf.display_name %]'
             [% ELSE %]
-              title: 'New [% conf.display_name %]'
+              title: 'New [% tab_names.$tbl %]'
               ,xtype: 'fieldset'
               ,checkboxToggle: true
               ,checkboxName: 'checkbox.[% tbl %]'
