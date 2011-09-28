@@ -63,7 +63,7 @@
                     // doing this manually in a loop for each col index.
                     [% SET colidx = 0 %]
                     [% FOREACH col IN cpac.tc.cols %]
-                        [% IF cpac.tc.hidden_cols.exists(col) %]
+                        [% IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by') %]
                             cm.setHidden([% colidx %], true);
                         [% ELSE %]
                             cm.setHidden([% colidx %], false);

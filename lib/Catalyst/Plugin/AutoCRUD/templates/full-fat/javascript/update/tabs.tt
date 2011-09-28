@@ -31,7 +31,7 @@
             ,items: [
               [% SET count = 1 %]
               [% FOREACH field IN conf.cols %]
-              [% NEXT IF meta.f.$field.extra('is_reverse') %]
+              [% NEXT IF meta.f.$field.extra('is_reverse') OR meta.f.$field.extra('masked_by') %]
                 [% ',' IF count > 1 %]{
                 [% SET count = count + 1 %]
                   [% IF tbl == cpac_table %]
@@ -61,7 +61,8 @@
                   [% END %]
 
                   [% IF meta.f.$field.is_foreign_key
-                        AND meta.f.$field.foreign_key_reference.reference_table != cpac_table %]
+                        AND meta.f.$field.foreign_key_reference.reference_table != cpac_table
+                        AND NOT meta.f.$field.extra('masked_by') %]
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'

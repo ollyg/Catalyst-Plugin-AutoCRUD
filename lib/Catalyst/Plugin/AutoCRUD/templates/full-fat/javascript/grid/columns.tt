@@ -27,6 +27,7 @@
     [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
       [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+      [% NEXT IF cpac.tm.f.$col.extra('masked_by') %]
       var fk_combo_[% col | replace('\'', '\\\'') %] = new Ext.form.ComboBox ({
           valueField: 'dbid'
           ,displayField: 'stringified'
@@ -99,8 +100,9 @@
       [% FOREACH col IN cpac.tc.cols %]
         [% ',' IF NOT loop.first %]{
           header: '[% cpac.tc.headings.$col %]'
-          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) %]
-          [% IF cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
+          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by') %]
+          [% IF (NOT cpac.tm.f.$col.extra('masked_by'))
+                AND (cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse')) %]
             [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
             ,dataIndex: 'cpac-multi-column'
             ,align: 'center'
