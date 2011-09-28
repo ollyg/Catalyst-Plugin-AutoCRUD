@@ -195,17 +195,16 @@ sub list {
         $search_opts->{rows} = $limit;
     }
 
-    if ($ENV{AUTOCRUD_TRACE}) {
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         use Data::Dumper;
-        $c->log->debug( Dumper [$filter, $search_opts] ) if $c->debug;
+        $c->log->debug( Dumper [$filter, $search_opts] );
     }
 
     my $rs = $c->model($meta->extra('model'))->search($filter, $search_opts);
     $response->{rows} ||= [];
 
-    if ($ENV{AUTOCRUD_TRACE}) {
-        $c->model($meta->extra('model'))->result_source->storage->debug(1)
-            if $c->debug;
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(1);
     }
 
     # make data structure for JSON output
@@ -260,13 +259,15 @@ sub list {
             }
         }
 
+        if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+            $c->log->debug( Dumper $data );
+        }
         push @{$response->{rows}}, $data;
     }
 
-    if ($ENV{AUTOCRUD_TRACE}) {
-        $c->log->debug( Dumper $response->{rows} ) if $c->debug;
-        $c->model($meta->extra('model'))->result_source->storage->debug(0)
-            if $c->debug;
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->log->debug( Dumper $response->{rows} );
+        $c->model($meta->extra('model'))->result_source->storage->debug(0);
     }
 
     # sort col which cannot be passed to the DB

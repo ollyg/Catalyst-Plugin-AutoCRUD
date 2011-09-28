@@ -428,6 +428,8 @@ CREATE TABLE cd_artwork (
 
 INSERT INTO cd_artwork (cd_id) VALUES (1);
 
+INSERT INTO cd_artwork (cd_id) VALUES (2);
+
 --
 -- Table: liner_notes
 --

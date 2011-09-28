@@ -129,16 +129,18 @@
                         [%# need to carefully work through the SQLT methods to preseve ordering %]
                         [% IF cpac.tm.extra('pks').size > 1 %]
                           [% FOREACH fk IN cpac.m.t.$ft.f.$anyfk.foreign_key_reference.fields %]
+                            [% ',' IF count > 1 %]
+                            [% SET count = count + 1 %]
                             [% SET idx = loop.index %]
                             '[% ft %].[% fk %]':
                                 rec.data['[% cpac.m.t.$ft.f.$fk.foreign_key_reference.reference_fields.$idx %]']
                           [% END %]
                         [% ELSE %]
+                          [% ',' IF count > 1 %]
+                          [% SET count = count + 1 %]
                           '[% ft %].[% anyfk %]': rec.data['[% cpac.tm.extra('pks').first %]']
                         [% END %]
 
-                        [% ',' IF count > 1 %]
-                        [% SET count = count + 1 %]
                       [% END %]
                     });
                 }
