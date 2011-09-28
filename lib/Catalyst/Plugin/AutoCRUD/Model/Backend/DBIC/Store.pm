@@ -116,7 +116,8 @@ sub list {
     # we want to prefetch all related data for _sfy
     foreach my $rel (@columns) {
         next unless ($meta->f->{$rel}->is_foreign_key or $meta->f->{$rel}->extra('is_reverse'));
-        next if $meta->f->{$rel}->extra('rel_type') and $meta->f->{$rel}->extra('rel_type') eq 'many_to_many';
+        next if $meta->f->{$rel}->extra('rel_type') and $meta->f->{$rel}->extra('rel_type') =~ m/_many$/;
+        next if $meta->f->{$rel}->extra('masked_by');
         push @{$search_opts->{prefetch}}, $rel;
     }
 
@@ -194,14 +195,18 @@ sub list {
         $search_opts->{rows} = $limit;
     }
 
-    #use Data::Dumper;
-    #$c->log->debug( Dumper [$filter, $search_opts] );
+    if ($ENV{AUTOCRUD_TRACE}) {
+        use Data::Dumper;
+        $c->log->debug( Dumper [$filter, $search_opts] ) if $c->debug;
+    }
 
     my $rs = $c->model($meta->extra('model'))->search($filter, $search_opts);
     $response->{rows} ||= [];
 
-    #$c->model($meta->extra('model'))->result_source->storage->debug(1)
-    #    if $c->debug;
+    if ($ENV{AUTOCRUD_TRACE}) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(1)
+            if $c->debug;
+    }
 
     # make data structure for JSON output
     DBIC_ROW:
@@ -221,7 +226,7 @@ sub list {
                 elsif ($meta->f->{$col}->extra('rel_type')
                        and $meta->f->{$col}->extra('rel_type') =~ m/has_many$/) {
                     $data->{$col} = $row->can($col) ?
-                        [ map { _sfy($_) } $row->$col->all ] : [];
+                        [ uniq sort map { _sfy($_) } $row->$col->all ] : [];
                 }
                 else {
                     # here assume table names are sane perl identifiers
@@ -258,9 +263,11 @@ sub list {
         push @{$response->{rows}}, $data;
     }
 
-    #$c->log->debug( Dumper $response->{rows} );
-    #$c->model($meta->extra('model'))->result_source->storage->debug(0)
-    #    if $c->debug;
+    if ($ENV{AUTOCRUD_TRACE}) {
+        $c->log->debug( Dumper $response->{rows} ) if $c->debug;
+        $c->model($meta->extra('model'))->result_source->storage->debug(0)
+            if $c->debug;
+    }
 
     # sort col which cannot be passed to the DB
     if (exists $delay_page_sort{$sort}) {
