@@ -5,27 +5,27 @@
     // most of the messing about is to get the right form field types
     // also readonly, validation
 
-    [% SET tab_order = [ cpac_table ] %]
+    [% SET tab_order = [ '' ] %]
     [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.extra('rel_type') == 'belongs_to' %]
-      [% SET ref_table = cpac.tm.f.$col.extra('ref_table') %]
-      [% tab_order.push( ref_table ) %]
-      [% SET tab_names.$ref_table = cpac.tm.f.$col.extra('display_name') %]
+      [% tab_order.push( col ) %]
     [% END %]
 
     var tabs = [
-      [% FOREACH tbl IN tab_order %]
+      [% FOREACH orig_col IN tab_order %]
+        [% SET tbl = cpac.tm.f.$orig_col.extra('ref_table') || cpac_table %]
         [% SET conf = cpac.c.$cpac_db.t.$tbl %]
         [% SET meta = cpac.m.t.$tbl %]
+
         [% NEXT IF conf.create_allowed == 'no' OR conf.update_allowed == 'no' %]
-        [% ',' IF tbl != cpac_table %]{
-            [% IF tbl == cpac_table %]
+        [% ',' IF orig_col != '' %]{
+            [% IF orig_col == '' %]
               title: '[% conf.display_name %]'
             [% ELSE %]
-              title: 'New [% tab_names.$tbl %]'
+              title: 'New [% cpac.tm.f.$orig_col.extra('display_name') %]'
               ,xtype: 'fieldset'
               ,checkboxToggle: true
-              ,checkboxName: 'checkbox.[% tbl %]'
+              ,checkboxName: 'checkbox.[% orig_col %]'
               ,collapsed: true
             [% END %]
 
@@ -35,12 +35,12 @@
               [% NEXT IF meta.f.$field.extra('is_reverse') OR meta.f.$field.extra('masked_by') %]
                 [% ',' IF count > 1 %]{
                 [% SET count = count + 1 %]
-                  [% IF tbl == cpac_table %]
+                  [% IF orig_col == '' %]
                     name: '[% field | replace('\'', '\\\'') %]'
                     ,id: '[% field | replace('\'', '\\\'') %]'
                   [% ELSE %]
-                    name: '[% tbl %].[% field | replace('\'', '\\\'') %]'
-                    ,id: '[% tbl %].[% field | replace('\'', '\\\'') %]'
+                    name: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
+                    ,id: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
                   [% END %]
 
                     ,fieldLabel: '[% conf.headings.$field %]'
@@ -51,9 +51,7 @@
                     ,value: '[% meta.f.$field.default_value | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% IF meta.f.$field.is_auto_increment
-                        OR (meta.f.$field.is_foreign_key
-                            AND meta.f.$field.foreign_key_reference.reference_table == cpac_table) %]
+                  [% IF meta.f.$field.is_auto_increment %]
                     ,readOnly: true
                     ,cls: 'x-item-disabled'
                     //,disabled: true // argh, prevents submit :-( so use cls
@@ -61,9 +59,7 @@
                     ,allowBlank: false
                   [% END %]
 
-                  [% IF meta.f.$field.is_foreign_key
-                        AND meta.f.$field.foreign_key_reference.reference_table != cpac_table
-                        AND NOT meta.f.$field.extra('masked_by') %]
+                  [% IF meta.f.$field.is_foreign_key %]
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
@@ -77,7 +73,7 @@
                     ,store: new Ext.data.JsonStore ({
                         url: '[% c.uri_for(
                             c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
-                            [cpac.g.site,cpac_db,cpac_table]
+                            [cpac.g.site,cpac_db,tbl]
                         ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'

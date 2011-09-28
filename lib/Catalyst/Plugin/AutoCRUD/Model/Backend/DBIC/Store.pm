@@ -554,6 +554,11 @@ sub list_stringified {
     $response->{rows} = [ $pg->splice(\@data) ];
     $response->{total} = $pg->total_entries;
 
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        use Data::Dumper;
+        $c->log->debug( Dumper $response->{rows} );
+    }
+
     return $self;
 }
 
