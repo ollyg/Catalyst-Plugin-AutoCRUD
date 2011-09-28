@@ -141,8 +141,8 @@ sub list {
 
         # exact match on FK value (checked above)
         if ($meta->f->{$col}->is_foreign_key) {
-            my $const = $meta->f->{$col}->foreign_key_reference;
-            my %fmap = zip @{$const->reference_fields}, @{$const->fields};
+            my %fmap = zip @{$meta->f->{$col}->extra('ref_fields')},
+                           @{$meta->f->{$col}->extra('fields')};
             foreach my $i (split m/\000\000/, $val) {
                 my ($k, $v) = split m/\000/, $i;
                 $filter->{"me.$fmap{$k}"} = $v;
@@ -263,9 +263,9 @@ sub list {
             }
         }
 
-        if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
-            $c->log->debug( Dumper ['item:', $data] );
-        }
+        #if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        #    $c->log->debug( Dumper ['item:', $data] );
+        #}
         push @{$response->{rows}}, $data;
     }
 
