@@ -139,17 +139,6 @@ sub list {
         next if exists $delay_page_sort{$col};
         my $val = $c->req->params->{"search.$col"};
 
-        # exact match on FK value (checked above)
-        if ($meta->f->{$col}->is_foreign_key) {
-            my %fmap = zip @{$meta->f->{$col}->extra('ref_fields')},
-                           @{$meta->f->{$col}->extra('fields')};
-            foreach my $i (split m/\000\000/, $val) {
-                my ($k, $v) = split m/\000/, $i;
-                $filter->{"me.$fmap{$k}"} = $v;
-            }
-            next;
-        }
-
         # exact match on RR value (checked above)
         if ($meta->f->{$col}->extra('is_reverse')) {
             next if $meta->f->{$col}->extra('rel_type') eq 'many_to_many';
@@ -157,6 +146,17 @@ sub list {
             foreach my $i (split m/\000\000/, $val) {
                 my ($k, $v) = split m/\000/, $i;
                 $filter->{"$col.$k"} = $v;
+            }
+            next;
+        }
+
+        # exact match on FK value (checked above)
+        if ($meta->f->{$col}->is_foreign_key) {
+            my %fmap = zip @{$meta->f->{$col}->extra('ref_fields')},
+                           @{$meta->f->{$col}->extra('fields')};
+            foreach my $i (split m/\000\000/, $val) {
+                my ($k, $v) = split m/\000/, $i;
+                $filter->{"me.$fmap{$k}"} = $v;
             }
             next;
         }
@@ -230,6 +230,16 @@ sub list {
 
                     $data->{$col} = $row->can($col) ?
                         [ uniq sort map { _sfy($_) } $row->$col->all ] : [];
+
+                    # check filter on FK, might want to skip further processing/storage
+                    if (exists $c->req->params->{"search.$col"}
+                            and exists $delay_page_sort{$col}) {
+                        my $p_val = $c->req->params->{"search.$col"};
+                        my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
+
+                        next DBIC_ROW if 0 == scalar grep {$_ =~ m/$fk_match/}
+                                                          @{$data->{$col}};
+                    }
                 }
                 else {
                     # here assume table names are sane perl identifiers

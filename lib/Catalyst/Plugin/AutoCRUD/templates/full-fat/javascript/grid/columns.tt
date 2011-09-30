@@ -26,8 +26,7 @@
     // create the combo instances
     [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
-      [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'has_many'
-              OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+      [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
       [% NEXT IF cpac.tm.f.$col.extra('masked_by') %]
       var fk_combo_[% col | replace('\'', '\\\'') %] = new Ext.form.ComboBox ({
           valueField: 'dbid'
@@ -104,7 +103,7 @@
           [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by') %]
           [% IF (NOT cpac.tm.f.$col.extra('masked_by'))
                 AND (cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse')) %]
-            [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+            [% IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
             ,dataIndex: 'cpac-multi-column'
             ,align: 'center'
             ,sortable: false
@@ -112,6 +111,30 @@
             ,tooltip: 'Hover mouse over a cell<br />to show related data'
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
                 if (rowindex === 0 || record.get('[% col | replace('\'', '\\\'') %]').join('') === '') { return '' }
+                else {
+                    metadata.css += 'half-grey';
+                    metadata.attr += 'ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
+                        + record.get('[% col | replace('\'', '\\\'') %]').join('<br />') + '"';
+                    return '<img ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
+                        + record.get('[% col | replace('\'', '\\\'') %]').join('<br />')
+                        + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
+                        + ' Show';
+                }
+            }
+            [% ELSIF cpac.tm.f.$col.extra('rel_type') == 'has_many' %]
+            ,dataIndex: '[% col | replace('\'', '\\\'') %]'
+            ,editor: fk_combo_[% col | replace('\'', '\\\'') %] //reference to combo instance
+            ,sortable: false
+            ,menuDisabled: true
+            ,tooltip: 'Hover mouse over a cell<br />to show related data'
+            ,renderer: function (value,metadata,record,rowindex,colindex,store) {
+                if (rowindex === 0) {
+                    var combo = fk_combo_[% col %]
+                    var rec = combo.findRecord(combo.valueField, value);
+                    var retval = rec ? rec.get(combo.displayField) : value;
+                    return (retval.indexOf(fk_combo_comment) !== -1) ? value : retval;
+                }
+                else if (record.get('[% col | replace('\'', '\\\'') %]').join('') === '') { return '' }
                 else {
                     metadata.css += 'half-grey';
                     metadata.attr += 'ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
