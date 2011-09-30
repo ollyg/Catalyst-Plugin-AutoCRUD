@@ -11,7 +11,7 @@
 
     // create the Data Store
     var store = new Ext.data.JsonStore({
-        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [site,db,lf.main.path] ) %]'
+        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [site,db,lf.main.path], c.req.query_params ) %]'
         ,root: 'rows'
         ,fields: rowRecord
         ,remoteSort: true
