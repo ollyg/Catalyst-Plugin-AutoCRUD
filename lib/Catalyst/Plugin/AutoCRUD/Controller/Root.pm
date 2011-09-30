@@ -39,6 +39,14 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
         $c->log->debug("autocrud: generated global dispatch table") if $c->debug;
     }
 
+    # we get a list of params if there are filter items in the query string
+    # and the user then also sets a filter - allow grid filter to override
+    foreach my $k (%{ $c->req->params }) {
+        next unless $k =~ m/^cpac_/
+            and ref $c->req->params->{$k} eq ref [];
+        $c->req->params->{$k} = pop @{ $c->req->params->{$k} };
+    }
+
     # cpac.c.<schema>.t.<source>.<property>
     $c->stash->{cpac}->{c} = $self->_site_conf_cache->{dispatch};
 }

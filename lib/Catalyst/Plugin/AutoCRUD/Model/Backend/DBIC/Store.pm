@@ -124,20 +124,20 @@ sub list {
     # use of FK or RR partial text filter must disable the DB-side page/sort
     my %delay_page_sort = ();
     foreach my $p (keys %{$c->req->params}) {
-        next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
+        next unless (my $col) = ($p =~ m/^cpac_filter\.([\w ]+)/);
         next unless exists $meta->f->{$col}
             and ($meta->f->{$col}->is_foreign_key or $meta->f->{$col}->extra('is_reverse'));
 
         $delay_page_sort{$col} += 1
-            if $c->req->params->{"search.$col"} !~ m/\000/;
+            if $c->req->params->{"cpac_filter.$col"} !~ m/\000/;
     }
 
     # find filter fields in UI form that can be passed to DB
     foreach my $p (keys %{$c->req->params}) {
-        next unless (my $col) = ($p =~ m/^search\.([\w ]+)/);
+        next unless (my $col) = ($p =~ m/^cpac_filter\.([\w ]+)/);
         next unless exists $meta->f->{$col};
         next if exists $delay_page_sort{$col};
-        my $val = $c->req->params->{"search.$col"};
+        my $val = $c->req->params->{"cpac_filter.$col"};
 
         # exact match on RR value (checked above)
         if ($meta->f->{$col}->extra('is_reverse')) {
@@ -164,7 +164,7 @@ sub list {
         # for numberish types the case insensitive functions may not work
         if ($meta->f->{$col}->extra('extjs_xtype')
             and $meta->f->{$col}->extra('extjs_xtype') eq 'numberfield') {
-            $filter->{"me.$col"} = $c->req->params->{"search.$col"};
+            $filter->{"me.$col"} = $c->req->params->{"cpac_filter.$col"};
             next;
         }
 
@@ -172,14 +172,14 @@ sub list {
         $filter->{"me.$col"} = {
             # find whether this DMBS supports ILIKE or just LIKE
             _likeop_for($c->model($meta->extra('model')))
-                => '%'. $c->req->params->{"search.$col"} .'%'
+                => '%'. $c->req->params->{"cpac_filter.$col"} .'%'
         };
     }
 
     # any sort on FK -must- disable DB-side paging, unless we already know the
     # supplied filter is a legitimate PK of the related table
     if (($meta->f->{$sort}->is_foreign_key or $meta->f->{$sort}->extra('is_reverse'))
-            and not (exists $c->req->params->{"search.$sort"} and not exists $delay_page_sort{$sort})) {
+            and not (exists $c->req->params->{"cpac_filter.$sort"} and not exists $delay_page_sort{$sort})) {
         $delay_page_sort{$sort} += 1;
     }
 
@@ -232,9 +232,9 @@ sub list {
                         [ uniq sort map { _sfy($_) } $row->$col->all ] : [];
 
                     # check filter on FK, might want to skip further processing/storage
-                    if (exists $c->req->params->{"search.$col"}
+                    if (exists $c->req->params->{"cpac_filter.$col"}
                             and exists $delay_page_sort{$col}) {
-                        my $p_val = $c->req->params->{"search.$col"};
+                        my $p_val = $c->req->params->{"cpac_filter.$col"};
                         my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
 
                         next DBIC_ROW if 0 == scalar grep {$_ =~ m/$fk_match/}
@@ -246,9 +246,9 @@ sub list {
                     $data->{$col} = _sfy($row->$col);
 
                     # check filter on FK, might want to skip further processing/storage
-                    if (exists $c->req->params->{"search.$col"}
+                    if (exists $c->req->params->{"cpac_filter.$col"}
                             and exists $delay_page_sort{$col}) {
-                        my $p_val = $c->req->params->{"search.$col"};
+                        my $p_val = $c->req->params->{"cpac_filter.$col"};
                         my $fk_match = ($p_val ? qr/\Q$p_val\E/i : qr/./);
 
                         next DBIC_ROW if $data->{$col} !~ m/$fk_match/;
@@ -314,8 +314,8 @@ sub list {
             $searchrow{$col} = '';
         }
         else {
-            if (exists $c->req->params->{ 'search.'. $col }) {
-                $searchrow{$col} = $c->req->params->{ 'search.'. $col };
+            if (exists $c->req->params->{ 'cpac_filter.'. $col }) {
+                $searchrow{$col} = $c->req->params->{ 'cpac_filter.'. $col };
             }
             else {
                 $searchrow{$col} = '(click to add filter)';
