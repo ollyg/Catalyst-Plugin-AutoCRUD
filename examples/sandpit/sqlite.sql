@@ -229,14 +229,15 @@ INSERT INTO producer (name) VALUES ('amanda');
 --
 CREATE TABLE self_ref (
   id INTEGER PRIMARY KEY NOT NULL,
-  name varchar(100) NOT NULL
+  name varchar(100) NOT NULL,
+  self_ref_id INTEGER
 );
 
 INSERT INTO self_ref (name) VALUES ('harry');
 
-INSERT INTO self_ref (name) VALUES ('bob');
+INSERT INTO self_ref (name, self_ref_id) VALUES ('bob', 2);
 
-INSERT INTO self_ref (name) VALUES ('jim');
+INSERT INTO self_ref (name, self_ref_id) VALUES ('jim', 1);
 
 --
 -- Table: serialized

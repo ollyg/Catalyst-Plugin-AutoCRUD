@@ -13,9 +13,13 @@ __PACKAGE__->add_columns(
     data_type => 'varchar',
     size      => 100,
   },
+  'self_ref_id' => {
+    data_type => 'integer',
+  },
 );
 __PACKAGE__->set_primary_key('id');
 
+__PACKAGE__->belongs_to( self_ref => 'DBICTest::Schema::SelfRef' => 'self_ref_id', { join_type => 'left' } );
 __PACKAGE__->has_many( aliases => 'DBICTest::Schema::SelfRefAlias' => 'self_ref' );
 
 1;
