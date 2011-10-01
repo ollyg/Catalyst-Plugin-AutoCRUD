@@ -3,6 +3,19 @@
 -- Created on Sat Jun 11 00:39:51 2011
 -- 
 
+CREATE TABLE punctuated_column_name (
+    id INTEGER PRIMARY KEY NOT NULL,
+    "foo ' bar" INTEGER,
+    'bar/baz' INTEGER,
+    'baz;quux' INTEGER
+);
+
+CREATE INDEX punctuated_column_name_id ON punctuated_column_name (id);
+
+INSERT INTO punctuated_column_name ("foo ' bar", 'bar/baz', 'baz;quux') VALUES (1,2,3);
+
+INSERT INTO punctuated_column_name ("foo ' bar", 'bar/baz', 'baz;quux') VALUES (4,5,6);
+
 --
 -- Table: images
 --
