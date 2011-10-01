@@ -19,6 +19,8 @@ sub filter {
         next unless $source->isa('DBIx::Class::ResultSource::View');
 
         my $tbl = $sqlt->add_table(name => lc $tbl_name);
+        $tbl->extra(is_read_only => 1);
+
         foreach my $field ($source->columns) {
             $tbl->add_field(
                 name => lc $field,

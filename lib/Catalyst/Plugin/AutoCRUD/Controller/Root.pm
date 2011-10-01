@@ -159,6 +159,18 @@ sub bootstrap : Private {
     $c->forward('build_site_config');
     $c->forward('acl');
     $c->forward('do_meta');
+
+    # support for tables with no pks
+    $c->stash->{cpac}->{g}->{default_sort} = ((scalar @{$c->stash->{cpac}->{tm}->extra('pks')})
+        ? $c->stash->{cpac}->{tm}->extra('pks')->[0] : $c->stash->{cpac}->{tc}->{cols}->[0]);
+
+    # tables that are backend read-only (e.g. views) disallow modification
+    foreach my $t (keys %{$c->stash->{cpac}->{m}->t}) {
+        next unless $c->stash->{cpac}->{m}->t->{$t}->extra('is_read_only');
+        $c->log->debug($t);
+        $c->stash->{cpac}->{c}->{ $c->stash->{cpac}->{g}->{db} }->{t}->{$t}->{$_} = 'no'
+            for qw/create_allowed update_allowed delete_allowed/;
+    }
 }
 
 # build site config for filtering the frontend
@@ -331,8 +343,6 @@ sub do_meta : Private {
     $c->stash->{cpac_table} = $table;
     $c->stash->{cpac}->{tm} = $c->stash->{cpac}->{m}->t->{$table};
     $c->stash->{cpac}->{tc} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
-    $c->stash->{cpac}->{g}->{default_sort} = ((scalar @{$c->stash->{cpac}->{tm}->extra('pks')})
-        ? $c->stash->{cpac}->{tm}->extra('pks')->[0] : $c->stash->{cpac}->{tc}->{cols}->[0]);
     weaken $c->stash->{cpac}->{tm};
     weaken $c->stash->{cpac}->{tc};
 }
