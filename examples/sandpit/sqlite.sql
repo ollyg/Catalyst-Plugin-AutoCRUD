@@ -393,7 +393,7 @@ INSERT INTO cd (cdid, artist, title, year)
     VALUES (1, 1, "Spoonful of bees", 1999);
 
 INSERT INTO cd (cdid, artist, title, year)
-    VALUES (2, 1, "Forkful of bees", 2001);
+    VALUES (2, 1, "Forkful of bees", 2000);
 
 INSERT INTO cd (cdid, artist, title, year)
     VALUES (3, 1, "Caterwaulin' Blues", 1997);
