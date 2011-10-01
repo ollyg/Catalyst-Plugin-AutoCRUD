@@ -63,7 +63,9 @@
                     // doing this manually in a loop for each col index.
                     [% SET colidx = 0 %]
                     [% FOREACH col IN cpac.tc.cols %]
-                        [% IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by') %]
+                        [% SET link = cpac.tm.f.$col.extra('ref_table') %]
+                        [% IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by')
+                            OR (link.defined AND (cpac.tm.f.$col.extra('rel_type') == 'has_many') AND (NOT cpac.m.t.$link.is_data)) %]
                             cm.setHidden([% colidx %], true);
                         [% ELSE %]
                             cm.setHidden([% colidx %], false);

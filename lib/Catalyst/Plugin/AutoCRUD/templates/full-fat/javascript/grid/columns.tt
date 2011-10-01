@@ -110,7 +110,9 @@
       [% FOREACH col IN cpac.tc.cols %]
         [% ',' IF NOT loop.first %]{
           header: '[% cpac.tc.headings.$col %]'
-          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by') %]
+          [% SET link = cpac.tm.f.$col.extra('ref_table') %]
+          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by')
+                OR (link.defined AND (cpac.tm.f.$col.extra('rel_type') == 'has_many') AND (NOT cpac.m.t.$link.is_data)) %]
           [% IF (NOT cpac.tm.f.$col.extra('masked_by'))
                 AND (cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse')) %]
             [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' 
@@ -122,7 +124,7 @@
             ,tooltip: 'Hover mouse over a cell<br />to show related data'
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
                 if (rowindex === 0) {
-                    var combo = fk_combo_[% col %]
+                    var combo = fk_combo_[% col | replace('\'', '\\\'') %]
                     var rec = combo.findRecord(combo.valueField, value);
                     var retval = rec ? rec.get(combo.displayField) : value;
                     return (retval.indexOf(fk_combo_comment) !== -1) ? value : retval;

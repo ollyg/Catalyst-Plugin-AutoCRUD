@@ -169,6 +169,7 @@ sub list {
         }
 
         # for numberish types the case insensitive functions may not work
+        # plus, an exact match is probably what the user wants (i.e. 1 not 1*)
         if ($meta->f->{$col}->extra('extjs_xtype')
             and $meta->f->{$col}->extra('extjs_xtype') eq 'numberfield') {
             $filter->{"me.$col"} = $c->req->params->{"cpac_filter.$col"};
