@@ -141,8 +141,15 @@ sub list {
 
         # exact match on RR value (checked above)
         if ($meta->f->{$col}->extra('is_reverse')) {
-            next if $meta->f->{$col}->extra('rel_type') eq 'many_to_many';
-            push @{$search_opts->{join}}, $col;
+            if ($meta->f->{$col}->extra('rel_type') eq 'many_to_many') {
+                push @{$search_opts->{join}},
+                    {@{ $meta->f->{$col}->extra('via') }};
+                $col = $meta->f->{$col}->extra('via')->[1];
+            }
+            else {
+                push @{$search_opts->{join}}, $col;
+            }
+
             foreach my $i (split m/\000\000/, $val) {
                 my ($k, $v) = split m/\000/, $i;
                 $filter->{"$col.$k"} = $v;

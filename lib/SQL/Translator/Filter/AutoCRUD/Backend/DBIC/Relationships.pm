@@ -119,7 +119,7 @@ sub filter {
             foreach my $lrel (keys %{$rels->{$link}}) {
                 next if $rels->{$link}->{$lrel}->{ref_table} eq $from;
                 $new_cols->{ $rels->{$link}->{$lrel}->{ref_table} } = {
-                    name => $rels->{$link}->{$lrel}->{ref_table},
+                    name => $lrel,
                     rel_type => 'many_to_many',
                     via => [$r, $lrel],
                 };

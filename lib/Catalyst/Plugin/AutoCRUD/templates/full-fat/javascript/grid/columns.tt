@@ -26,7 +26,6 @@
     // create the combo instances
     [% FOREACH col IN cpac.tc.cols %]
       [% NEXT UNLESS cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse') %]
-      [% NEXT IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
       [% NEXT IF cpac.tm.f.$col.extra('masked_by') %]
       var fk_combo_[% col | replace('\'', '\\\'') %] = new Ext.form.ComboBox ({
           valueField: 'dbid'
@@ -43,10 +42,17 @@
           ,listClass: 'x-combo-list-small'
           ,lastQuery: ''
           ,store: new Ext.data.JsonStore ({
-              url: '[% c.uri_for(
-                          c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
-                          [cpac.g.site,cpac_db,cpac_table]
-                   ) %]'
+              [% IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+                url: '[% c.uri_for(
+                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            [ cpac.g.site, cpac_db, cpac.tm.f.$col.extra('via').0 ]
+                     ) %]'
+              [% ELSE %]
+                url: '[% c.uri_for(
+                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            [ cpac.g.site, cpac_db, cpac_table ]
+                     ) %]'
+              [% END %]
               ,root: 'rows'
               ,totalProperty: 'total'
               ,fields: [ 'dbid', 'stringified' ]
@@ -55,7 +61,11 @@
                       var start = options.params.start;
                       var limit = options.params.limit;
                       options.params.page = Math.floor(start / limit) + 1;
-                      options.params.fkname = '[% col | replace('\'', '\\\'') %]';
+                      [% IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+                        options.params.fkname = '[% cpac.tm.f.$col.extra('via').1 | replace('\'', '\\\'') %]';
+                      [% ELSE %]
+                        options.params.fkname = '[% col | replace('\'', '\\\'') %]';
+                      [% END %]
                       if (fk_combo_[% col | replace('\'', '\\\'') %].getRawValue() && (options.params.page === 1)) {
                           // so that we can hack in an extra row
                           options.params.limit = 9;
@@ -103,25 +113,8 @@
           [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by') %]
           [% IF (NOT cpac.tm.f.$col.extra('masked_by'))
                 AND (cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse')) %]
-            [% IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
-            ,dataIndex: 'cpac-multi-column'
-            ,align: 'center'
-            ,sortable: false
-            ,menuDisabled: true
-            ,tooltip: 'Hover mouse over a cell<br />to show related data'
-            ,renderer: function (value,metadata,record,rowindex,colindex,store) {
-                if (rowindex === 0 || record.get('[% col | replace('\'', '\\\'') %]').join('') === '') { return '' }
-                else {
-                    metadata.css += 'half-grey';
-                    metadata.attr += 'ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
-                        + record.get('[% col | replace('\'', '\\\'') %]').join('<br />') + '"';
-                    return '<img ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
-                        + record.get('[% col | replace('\'', '\\\'') %]').join('<br />')
-                        + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
-                        + ' Show';
-                }
-            }
-            [% ELSIF cpac.tm.f.$col.extra('rel_type') == 'has_many' %]
+            [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' 
+                OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
             ,dataIndex: '[% col | replace('\'', '\\\'') %]'
             ,editor: fk_combo_[% col | replace('\'', '\\\'') %] //reference to combo instance
             ,sortable: false
@@ -141,7 +134,8 @@
                         + record.get('[% col | replace('\'', '\\\'') %]').join('<br />') + '"';
                     return '<img ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
                         + record.get('[% col | replace('\'', '\\\'') %]').join('<br />')
-                        + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "magnifier.png" ) %]" />'
+                        + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                                        "magnifier.png" ) %]" />'
                         + ' Show';
                 }
             }
@@ -157,10 +151,12 @@
               [% IF cpac.tm.f.$col.extra('extjs_xtype') == 'checkbox' %]
                 if (rowindex === 0) { return '' }
                 if (value == '1') {
-                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bullet_green.png" ) %]" />';
+                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                                        "bullet_green.png" ) %]" />';
                 }
                 else {
-                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bullet_red.png" ) %]" />';
+                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                                        "bullet_red.png" ) %]" />';
                 }
               [% ELSE %]
                 return value;
@@ -184,7 +180,8 @@
                         + ' [% cpac.tm.extra('pks').first %](' + record.get('[% cpac.tm.extra('pks').first %]') + ')"';
                     return '<img ext:qtitle="Delete" ext:qtip="'
                         + ' [% cpac.tm.extra('pks').first %](' + record.get('[% cpac.tm.extra('pks').first %]') + ')"'
-                        + ' src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "bin_closed.png" ) %]" />';
+                        + ' src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                                        "bin_closed.png" ) %]" />';
                 }
             }
         }
