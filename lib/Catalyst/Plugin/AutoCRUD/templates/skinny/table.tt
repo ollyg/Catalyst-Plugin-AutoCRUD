@@ -20,7 +20,7 @@
               &uarr;
             [% END %]
           [% END %]
-        [% ELSIF col == cpac.tm.extra('pks').first %]
+        [% ELSIF col == cpac.g.default_sort %]
               &darr;
         [% END %]
 

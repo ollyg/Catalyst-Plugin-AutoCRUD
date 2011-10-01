@@ -16,7 +16,7 @@
     });
 
     // set default sort if we can
-    store.setDefaultSort('[% cpac.tm.extra('pks').first %]', 'ASC');
+    store.setDefaultSort('[% cpac.g.default_sort %]', 'ASC');
 
     // hook to add page num param
     // got this from the extjs forums

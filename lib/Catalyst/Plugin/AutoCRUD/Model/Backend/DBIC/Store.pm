@@ -111,7 +111,9 @@ sub list {
     my $filter = {}; my $search_opts = {};
 
     # sanity check the sort param
-    $sort = $meta->extra('pks')->[0] if $sort !~ m/^[\w ]+$/ or !exists $meta->f->{$sort};
+    unless (defined $sort and $sort =~ m/^[\w ]+$/ and exists $meta->f->{$sort}) {
+        $sort = $c->stash->{cpac}->{g}->{default_sort};
+    }
 
     # we want to prefetch all related data for _sfy
     foreach my $rel (@columns) {

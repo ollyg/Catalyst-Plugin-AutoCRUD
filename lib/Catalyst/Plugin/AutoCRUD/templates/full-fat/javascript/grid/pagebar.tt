@@ -53,7 +53,7 @@
                     // clear search opts
                     store.baseParams = {};
                     // private? clear sorting config
-                    store.sortInfo = { field: '[% cpac.tm.extra('pks').first %]', direction: 'ASC' }
+                    store.sortInfo = { field: '[% cpac.g.default_sort %]', direction: 'ASC' }
                     // reset page size to default of 10
                     pagebar.pageSize = 10;
                     Ext.getCmp('pgsz-combo').setValue(10);

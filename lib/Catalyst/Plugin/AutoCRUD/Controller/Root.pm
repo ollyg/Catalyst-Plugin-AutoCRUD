@@ -331,6 +331,8 @@ sub do_meta : Private {
     $c->stash->{cpac_table} = $table;
     $c->stash->{cpac}->{tm} = $c->stash->{cpac}->{m}->t->{$table};
     $c->stash->{cpac}->{tc} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
+    $c->stash->{cpac}->{g}->{default_sort} = ((scalar @{$c->stash->{cpac}->{tm}->extra('pks')})
+        ? $c->stash->{cpac}->{tm}->extra('pks')->[0] : $c->stash->{cpac}->{tc}->{cols}->[0]);
     weaken $c->stash->{cpac}->{tm};
     weaken $c->stash->{cpac}->{tc};
 }
