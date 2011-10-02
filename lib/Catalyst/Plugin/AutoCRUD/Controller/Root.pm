@@ -102,6 +102,7 @@ sub no_schema : Chained('site') PathPart('') Args(0) {
 sub schema : Chained('site') PathPart CaptureArgs(1) {
     my ($self, $c, $db) = @_;
     $c->stash->{cpac}->{g}->{db} = $db;
+    $c->detach('err_message') unless exists $c->stash->{cpac}->{c}->{$db};
 }
 
 sub no_source : Chained('schema') PathPart('') Args(0) {
@@ -147,6 +148,13 @@ sub err_message : Private {
         $c->stash->{cpac}->{g}->{db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
         $c->stash->{cpac_db} = $c->stash->{cpac}->{g}->{db};
     }
+    elsif (!exists $c->stash->{cpac}->{c}->{ $c->stash->{cpac}->{g}->{db} }) {
+        delete $c->stash->{cpac}->{g}->{db};
+        delete $c->stash->{cpac_db};
+    }
+
+    delete $c->stash->{cpac}->{g}->{table};
+    delete $c->stash->{cpac_table};
 
     $c->stash->{template} = 'tables.tt';
 }
@@ -154,7 +162,10 @@ sub err_message : Private {
 # just to factor out the pulling of conf and meta from package caches
 sub bootstrap : Private {
     my ($self, $c, $table) = @_;
+
+    my $db = $c->stash->{cpac}->{g}->{db};
     $c->stash->{cpac}->{g}->{table} = $table;
+    $c->detach('err_message') unless exists $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
 
     $c->forward('build_site_config');
     $c->forward('acl');
@@ -167,7 +178,7 @@ sub bootstrap : Private {
     # tables that are backend read-only (e.g. views) disallow modification
     foreach my $t (keys %{$c->stash->{cpac}->{m}->t}) {
         next unless $c->stash->{cpac}->{m}->t->{$t}->extra('is_read_only');
-        $c->stash->{cpac}->{c}->{ $c->stash->{cpac}->{g}->{db} }->{t}->{$t}->{$_} = 'no'
+        $c->stash->{cpac}->{c}->{$db}->{t}->{$t}->{$_} = 'no'
             for qw/create_allowed update_allowed delete_allowed/;
     }
 }
