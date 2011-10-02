@@ -1,9 +1,10 @@
     // create a data record
     var rowRecord = Ext.data.Record.create([
       [% FOREACH col IN cpac.tc.cols %]
-        [% ',' IF NOT loop.first %]
-        { name: '[% col | replace('\'', '\\\'') %]' }
+      [%- ',' IF NOT loop.first %]{ name: '[% col | replace('\'', '\\\'') %]' }
       [% END %]
+      ,{ name: 'cpac__id' }
+      ,{ name: 'cpac__display_name' }
     ]);
 
     // create the Data Store

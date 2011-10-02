@@ -286,12 +286,11 @@ sub list {
         #if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         #    $c->log->debug( Dumper ['item:', $data] );
         #}
-        push @{$response->{rows}}, $data;
-    }
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
-        $c->log->debug( Dumper ['rows:', $response->{rows}] );
-        $c->model($meta->extra('model'))->result_source->storage->debug(0);
+        # these are used for delete and update to overcome ExtJS single col PK
+        $data->{cpac__id} = _create_ID($row);
+        $data->{cpac__display_name} = _sfy($row);
+        push @{$response->{rows}}, $data;
     }
 
     # sort col which cannot be passed to the DB
@@ -333,6 +332,11 @@ sub list {
         }
     }
     unshift @{$response->{rows}}, \%searchrow;
+
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->log->debug( Dumper $response );
+        $c->model($meta->extra('model'))->result_source->storage->debug(0);
+    }
 
     return $self;
 }

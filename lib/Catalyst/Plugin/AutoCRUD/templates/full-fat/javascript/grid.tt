@@ -33,7 +33,6 @@
             cellclick: function(g, row, col) {
                 var rec = g.getStore().getAt(row);
                 var fieldName = g.getColumnModel().getDataIndex(col);
-                // var data = rec.get(fieldName);
 
                 // reset the grid selectionModel
                 g.getSelectionModel().deselectRow(row);
@@ -50,10 +49,9 @@
                         return false;
                     }
 
-                    var data = rec.get('[% cpac.tm.extra('pks').first %]');
                     Ext.MessageBox.confirm (
                         'Confirm Delete [% cpac.tc.display_name %]'
-                        ,'Are you sure you want to delete [% cpac.tc.display_name %] [% cpac.tm.extra('pks').first %](' + data + ')?'
+                        ,"Are you sure you want to delete '" + rec.get('cpac__display_name') + "'?"
                         ,function (btn) {
                             if (btn == 'yes') {
                                 grid.loadMask.el.mask();
@@ -63,7 +61,7 @@
                                         [cpac.g.site,cpac_db,cpac_table]
                                     ) %]'
                                     ,params: {
-                                        key: data
+                                        key: rec.get('cpac__id')
                                     }
                                     ,success: function(response,options) {
                                         grid.loadMask.el.unmask();

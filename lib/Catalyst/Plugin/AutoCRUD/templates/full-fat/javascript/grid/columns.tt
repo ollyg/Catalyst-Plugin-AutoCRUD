@@ -177,10 +177,8 @@
             ,renderer: function (value,metadata,record,rowindex,colindex,store) {
                 if (rowindex === 0) { return '' }
                 else {
-                    metadata.attr += 'ext:qtitle="Delete" ext:qtip="'
-                        + ' [% cpac.tm.extra('pks').first %](' + record.get('[% cpac.tm.extra('pks').first %]') + ')"';
-                    return '<img ext:qtitle="Delete" ext:qtip="'
-                        + ' [% cpac.tm.extra('pks').first %](' + record.get('[% cpac.tm.extra('pks').first %]') + ')"'
+                    metadata.attr += 'ext:qtitle="Delete" ext:qtip="' + record.get('cpac__display_name') + '"';
+                    return '<img ext:qtitle="Delete" ext:qtip="' + record.get('cpac__display_name') + '"'
                         + ' src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
                                         "bin_closed.png" ) %]" />';
                 }
