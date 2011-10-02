@@ -25,6 +25,7 @@ sub rpc_browse : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
 sub table : Chained('/autocrud/root/db') PathPart('') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('/autocrud/root/source');
+    $c->stash->{cpac}->{g}->{backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # re-set the template and some params defaults for Skinny frontend

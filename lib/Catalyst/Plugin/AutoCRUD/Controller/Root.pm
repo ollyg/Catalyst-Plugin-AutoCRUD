@@ -167,7 +167,6 @@ sub bootstrap : Private {
     # tables that are backend read-only (e.g. views) disallow modification
     foreach my $t (keys %{$c->stash->{cpac}->{m}->t}) {
         next unless $c->stash->{cpac}->{m}->t->{$t}->extra('is_read_only');
-        $c->log->debug($t);
         $c->stash->{cpac}->{c}->{ $c->stash->{cpac}->{g}->{db} }->{t}->{$t}->{$_} = 'no'
             for qw/create_allowed update_allowed delete_allowed/;
     }
