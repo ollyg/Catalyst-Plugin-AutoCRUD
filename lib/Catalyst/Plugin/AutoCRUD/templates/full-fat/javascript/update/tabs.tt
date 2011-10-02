@@ -34,15 +34,20 @@
               [% FOREACH field IN conf.cols %]
               [% NEXT IF meta.f.$field.extra('is_reverse') OR meta.f.$field.extra('masked_by') %]
                 [% ',' IF count > 1 %]{
-                [% SET count = count + 1 %]
                   [% IF orig_col == '' %]
+                    [% IF count == 1 %]
+                    name: 'cpac__id'
+                    ,id: 'cpac__id'
+                    ,xtype: 'hidden'
+                    },{
+                    [% END %]
                     name: '[% field | replace('\'', '\\\'') %]'
                     ,id: '[% field | replace('\'', '\\\'') %]'
                   [% ELSE %]
                     name: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
                     ,id: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
                   [% END %]
-
+                  [% SET count = count + 1 %]
                   [% IF meta.f.$field.is_auto_increment %]
                     ,xtype: 'hidden'
                   }[% NEXT %]
