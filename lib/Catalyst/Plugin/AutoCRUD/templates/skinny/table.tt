@@ -1,7 +1,8 @@
 <table class="cpac_table">
     <tr>
     [% FOR col IN cpac.tc.cols %]
-        [% NEXT IF cpac.tc.hidden_cols.exists(col) %]
+        [% NEXT IF cpac.tc.hidden_cols.exists(col)
+            OR (cpac.tm.f.$col.extra('is_reverse') AND cpac.tm.f.$col.extra('rel_type').match('_many')) %]
         <th class="cpac_table_header">
         [% SET qp = "?sort=" _ col %]
         [% SET qp = qp _ "&page=" _ cpac_skinny_pager.current_page IF cpac_skinny_pager %]

@@ -115,8 +115,7 @@
                 OR (link.defined AND (cpac.tm.f.$col.extra('rel_type') == 'has_many') AND (NOT cpac.m.t.$link.is_data)) %]
           [% IF (NOT cpac.tm.f.$col.extra('masked_by'))
                 AND (cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse')) %]
-            [% IF cpac.tm.f.$col.extra('rel_type') == 'has_many' 
-                OR cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
+            [% IF cpac.tm.f.$col.extra('rel_type').match('_many') %]
             ,dataIndex: '[% col | replace('\'', '\\\'') %]'
             ,editor: fk_combo_[% col | replace('\'', '\\\'') %] //reference to combo instance
             ,sortable: false
