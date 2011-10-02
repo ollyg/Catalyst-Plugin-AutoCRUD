@@ -516,20 +516,31 @@ sub _process_row_stack {
 
 sub delete {
     my ($self, $c) = @_;
-    my $cpac = $c->stash->{cpac_meta};
+    my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
-    my $params = $c->req->params;
+    my $key = $c->req->params->{key};
 
-    my $row = eval { $c->model($cpac->{model})->find($params->{key}) };
+    my $filter = {};
+    foreach my $i (split m/\000\000/, $key) {
+        my ($k, $v) = split m/\000/, $i;
+        $filter->{$k} = $v;
+    }
 
-    if (blessed $row) {
-        $row->delete;
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(1);
+    }
+    my $row = eval { $c->model($meta->extra('model'))->find($filter) };
+
+    if (blessed $row and eval {$row->delete}) {
         $response->{'success'} = 1;
     }
     else {
         $response->{'success'} = 0;
     }
 
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(0);
+    }
     return $self;
 }
 
