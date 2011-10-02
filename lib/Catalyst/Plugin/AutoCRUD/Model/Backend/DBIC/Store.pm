@@ -381,7 +381,7 @@ sub _update_txn {
 
     COL: foreach my $col (@{$meta->extra('fields')}) {
         my $ci = $meta->f->{$col};
-        next COL if $ci->extra('is_reverse');
+        next COL if $ci->extra('is_reverse') or $ci->extra('masked_by');
 
         if ($ci->is_foreign_key) {
             my $link = $c->stash->{cpac}->{m}->t->{ $ci->extra('ref_table') };
@@ -390,7 +390,7 @@ sub _update_txn {
             if (exists $params->{'checkbox.' . $col}) {
                 foreach my $fcol (@{$link->extra('fields')}) {
                     my $fci = $link->f->{$fcol};
-                    next if $fci->extra('is_reverse');
+                    next if $fci->extra('is_reverse') or $fci->extra('masked_by');
 
                     # fix for HTML standard which excludes checkboxes
                     $params->{"$col.$fcol"} ||= 'false'
@@ -422,7 +422,7 @@ sub _update_txn {
                         my $finder = _extract_ID($params->{"combobox.$col.$fcol"});
                         my $link_link = $c->stash->{cpac}->{m}->t->{ $fci->extra('ref_table') };
                         $update->{$col}->{$fcol} = 
-                            $c->model( $link_link->extra('model') )->find($finder)
+                            $c->model( $link_link->extra('model') )->find($finder, {key => 'primary'})
                             or return;
                     }
                 }
@@ -443,8 +443,9 @@ sub _update_txn {
             # update to new related record
             # we find the target and pass in the row object to DBIC
             my $finder = _extract_ID($params->{'combobox.' . $col});
-            $update->{$col} = $c->model( $link->extra('model') )->find($finder)
+            $update->{$col} = $c->model( $link->extra('model') )->find($finder, {key => 'primary'})
                 or return;
+
             next COL;
         }
 
@@ -468,7 +469,15 @@ sub _update_txn {
         $update->{$col} = $params->{$col};
     }
 
-    return $c->model( $meta->extra('model') )->update_or_create($update);
+    # cope with PK being composite/compound by extracting cpac__id
+    my $self_finder = _extract_ID($params->{'cpac__id'});
+
+    my $rs = $c->model( $meta->extra('model') );
+    my $self_row = (0 == scalar keys %$self_finder)
+        ? $rs->create($update)
+        : $rs->find($self_finder, {key => 'primary'});
+
+    return $self_row->update($update);
 }
 
 sub delete {
