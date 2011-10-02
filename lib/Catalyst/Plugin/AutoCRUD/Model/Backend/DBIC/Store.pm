@@ -78,6 +78,20 @@ sub _create_ID {
         map { "$_\000${\$row->get_column($_)}" } $row->primary_columns;
 }
 
+# take unique identifier and reconstruct hash of row PK vals
+sub _extract_ID {
+    my ($val, $finder, $prefix, $map) = @_;
+    $prefix = $prefix ? "$prefix." : '';
+    $finder ||= {};
+
+    foreach my $i (split m/\000\000/, $val) {
+        my ($k, $v) = split m/\000/, $i;
+        $k = $map->{$k} if $map;
+        $finder->{"$prefix$k"} = $v;
+    }
+    return $finder;
+}
+
 # find whether this DMBS supports ILIKE or just LIKE
 sub _likeop_for {
     my $model = shift;
@@ -97,12 +111,9 @@ sub create {
 
 sub list {
     my ($self, $c) = @_;
-    my $site = $c->stash->{cpac}->{g}->{site};
-    my $db = $c->stash->{cpac_db};
-    my $table = $c->stash->{cpac_table};
-
     my $conf = $c->stash->{cpac}->{tc};
     my $meta = $c->stash->{cpac}->{tm};
+
     my $response = $c->stash->{json_data} = {};
     my @columns = @{$conf->{cols}};
 
@@ -152,10 +163,7 @@ sub list {
                 push @{$search_opts->{join}}, $col;
             }
 
-            foreach my $i (split m/\000\000/, $val) {
-                my ($k, $v) = split m/\000/, $i;
-                $filter->{"$col.$k"} = $v;
-            }
+            _extract_ID($val, $filter, $col);
             next;
         }
 
@@ -163,10 +171,7 @@ sub list {
         if ($meta->f->{$col}->is_foreign_key) {
             my %fmap = zip @{$meta->f->{$col}->extra('ref_fields')},
                            @{$meta->f->{$col}->extra('fields')};
-            foreach my $i (split m/\000\000/, $val) {
-                my ($k, $v) = split m/\000/, $i;
-                $filter->{"me.$fmap{$k}"} = $v;
-            }
+            _extract_ID($val, $filter, 'me', \%fmap);
             next;
         }
 
@@ -343,18 +348,35 @@ sub list {
 
 sub update {
     my ($self, $c) = @_;
-    my $conf = $c->stash->{cpac}->{tc};
     my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
+
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(1);
+    }
+
+    my $success =
+        $c->model($meta->extra('model'))
+            ->result_source->storage->txn_do(\&_update_txn, $c);
+    $response->{'success'} = (($success && !$@) ? 1 : 0);
+
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(0);
+    }
+
+    return $self;
+}
+
+sub _update_txn {
+    my $c = shift;
+    my $meta = $c->stash->{cpac}->{tm};
 
     my $params = $c->req->params;
     my $update = {};
 
-    use Data::Dumper;
-    $c->log->debug( Dumper $params );
-
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
-        $c->model($meta->extra('model'))->result_source->storage->debug(1);
+        use Data::Dumper;
+        $c->log->debug( Dumper $params );
     }
 
     COL: foreach my $col (@{$meta->extra('fields')}) {
@@ -377,10 +399,13 @@ sub update {
                     # basic fields in the related record
                     if (exists $params->{"$col.$fcol"}) {
                         # skip auto-inc cols unless they contain data
-                        next if $fci->is_auto_increment and not $params->{"$col.$fcol"};
+                        next unless exists $params->{"$col.$fcol"}
+                            and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
 
                         # filter data before sending to the database
-                        if ($fci->extra('extjs_xtype') and exists $filter_for{ $fci->extra('extjs_xtype') }) {
+                        if ($fci->extra('extjs_xtype')
+                            and exists $filter_for{ $fci->extra('extjs_xtype') }) {
+
                             $params->{"$col.$fcol"} =
                                 $filter_for{ $fci->extra('extjs_xtype') }->{to_db}->(
                                     $params->{"$col.$fcol"}
@@ -394,11 +419,7 @@ sub update {
                     elsif (exists $params->{"combobox.$col.$fcol"}) {
                         next unless length $params->{"combobox.$col.$fcol"};
 
-                        my $finder = {};
-                        foreach my $i (split m/\000\000/, $params->{"combobox.$col.$fcol"}) {
-                            my ($k, $v) = split m/\000/, $i;
-                            $finder->{$k} = $v;
-                        }
+                        my $finder = _extract_ID($params->{"combobox.$col.$fcol"});
                         my $link_link = $c->stash->{cpac}->{m}->t->{ $fci->extra('ref_table') };
                         $update->{$col}->{$fcol} = 
                             $c->model( $link_link->extra('model') )->find($finder)
@@ -413,23 +434,23 @@ sub update {
                 next COL;
             }
 
-            # user has not updated the field
+            # user has blanked the field to remove the relation
+            $update->{$col} = undef if !length $params->{'combobox.' . $col};
+
+            # user has cleared or not updated the field
             next COL if $params->{'combobox.' . $col} !~ m/\000/;
 
             # update to new related record
             # we find the target and pass in the row object to DBIC
-            my $finder = {};
-            foreach my $i (split m/\000\000/, $params->{'combobox.' . $col}) {
-                my ($k, $v) = split m/\000/, $i;
-                $finder->{$k} = $v;
-            }
+            my $finder = _extract_ID($params->{'combobox.' . $col});
             $update->{$col} = $c->model( $link->extra('model') )->find($finder)
                 or return;
             next COL;
         }
 
         # skip auto-inc cols unless they contain data
-        next COL if $ci->is_auto_increment and not $params->{$col};
+        next COL unless exists $params->{$col}
+            and ($params->{$col} or not $ci->is_auto_increment);
 
         # fix for HTML standard which excludes checkboxes
         $params->{$col} ||= 'false'
@@ -443,30 +464,18 @@ sub update {
                 );
         }
 
+        # copy simple form data into new row
         $update->{$col} = $params->{$col};
     }
 
-    my $success = eval {$c->model( $meta->extra('model') )->update_or_create($update)};
-    $response->{'success'} = (($success && !$@) ? 1 : 0);
-
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
-        $c->model($meta->extra('model'))->result_source->storage->debug(0);
-    }
-
-    return $self;
+    return $c->model( $meta->extra('model') )->update_or_create($update);
 }
 
 sub delete {
     my ($self, $c) = @_;
     my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
-    my $key = $c->req->params->{key};
-
-    my $filter = {};
-    foreach my $i (split m/\000\000/, $key) {
-        my ($k, $v) = split m/\000/, $i;
-        $filter->{$k} = $v;
-    }
+    my $filter = _extract_ID($c->req->params->{key});
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(1);
