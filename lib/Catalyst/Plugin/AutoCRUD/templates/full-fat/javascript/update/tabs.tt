@@ -43,19 +43,20 @@
                     ,id: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
                   [% END %]
 
-                    ,fieldLabel: '[% conf.headings.$field %]'
-                    ,anchor: '-20'
-                    ,autoHeight: true
+                  [% IF meta.f.$field.is_auto_increment %]
+                    ,xtype: 'hidden'
+                  }[% NEXT %]
+                  [% END %]
+
+                  ,fieldLabel: '[% conf.headings.$field %]'
+                  ,anchor: '-20'
+                  ,autoHeight: true
                   
                   [% IF meta.f.$field.default_value %]
                     ,value: '[% meta.f.$field.default_value | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% IF meta.f.$field.is_auto_increment %]
-                    ,readOnly: true
-                    ,cls: 'x-item-disabled'
-                    //,disabled: true // argh, prevents submit :-( so use cls
-                  [% ELSIF NOT meta.f.$field.is_nullable %]
+                  [% IF NOT meta.f.$field.is_nullable %]
                     ,allowBlank: false
                   [% END %]
 
@@ -63,7 +64,7 @@
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
-                    ,hiddenName: 'combobox.[% orig_col %].[% field | replace('\'', '\\\'') %]'
+                    ,hiddenName: 'combobox.[% orig_col || cpac_table %].[% field | replace('\'', '\\\'') %]'
                     ,loadingText: 'Searching...'
                     ,forceSelection: true
                     ,selectOnFocus: true
