@@ -64,7 +64,11 @@
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
-                    ,hiddenName: 'combobox.[% orig_col || cpac_table %].[% field | replace('\'', '\\\'') %]'
+                    [% IF orig_col == '' %]
+                    ,hiddenName: 'combobox.[% field | replace('\'', '\\\'') %]'
+                    [% ELSE %]
+                    ,hiddenName: 'combobox.[% orig_col %].[% field | replace('\'', '\\\'') %]'
+                    [% END %]
                     ,loadingText: 'Searching...'
                     ,forceSelection: true
                     ,selectOnFocus: true

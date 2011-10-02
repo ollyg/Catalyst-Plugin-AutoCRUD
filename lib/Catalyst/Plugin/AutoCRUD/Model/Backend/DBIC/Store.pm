@@ -341,177 +341,119 @@ sub list {
     return $self;
 }
 
-# updates (currently) involve building a stack of table rows to update/insert
-# and then popping items off that stack, remembering the PK vals as we go,
-# for the benefit of later stack items (stack is built for this purpose).
-
 sub update {
     my ($self, $c) = @_;
-    my $cpac = $c->stash->{cpac_meta};
+    my $conf = $c->stash->{cpac}->{tc};
+    my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
 
-    my $stack = _build_table_data($c, [], $cpac->{model});
-    #if ($c->debug) {
-    #    use Data::Dumper;
-    #    $c->log->debug(Dumper {table_stack => $stack});
-    #}
-
-    # stack is processed in one transaction, so either all rows are
-    # updated, or none, and an error thrown.
-
-    #$c->model($cpac->{model})->result_source->storage->debug(1)
-    #    if $c->debug;
-    my $success = eval {
-        $c->model($cpac->{model})->result_source->schema->txn_do(
-            \&_process_row_stack, $c, $stack
-        );
-    };
-    #if ($c->debug) {
-    #    use Data::Dumper;
-    #    $c->log->debug(Dumper {success => $success, exception => $@});
-    #}
-    $response->{'success'} = (($success && !$@) ? 1 : 0);
-
-    #$c->model($cpac->{model})->result_source->storage->debug(0)
-    #    if $c->debug;
-
-    return $self;
-}
-
-sub _build_table_data {
-    my ($c, $stack, $model) = @_;
-    my $cpac = $c->stash->{cpac_meta};
     my $params = $c->req->params;
+    my $update = {};
 
-    my $info = $cpac->{table_info}->{$model};
-    my $prefix = ($model eq $cpac->{model} ? '' : "$info->{path}.");
-    my @related = ();
-    my $data = {};
+    use Data::Dumper;
+    $c->log->debug( Dumper $params );
 
-    foreach my $col (keys %{$info->{cols}}) {
-        my $ci = $info->{cols}->{$col};
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(1);
+    }
+
+    COL: foreach my $col (@{$meta->extra('fields')}) {
+        my $ci = $meta->f->{$col};
+        next COL if $ci->extra('is_reverse');
+
+        if ($ci->is_foreign_key) {
+            my $link = $c->stash->{cpac}->{m}->t->{ $ci->extra('ref_table') };
+
+            # user is asking for a new related record to be created
+            if (exists $params->{'checkbox.' . $col}) {
+                foreach my $fcol (@{$link->extra('fields')}) {
+                    my $fci = $link->f->{$fcol};
+                    next if $fci->extra('is_reverse');
+
+                    # fix for HTML standard which excludes checkboxes
+                    $params->{"$col.$fcol"} ||= 'false'
+                        if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
+
+                    # basic fields in the related record
+                    if (exists $params->{"$col.$fcol"}) {
+                        # skip auto-inc cols unless they contain data
+                        next if $fci->is_auto_increment and not $params->{"$col.$fcol"};
+
+                        # filter data before sending to the database
+                        if ($fci->extra('extjs_xtype') and exists $filter_for{ $fci->extra('extjs_xtype') }) {
+                            $params->{"$col.$fcol"} =
+                                $filter_for{ $fci->extra('extjs_xtype') }->{to_db}->(
+                                    $params->{"$col.$fcol"}
+                                );
+                        }
+
+                        $update->{$col}->{$fcol} = $params->{"$col.$fcol"};
+                    }
+                    # any foreign keys (belongs_to) in the related record
+                    # we find the target and pass the row object to DBIC
+                    elsif (exists $params->{"combobox.$col.$fcol"}) {
+                        next unless length $params->{"combobox.$col.$fcol"};
+
+                        my $finder = {};
+                        foreach my $i (split m/\000\000/, $params->{"combobox.$col.$fcol"}) {
+                            my ($k, $v) = split m/\000/, $i;
+                            $finder->{$k} = $v;
+                        }
+                        my $link_link = $c->stash->{cpac}->{m}->t->{ $fci->extra('ref_table') };
+                        $update->{$col}->{$fcol} = 
+                            $c->model( $link_link->extra('model') )->find($finder)
+                            or return;
+                    }
+                }
+
+                # for some reason had difficulty using a bare hash
+                $update->{$col} =
+                    $c->model( $link->extra('model') )->create($update->{$col})
+                    or return;
+                next COL;
+            }
+
+            # user has not updated the field
+            next COL if $params->{'combobox.' . $col} !~ m/\000/;
+
+            # update to new related record
+            # we find the target and pass in the row object to DBIC
+            my $finder = {};
+            foreach my $i (split m/\000\000/, $params->{'combobox.' . $col}) {
+                my ($k, $v) = split m/\000/, $i;
+                $finder->{$k} = $v;
+            }
+            $update->{$col} = $c->model( $link->extra('model') )->find($finder)
+                or return;
+            next COL;
+        }
+
+        # skip auto-inc cols unless they contain data
+        next COL if $ci->is_auto_increment and not $params->{$col};
 
         # fix for HTML standard which excludes checkboxes
-        $params->{ $prefix . $col } ||= 'false'
-            if exists $ci->{extjs_xtype} and $ci->{extjs_xtype} eq 'checkbox';
+        $params->{$col} ||= 'false'
+            if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
 
-        if (exists $ci->{fk_model}) {
-            if (exists $cpac->{table_info}->{ $ci->{fk_model} }) {
-            # FKs where we could have full row data for the FT
-                my $ft = $cpac->{table_info}->{ $ci->{fk_model} }->{path};
-
-                # has the user submitted a new row in the related table?
-                if (exists $params->{ 'checkbox.' . $ft }) {
-                    # FIXME should be Model, Table, Col to support multi FK to
-                    # same table
-                    push @related, $ci->{fk_model};
-                    next;
-                }
-                elsif ($ci->{is_rr}) { # skip reverse relations here
-                    next;
-                }
-            }
-
-            # okay, no full row for related table, maybe just an ID update?
-            if ($params->{ "combobox.$col" } and ($model eq $cpac->{model})) {
-                my $pk = $cpac->{main}->{pk};
-                if (exists $params->{ $pk } and $params->{ $pk } ne '') {
-                    my $this_row = eval { $c->model($cpac->{model})->find( $params->{ $pk } ) };
-
-                    # skip where the FK val isn't really an update
-                    next if (blessed $this_row)
-                        and (_sfy($this_row->$col) eq $params->{ "combobox.$col" });
-                }
-            }
-
-            # FK val is an update, so set the value
-            $data->{$col} = $params->{ 'combobox.' . $col } || undef
-                if exists $params->{ 'combobox.' . $col };
-
-            # rename col to real name, now we have data for it
-            # (custom relation accessor name)
-            $data->{ $ci->{masked_col} } = delete $data->{$col}
-                if defined $data->{$col} and exists $ci->{masked_col};
-        }
-        else {
-        # not a foreign key, so just update the row data
-            if (exists $params->{ $prefix . $col }
-                and ($ci->{editable} or $params->{ $prefix . $col })) {
-                    # skip auto-inc cols unless they contain data
-
-                # filter data before sending to the database
-                if (exists $ci->{extjs_xtype}
-                    and exists $filter_for{ $ci->{extjs_xtype} }) {
-                    $params->{ $prefix . $col } =
-                        $filter_for{ $ci->{extjs_xtype} }->{to_db}->(
-                            $params->{ $prefix . $col }
-                        );
-                }
-
-                $data->{$col} = $params->{$prefix . $col};
-            }
-        }
-    }
-
-    # work out whether this row is lacking in the values of some foreign cols
-    my $needs_keys = 0;
-    foreach my $col (keys %{$info->{cols}}) {
-        my $ci = $info->{cols}->{$col};
-        next unless exists $ci->{fk_model}
-                and $ci->{fk_model} eq $cpac->{model};
-
-        if (!exists $data->{$col}) {
-            $needs_keys = 1;
-            last;
-        }
-    }
-
-    # add row data to stack - which end depends on whether it needs PKs adding
-    if ($needs_keys) {
-        unshift @$stack, $data, $model;
-    }
-    else {
-        push @$stack, $data, $model;
-    }
-
-    _build_table_data($c, $stack, $_) for @related;
-    return $stack;
-}
-
-# pop items off the stack, update/insert rows, and track new PK vals
-# this should be run within a transaction
-
-sub _process_row_stack {
-    my ($c, $stack) = @_;
-    my $cpac = $c->stash->{cpac_meta};
-    my %stashed_keys;
-
-    while (my ($model, $data) = (pop @$stack, pop @$stack)) {
-        last if !defined $model;
-
-        # fetch and include PK vals from previously inserted rows
-        my $info = $cpac->{table_info}->{$model};
-        foreach my $col (keys %{$info->{cols}}) {
-            my $ci = $info->{cols}->{$col};
-            next unless $ci->{is_fk} and exists $stashed_keys{$ci->{fk_model}};
-            $col = $ci->{masked_col} if exists $ci->{masked_col};
-            $data->{$col} = $stashed_keys{$ci->{fk_model}};
+        # filter data before sending to the database
+        if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {
+            $params->{$col} =
+                $filter_for{ $ci->extra('extjs_xtype') }->{to_db}->(
+                    $params->{$col}
+                );
         }
 
-        # update or create the row; could this use a magic DBIC method?
-        my $pk = $cpac->{table_info}->{$model}->{pk};
-        my $row = (( defined $data->{ $pk } )
-            ? eval { $c->model($model)->find( $data->{ $pk } ) }
-            : undef );
-        $row = (( blessed $row )
-            ? $row->set_columns( $data )
-            : $c->model($model)->new_result( $data ) );
-
-        $row->update_or_insert;
-        $stashed_keys{$model} = $row->id;
+        $update->{$col} = $params->{$col};
     }
-    
-    return 1;
+
+    my $success = eval {$c->model( $meta->extra('model') )->update_or_create($update)};
+    $response->{'success'} = (($success && !$@) ? 1 : 0);
+
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        $c->model($meta->extra('model'))->result_source->storage->debug(0);
+    }
+
+    return $self;
 }
 
 sub delete {
