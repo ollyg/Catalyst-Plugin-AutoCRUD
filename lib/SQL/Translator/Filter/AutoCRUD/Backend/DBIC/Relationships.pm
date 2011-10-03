@@ -31,9 +31,15 @@ sub add_to_fields_at {
             # col already exists, so update metadata
             $f->extra($_ => $field->{extra}->{$_})
                 for keys %{$field->{extra}};
-            $f->{is_foreign_key} = 1; # XXX for Views hack?
+            $f->{is_foreign_key} = 1;
         }
         else {
+            # need to skip subsequent belongs_to where one has
+            # already been set - not really ideal but best we can do
+            return if
+                scalar grep {$table->get_field($_)->extra('ref_table')}
+                            @{$field->{extra}->{fields}};
+
             $table->get_field($_)->extra('masked_by' => $field->{name})
                 for @{$field->{extra}->{fields}};
             my $f = $table->add_field(%$field);
