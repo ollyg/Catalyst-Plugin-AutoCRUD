@@ -128,19 +128,20 @@ sub schema_metadata {
     return $self->_schema_cache->{sqlt}->{$db}
         if exists $self->_schema_cache->{sqlt}->{$db};
 
-    my $schema = $c->model(
+    my $dbic = $c->model(
         $self->_schema_cache->{handles}->{$db}->{model})->schema;
     my $sqlt = SQL::Translator->new(
         parser => 'SQL::Translator::Parser::DBIx::Class',
-        parser_args => { package => $schema },
+        parser_args => { package => $dbic },
         filters => [
-            ['AutoCRUD::Backend::DBIC::ViewsAsTables', $schema],
-            ['AutoCRUD::Backend::DBIC::Relationships', $schema],
+            ['AutoCRUD::Backend::DBIC::ViewsAsTables', $dbic],
+            ['AutoCRUD::Backend::DBIC::Relationships', $dbic],
             ['AutoCRUD::CatalystModel',
                 $self->_schema_cache->{handles}->{$db}->{sources}],
             'AutoCRUD::ColumnsAndPKs',
             'AutoCRUD::DisplayName',
             'AutoCRUD::ExtJSxType',
+            ['AutoCRUD::Backend::DBIC::AccessorDisplayName', $dbic],
         ],
         producer => 'SQL::Translator::Producer::POD', # something cheap
     ) or die SQL::Translator->error;
