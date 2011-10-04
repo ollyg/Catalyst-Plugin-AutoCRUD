@@ -118,7 +118,7 @@ sub list {
 
     # sanity check the sort param
     $sort = $info->{pk} if
-        !defined $sort or $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort});
+        !defined $sort or $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
 
     # before setting up the paging and sorting, we need to check whether
     # the FK params are legit PK vals in the related schema
