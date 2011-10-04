@@ -122,9 +122,10 @@ sub list {
     my $filter = {}; my $search_opts = {};
 
     # sanity check the sort param
-    unless (defined $sort and $sort =~ m/^[\w ]+$/ and exists $meta->f->{$sort}) {
-        $sort = $c->stash->{cpac}->{g}->{default_sort};
-    }
+    $sort = $c->stash->{cpac}->{g}->{default_sort}
+        if not (defined $sort and $sort =~ m/^[\w ]+$/ and exists $meta->f->{$sort});
+    $sort = $c->stash->{cpac}->{g}->{default_sort}
+        if $meta->f->{$sort}->extra('rel_type') and $meta->f->{$sort}->extra('rel_type') =~ m/_many$/;
 
     # we want to prefetch all related data for _sfy
     foreach my $rel (@columns) {
@@ -353,9 +354,10 @@ sub update {
     }
 
     my $success =
-        $c->model($meta->extra('model'))
-            ->result_source->storage->txn_do(\&_update_txn, $c);
+        eval{ $c->model($meta->extra('model'))
+            ->result_source->storage->txn_do(\&_update_txn, $c) };
     $response->{'success'} = (($success && !$@) ? 1 : 0);
+    $c->log->debug($@) if $c->debug;
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
@@ -388,13 +390,13 @@ sub _update_txn {
         next COL if $ci->extra('is_reverse') or $ci->extra('masked_by');
 
         if (not $ci->is_foreign_key) {
-            # fix for HTML standard which excludes checkboxes
-            $params->{$col} ||= 'false'
-                if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
-
             # skip auto-inc cols unless they contain data
             next COL unless exists $params->{$col}
                 and ($params->{$col} or not $ci->is_auto_increment);
+
+            # fix for HTML standard which excludes checkboxes
+            $params->{$col} ||= 'false'
+                if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
 
             # filter data before sending to the database
             if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {
@@ -422,6 +424,9 @@ sub _update_txn {
 
         # some kind of update to an existing relation
         if (!exists $params->{'checkbox.' . $col}) {
+            # someone is messing with the AJAX (tests?)
+            next COL if !defined $params->{'combobox.' . $col};
+
             # user has blanked the field to remove the relation
             if (!length $params->{'combobox.' . $col}) {
                 $self_row->set_column($_ => undef)
@@ -435,8 +440,9 @@ sub _update_txn {
             # update to new related record
             # we find the target and pass in the row object to DBIC
             my $finder = _extract_ID($params->{'combobox.' . $col});
-            $self_row->set_inflated_columns({$col =>
-                $c->model( $link->extra('model') )->find($finder, {key => 'primary'})});
+            my $found_row = $c->model( $link->extra('model') )->find($finder, {key => 'primary'})
+                or $self_row->throw_exception("autocrud: failed to find row for $col");
+            $self_row->set_inflated_columns({$col => $found_row});
             delete $proxy_updates->{$col};
 
             next COL;
@@ -450,15 +456,15 @@ sub _update_txn {
             my $fci = $link->f->{$fcol};
             next if $fci->extra('is_reverse') or $fci->extra('masked_by');
 
-            # fix for HTML standard which excludes checkboxes
-            $params->{"$col.$fcol"} ||= 'false'
-                if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
-
             # basic fields in the related record
             if (exists $params->{"$col.$fcol"}) {
                 # skip auto-inc cols unless they contain data
                 next unless exists $params->{"$col.$fcol"}
                     and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
+
+                # fix for HTML standard which excludes checkboxes
+                $params->{"$col.$fcol"} ||= 'false'
+                    if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
 
                 # filter data before sending to the database
                 if ($fci->extra('extjs_xtype')
@@ -480,12 +486,14 @@ sub _update_txn {
                 my $finder = _extract_ID($params->{"combobox.$col.$fcol"});
                 my $link_link = $c->stash->{cpac}->{m}->t->{ $fci->extra('ref_table') };
                 $new_related->{$fcol} = 
-                    $c->model( $link_link->extra('model') )->find($finder, {key => 'primary'});
+                    $c->model( $link_link->extra('model') )->find($finder, {key => 'primary'})
+                    or $self_row->throw_exception("autocrud: failed to find row for $fcol");
             }
         }
 
-        $self_row->set_inflated_columns({$col =>
-            $c->model( $link->extra('model') )->create($new_related)});
+        my $new_col = $c->model( $link->extra('model') )->create($new_related)
+            or $self_row->throw_exception("autocrud: failed to create row for $col");
+        $self_row->set_inflated_columns({$col => $new_col});
     }
 
     foreach my $rel (keys %$proxy_updates) {
@@ -504,7 +512,9 @@ sub _update_txn {
 sub delete {
     my ($self, $c) = @_;
     my $meta = $c->stash->{cpac}->{tm};
-    my $response = $c->stash->{json_data} = {};
+    my $response = $c->stash->{json_data} = {success => 0};
+
+    return unless $c->req->params->{key};
     my $filter = _extract_ID($c->req->params->{key});
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
@@ -514,9 +524,6 @@ sub delete {
 
     if (blessed $row and eval {$row->delete}) {
         $response->{'success'} = 1;
-    }
-    else {
-        $response->{'success'} = 0;
     }
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {

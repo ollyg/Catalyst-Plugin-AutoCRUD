@@ -91,6 +91,7 @@ sub dumpmeta : Chained('base') Args(0) {
     $c->stash->{json_data} = { cpac => {
         meta => $meta,
         conf => $c->stash->{cpac}->{c},
+        global => $c->stash->{cpac}->{g},
     } };
 
     return $self;
