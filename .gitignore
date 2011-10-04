@@ -1,1 +1,3 @@
 Catalyst-Plugin-AutoCRUD-*
+examples/sandpit/
+lib/Catalyst/Plugin/AutoCRUD/static/ext2/
