@@ -112,7 +112,9 @@ sub do_meta : Private {
     $c->forward('build_site_config');
 
     # ACLs on the schema and source from site config
-    if ($c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
+    if ($c->stash->{site_conf}->{$db}->{hidden}
+        and $c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
+
         if ($site eq 'default') {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_db') )]);
         }
@@ -120,7 +122,9 @@ sub do_meta : Private {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_schema'), [$site] )]);
         }
     }
-    if ($c->stash->{site_conf}->{$db}->{$table}->{hidden} eq 'yes') {
+    if ($c->stash->{site_conf}->{$db}->{$table}->{hidden}
+        and $c->stash->{site_conf}->{$db}->{$table}->{hidden} eq 'yes') {
+
         if ($site eq 'default') {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_table'), [$db] )]);
         }
