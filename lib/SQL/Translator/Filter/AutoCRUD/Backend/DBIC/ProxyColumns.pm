@@ -39,6 +39,7 @@ sub filter {
 
             my $f_tbl = make_path($source->related_source($r));
             (my $col = (values %{$rel_info->{cond}})[0]) =~ s/^self\.//;
+            # (my $f_col = (keys %{$rel_info->{cond}})[0]) =~ s/^foreign\.//;
 
             while (my ($local, $remote) = each %proxy) {
                 next if $sqlt_tbl->get_field($local);
@@ -54,7 +55,7 @@ sub filter {
                     extra => {
                         is_proxy => 1,
                         proxy_field => $col,
-                        proxy_table => $f_tbl,
+                        proxy_rel_field => $remote,
                     },
                 );
             }

@@ -376,63 +376,58 @@ sub _update_txn {
         $c->log->debug( Dumper $params );
     }
 
+    # cope with PK being composite/compound by extracting cpac__id
+    my $rs = $c->model( $meta->extra('model') );
+    my $self_row = $params->{'cpac__id'}
+        ? $rs->find(_extract_ID($params->{'cpac__id'}), {key => 'primary'})
+        : $rs->new({});
+    my $proxy_updates = {};
+
     COL: foreach my $col (@{$meta->extra('fields')}) {
         my $ci = $meta->f->{$col};
         next COL if $ci->extra('is_reverse') or $ci->extra('masked_by');
 
-        if ($ci->is_foreign_key) {
-            my $link = $c->stash->{cpac}->{m}->t->{ $ci->extra('ref_table') };
+        if (not $ci->is_foreign_key) {
+            # fix for HTML standard which excludes checkboxes
+            $params->{$col} ||= 'false'
+                if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
 
-            # user is asking for a new related record to be created
-            if (exists $params->{'checkbox.' . $col}) {
-                foreach my $fcol (@{$link->extra('fields')}) {
-                    my $fci = $link->f->{$fcol};
-                    next if $fci->extra('is_reverse') or $fci->extra('masked_by');
+            # skip auto-inc cols unless they contain data
+            next COL unless exists $params->{$col}
+                and ($params->{$col} or not $ci->is_auto_increment);
 
-                    # fix for HTML standard which excludes checkboxes
-                    $params->{"$col.$fcol"} ||= 'false'
-                        if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
+            # filter data before sending to the database
+            if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {
+                $params->{$col} =
+                    $filter_for{ $ci->extra('extjs_xtype') }->{to_db}->(
+                        $params->{$col}
+                    );
+            }
 
-                    # basic fields in the related record
-                    if (exists $params->{"$col.$fcol"}) {
-                        # skip auto-inc cols unless they contain data
-                        next unless exists $params->{"$col.$fcol"}
-                            and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
-
-                        # filter data before sending to the database
-                        if ($fci->extra('extjs_xtype')
-                            and exists $filter_for{ $fci->extra('extjs_xtype') }) {
-
-                            $params->{"$col.$fcol"} =
-                                $filter_for{ $fci->extra('extjs_xtype') }->{to_db}->(
-                                    $params->{"$col.$fcol"}
-                                );
-                        }
-
-                        $update->{$col}->{$fcol} = $params->{"$col.$fcol"};
-                    }
-                    # any foreign keys (belongs_to) in the related record
-                    # we find the target and pass the row object to DBIC
-                    elsif (exists $params->{"combobox.$col.$fcol"}) {
-                        next unless length $params->{"combobox.$col.$fcol"};
-
-                        my $finder = _extract_ID($params->{"combobox.$col.$fcol"});
-                        my $link_link = $c->stash->{cpac}->{m}->t->{ $fci->extra('ref_table') };
-                        $update->{$col}->{$fcol} = 
-                            $c->model( $link_link->extra('model') )->find($finder, {key => 'primary'})
-                            or return;
-                    }
-                }
-
-                # for some reason had difficulty using a bare hash
-                $update->{$col} =
-                    $c->model( $link->extra('model') )->create($update->{$col})
-                    or return;
+            # only works if user doesn't change the FK val
+            if ($ci->extra('is_proxy')) {
+                $proxy_updates->{$ci->extra('proxy_field')}
+                    ->{$ci->extra('proxy_rel_field')} = $params->{$col};
                 next COL;
             }
 
+            # copy simple form data into new row
+            $self_row->set_inflated_columns({$col => $params->{$col}});
+
+            next COL;
+        }
+
+        # else is foreign key
+        my $link = $c->stash->{cpac}->{m}->t->{ $ci->extra('ref_table') };
+
+        # some kind of update to an existing relation
+        if (!exists $params->{'checkbox.' . $col}) {
             # user has blanked the field to remove the relation
-            $update->{$col} = undef if !length $params->{'combobox.' . $col};
+            if (!length $params->{'combobox.' . $col}) {
+                $self_row->set_column($_ => undef)
+                    for @{$ci->extra('fields')};
+                delete $proxy_updates->{$col};
+            }
 
             # user has cleared or not updated the field
             next COL if $params->{'combobox.' . $col} !~ m/\000/;
@@ -440,41 +435,69 @@ sub _update_txn {
             # update to new related record
             # we find the target and pass in the row object to DBIC
             my $finder = _extract_ID($params->{'combobox.' . $col});
-            $update->{$col} = $c->model( $link->extra('model') )->find($finder, {key => 'primary'})
-                or return;
+            $self_row->set_inflated_columns({$col =>
+                $c->model( $link->extra('model') )->find($finder, {key => 'primary'})});
+            delete $proxy_updates->{$col};
 
             next COL;
         }
 
-        # fix for HTML standard which excludes checkboxes
-        $params->{$col} ||= 'false'
-            if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
+        # else new related record to be created
+        my $new_related = {};
 
-        # skip auto-inc cols unless they contain data
-        next COL unless exists $params->{$col}
-            and ($params->{$col} or not $ci->is_auto_increment);
+        foreach my $fcol (@{$link->extra('fields')}) {
+            my $fci = $link->f->{$fcol};
+            next if $fci->extra('is_reverse') or $fci->extra('masked_by');
 
-        # filter data before sending to the database
-        if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {
-            $params->{$col} =
-                $filter_for{ $ci->extra('extjs_xtype') }->{to_db}->(
-                    $params->{$col}
-                );
+            # fix for HTML standard which excludes checkboxes
+            $params->{"$col.$fcol"} ||= 'false'
+                if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
+
+            # basic fields in the related record
+            if (exists $params->{"$col.$fcol"}) {
+                # skip auto-inc cols unless they contain data
+                next unless exists $params->{"$col.$fcol"}
+                    and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
+
+                # filter data before sending to the database
+                if ($fci->extra('extjs_xtype')
+                    and exists $filter_for{ $fci->extra('extjs_xtype') }) {
+
+                    $params->{"$col.$fcol"} =
+                        $filter_for{ $fci->extra('extjs_xtype') }->{to_db}->(
+                            $params->{"$col.$fcol"}
+                        );
+                }
+
+                $new_related->{$fcol} = $params->{"$col.$fcol"};
+            }
+            # any foreign keys (belongs_to) in the related record
+            # we find the target and pass the row object to DBIC
+            elsif (exists $params->{"combobox.$col.$fcol"}) {
+                next unless length $params->{"combobox.$col.$fcol"};
+
+                my $finder = _extract_ID($params->{"combobox.$col.$fcol"});
+                my $link_link = $c->stash->{cpac}->{m}->t->{ $fci->extra('ref_table') };
+                $new_related->{$fcol} = 
+                    $c->model( $link_link->extra('model') )->find($finder, {key => 'primary'});
+            }
         }
 
-        # copy simple form data into new row
-        $update->{$col} = $params->{$col};
+        $self_row->set_inflated_columns({$col =>
+            $c->model( $link->extra('model') )->create($new_related)});
     }
 
-    # cope with PK being composite/compound by extracting cpac__id
-    my $self_finder = _extract_ID($params->{'cpac__id'});
+    foreach my $rel (keys %$proxy_updates) {
+        next unless scalar keys %{$proxy_updates->{$rel}};
+        foreach my $f (keys %{$proxy_updates->{$rel}}) {
+            $self_row->$rel->set_inflated_columns({
+                $f => $proxy_updates->{$rel}->{$f}
+            });
+        }
+        $self_row->$rel->update; # save it
+    }
 
-    my $rs = $c->model( $meta->extra('model') );
-    my $self_row = (0 == scalar keys %$self_finder)
-        ? $rs->create($update)
-        : $rs->find($self_finder, {key => 'primary'});
-
-    return $self_row->update($update);
+    return $self_row->in_storage ? $self_row->update : $self_row->insert;
 }
 
 sub delete {
