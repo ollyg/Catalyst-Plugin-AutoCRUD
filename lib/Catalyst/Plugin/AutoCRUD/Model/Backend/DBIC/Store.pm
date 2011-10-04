@@ -443,6 +443,7 @@ sub _update_txn {
         }
 
         # else new related record to be created
+        delete $proxy_updates->{$col};
         my $new_related = {};
 
         foreach my $fcol (@{$link->extra('fields')}) {
