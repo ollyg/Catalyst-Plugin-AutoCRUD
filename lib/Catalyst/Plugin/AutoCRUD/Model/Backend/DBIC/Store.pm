@@ -271,16 +271,13 @@ sub list {
                 }
             }
             else {
-                if (!defined eval{$row->get_column($col)}) {
-                    $data->{$col} = '';
-                    next;
-                }
-                else {
-                    $data->{$col} = $row->get_column($col);
-                }
+                # proxy cols must be called as accessors, but normally we'd
+                # prefer to use get_column, so try both, otherwise empty str
+                $data->{$col} = (($col =~ m/\w+/ and $row->can($col))
+                    ? eval{$row->$col} : eval{$row->get_column($col)}) || '';
             }
 
-            if ($meta->f->{$col}->extra('extjs_xtype')
+            if ($data->{$col} and $meta->f->{$col}->extra('extjs_xtype')
                 and exists $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }) {
                 $data->{$col} =
                     $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }->{from_db}->(
@@ -449,13 +446,13 @@ sub _update_txn {
             next COL;
         }
 
-        # skip auto-inc cols unless they contain data
-        next COL unless exists $params->{$col}
-            and ($params->{$col} or not $ci->is_auto_increment);
-
         # fix for HTML standard which excludes checkboxes
         $params->{$col} ||= 'false'
             if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
+
+        # skip auto-inc cols unless they contain data
+        next COL unless exists $params->{$col}
+            and ($params->{$col} or not $ci->is_auto_increment);
 
         # filter data before sending to the database
         if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {

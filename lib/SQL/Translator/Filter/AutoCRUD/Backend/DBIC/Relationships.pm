@@ -76,6 +76,13 @@ sub filter {
                 next;
             }
 
+            # catch dangling rels and skip them
+            if (not eval{$source->related_source($r)}) {
+                delete $new_cols->{$r};
+                next;
+            }
+            $new_cols->{$r}->{ref_table} = make_path($source->related_source($r));
+
             # sort means we keep a consistent order (with generated [pks])
             foreach my $field (sort map {$_->name} $sqlt_tbl->get_fields) {
                 FOREIGN: foreach my $f (keys %$cond) {
@@ -87,13 +94,6 @@ sub filter {
                     }
                 }
             };
-
-            # catch dangling rels and skip them
-            if (not eval{$source->related_source($r)}) {
-                delete $new_cols->{$r};
-                next;
-            }
-            $new_cols->{$r}->{ref_table} = make_path($source->related_source($r));
 
             if ($rel_info->{attrs}->{accessor} eq 'multi') {
                 $new_cols->{$r}->{rel_type} = 'has_many';

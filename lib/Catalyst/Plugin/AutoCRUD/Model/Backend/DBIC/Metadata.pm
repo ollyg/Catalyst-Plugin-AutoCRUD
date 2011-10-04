@@ -138,6 +138,7 @@ sub schema_metadata {
             ['AutoCRUD::Backend::DBIC::Relationships', $dbic],
             ['AutoCRUD::CatalystModel',
                 $self->_schema_cache->{handles}->{$db}->{sources}],
+            ['AutoCRUD::Backend::DBIC::ProxyColumns', $dbic],
             'AutoCRUD::ColumnsAndPKs',
             'AutoCRUD::DisplayName',
             'AutoCRUD::ExtJSxType',
