@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '1.112560';
+  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '1.112770';
 }
 
 use strict;
@@ -20,7 +20,7 @@ __PACKAGE__->config(
     INCLUDE_PATH => "$directory../templates",
     CATALYST_VAR => 'c',
     WRAPPER => 'wrapper.tt',
-    # STRICT => 1,
+    render_die => 1,
 );
 
 # override to push a template var giving easy access to our plugin conf

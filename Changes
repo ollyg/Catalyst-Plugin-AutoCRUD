@@ -1,3 +1,7 @@
+1.112770  2011-10-04 07:25:12 Europe/London
+
+  * Fix for some Perl warnings (Okku, rt.cpan #71357 and #71356)
+
 1.112560  2011-09-13 10:30:26 Europe/London
 
   * Removed View::JSON::encode_json to output Unicode. If you want latin1, set

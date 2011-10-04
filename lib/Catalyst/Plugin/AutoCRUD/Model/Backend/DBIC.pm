@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC;
 BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::VERSION = '1.112560';
+  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::VERSION = '1.112770';
 }
 
 use strict;
@@ -120,7 +120,8 @@ sub list {
     #}
 
     # sanity check the sort param
-    $sort = $info->{pk} if $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
+    $sort = $info->{pk} if
+        !defined $sort or $sort !~ m/^[\w ]+$/ or !exists $info->{cols}->{$sort};
 
     # before setting up the paging and sorting, we need to check whether
     # the FK params are legit PK vals in the related schema
