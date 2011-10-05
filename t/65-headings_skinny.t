@@ -6,6 +6,9 @@ use lib qw( t/lib );
 
 use Test::More 'no_plan';
 
+# normal number of skinny columns, but the headings should be
+# modified as per the config.
+
 # application loads
 BEGIN {
     $ENV{AUTOCRUD_CONFIG} = 't/lib/headings_extjs.conf';

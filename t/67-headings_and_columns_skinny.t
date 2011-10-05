@@ -6,6 +6,8 @@ use lib qw( t/lib );
 
 use Test::More 'no_plan';
 
+# on skinny table test restricted columns and custom names
+
 # application loads
 BEGIN {
     $ENV{AUTOCRUD_CONFIG} = 't/lib/headings_and_columns_extjs.conf';
