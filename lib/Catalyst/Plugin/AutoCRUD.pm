@@ -901,18 +901,6 @@ your own data source instead.
 
 =over 4
 
-=item Single column primary key
-
-There's no support for multiple column primary keys (composite/compound
-keys). This has saved a lot of time in development because it greatly
-simplifies the L<Catalyst> and L<DBIx::Class> code.
-
-=item No two columns in a given table may have the same FK constraint
-
-If you have two columns which both have foreign key constraints to the same
-table, it's very likely AutoCRUD will not work. Again this is a simplification
-which speeded the initial development.
-
 =item Time Zone settings are lost during SELECT/UPDATE
 
 Database fields of types such as (PostgreSQL) C<timestamp with time zone> will

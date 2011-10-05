@@ -1,5 +1,44 @@
 {{$NEXT}}
 
+  [NEW FEATURES]
+
+  * Full support for both composite and compound primary keys
+  * Can set filters on has_many and many_to_many type relations
+  * URI query string can pre-set filter(s): cpac_filter.$col=$val
+  * Support for tables with no primary key
+  * Support for columns with names that are not Perl identifiers
+
+  * Support for Views (in DBIx::Class, both virtual and non-virtual)
+  * DBIx::Class proxy columns are displayed and can be edited
+  * Support custom accessor names on DBIx::Class columns
+
+  [ENHANCEMENTS]
+
+  * Delete dialog boxes use the "friendly" row display_name
+  * Tables can have multiple relations to the same table
+  * Tables can have relations to themselves
+  * Auto-increment columns are not displayed on the Add/Edit form
+  * Default behaviour to hide "uninteresting" columns (e.g. links)
+  * Default sort column is the first unhidden column
+
+  [DEPRECATIONS]
+
+  * The list_returns config option is no longer supported
+  * No longer can edit "reverse" relations (has_one, might_have)
+
+  [OTHER]
+
+  * A new "backend" infrastructure has been implemented. This uses
+    SQL::Translator as an abstraction between the frontend render
+    engine (templates) and the storage engine (such as DBIx::Class).
+    It ought to be possible to deploy AutoCRUD on top of any other
+    storage engine which can provide a table/column-like interface.
+
+  [TODO]
+
+  * Document the new features
+  * Document the backend architecture and APIs
+
 1.110731  2011-03-14 20:14:06 Europe/London
 
   * Fix example DemoApp to hide package name from PAUSE
