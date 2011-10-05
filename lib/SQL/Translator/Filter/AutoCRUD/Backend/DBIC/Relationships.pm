@@ -120,12 +120,13 @@ sub filter {
 
             my $link = $new_cols->{$r}->{ref_table};
             next unless 2 == scalar keys %{$rels->{$link}}
-                and 2 == scalar grep {$_->{rel_type} eq 'belongs_to'} values %{$rels->{$link}};
+                and 2 == scalar grep {$_->{rel_type} eq 'belongs_to'}
+                                     values %{$rels->{$link}};
 
             foreach my $lrel (keys %{$rels->{$link}}) {
                 next if $rels->{$link}->{$lrel}->{ref_table} eq $from;
                 $new_cols->{ $rels->{$link}->{$lrel}->{ref_table} } = {
-                    name => $lrel,
+                    name => $rels->{$link}->{$lrel}->{ref_table},
                     rel_type => 'many_to_many',
                     via => [$r, $lrel],
                 };

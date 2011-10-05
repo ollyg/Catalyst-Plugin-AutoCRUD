@@ -22,7 +22,7 @@ my $default_album_page = {
                                         'Hit Tune II'
                                       ],                          'deleted' => 0,
                           'artist_id' => 'Adam Smith',
-                          'copyright_id' => [
+                          'copyright' => [
                                               'Label B'
                                             ],                          'id' => 5,
                           'recorded' => '2002-05-21',
@@ -41,7 +41,7 @@ my $testing_album_page = {
                           'tracks' => [],
                           'deleted' => 0,
                           'artist_id' => 'Mike Smith',
-                          'copyright_id' => [],
+                          'copyright' => [],
                           'id' => 6,
                           'recorded' => '',
                           'title' => 'Testing Hits',
@@ -59,7 +59,7 @@ my $new_album_page = {
                           'tracks' => [],
                           'deleted' => 0,
                           'artist_id' => 'Charlie Thornton',
-                          'copyright_id' => [],
+                          'copyright' => [],
                           'id' => 7,
                           'recorded' => '',
                           'title' => 'Testing Hits 2',

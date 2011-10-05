@@ -26,9 +26,12 @@ ok(exists $content->{cpac}->{conf}->{dbic}->{t}->{album}->{headings}, 'headings 
 my $headings = $content->{cpac}->{conf}->{dbic}->{t}->{album}->{headings};
 ok(ref $headings eq 'HASH', 'headings imported as hash');
 
+#use Data::Dumper;
+#print STDERR Dumper $headings;
+
 ok(scalar keys %$headings, 'only two columns selected');
 ok($headings->{title} eq 'TheTitle', 'heading value for Title preserved');
 ok($headings->{recorded} eq 'Recorded', 'heading value for Recorded preserved');
-ok($headings->{copyright_id} eq 'Copyright Ids', 'heading value for Copyright preserved');
+ok($headings->{copyright} eq 'Copyrights', 'heading value for Copyright preserved');
 
 __END__

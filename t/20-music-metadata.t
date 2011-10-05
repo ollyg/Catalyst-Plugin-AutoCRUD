@@ -45,12 +45,12 @@ my $expected_json = <<'END_JSON';
             "headings":{
               "tracks":"Tracks",
               "sleeve_notes":"Sleeve Notes",
-              "deleted":"Deleted",
               "artist_id":"Artist",
-              "id":"Id",
-              "recorded":"Recorded",
+              "copyright":"Copyrights",
               "title":"Custom Title",
-              "copyright_id":"Copyright Ids"
+              "recorded":"Recorded",
+              "deleted":"Deleted",
+              "id":"Id"
             },
             "display_name":"Album",
             "hidden_cols":{
@@ -64,7 +64,7 @@ my $expected_json = <<'END_JSON';
               "artist_id",
               "sleeve_notes",
               "tracks",
-              "copyright_id"
+              "copyright"
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
@@ -147,8 +147,8 @@ my $expected_json = <<'END_JSON';
           "copyright":{
             "headings":{
               "rights owner":"Rights Owner",
+              "album":"Albums",
               "tracks":"Tracks",
-              "parent_album":"Parent Albums",
               "copyright_year":"Copyright Year",
               "id":"Id"
             },
@@ -158,7 +158,7 @@ my $expected_json = <<'END_JSON';
               "copyright_year",
               "rights owner",
               "tracks",
-              "parent_album"
+              "album"
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
@@ -235,7 +235,7 @@ my $expected_json = <<'END_JSON';
             "artist_id",
             "sleeve_notes",
             "tracks",
-            "copyright_id"
+            "copyright"
           ],
           "model":"AutoCRUD::DBIC::Album",
           "f":{
@@ -265,6 +265,16 @@ my $expected_json = <<'END_JSON';
               "ref_table":"track",
               "rel_type":"has_many"
             },
+            "copyright":{
+              "via":[
+                "tracks",
+                "copyright_id"
+              ],
+              "extjs_xtype":"textfield",
+              "is_reverse":"1",
+              "display_name":"Copyrights",
+              "rel_type":"many_to_many"
+            },
             "deleted":{
               "extjs_xtype":"checkbox",
               "display_name":"Deleted"
@@ -281,27 +291,17 @@ my $expected_json = <<'END_JSON';
               "ref_table":"artist",
               "display_name":"Artist"
             },
-            "id":{
-              "extjs_xtype":"numberfield",
-              "display_name":"Id"
+            "recorded":{
+              "extjs_xtype":"datefield",
+              "display_name":"Recorded"
             },
             "title":{
               "extjs_xtype":"textarea",
               "display_name":"Custom Title"
             },
-            "recorded":{
-              "extjs_xtype":"datefield",
-              "display_name":"Recorded"
-            },
-            "copyright_id":{
-              "via":[
-                "tracks",
-                "copyright_id"
-              ],
-              "extjs_xtype":"textfield",
-              "is_reverse":"1",
-              "display_name":"Copyright Ids",
-              "rel_type":"many_to_many"
+            "id":{
+              "extjs_xtype":"numberfield",
+              "display_name":"Id"
             }
           },
           "display_name":"Album"
@@ -416,13 +416,23 @@ my $expected_json = <<'END_JSON';
             "copyright_year",
             "rights owner",
             "tracks",
-            "parent_album"
+            "album"
           ],
           "model":"AutoCRUD::DBIC::Copyright",
           "f":{
             "rights owner":{
               "extjs_xtype":"textarea",
               "display_name":"Rights Owner"
+            },
+            "album":{
+              "via":[
+                "tracks",
+                "parent_album"
+              ],
+              "extjs_xtype":"textfield",
+              "is_reverse":"1",
+              "display_name":"Albums",
+              "rel_type":"many_to_many"
             },
             "tracks":{
               "ref_fields":[
@@ -436,16 +446,6 @@ my $expected_json = <<'END_JSON';
               "display_name":"Tracks",
               "ref_table":"track",
               "rel_type":"has_many"
-            },
-            "parent_album":{
-              "via":[
-                "tracks",
-                "parent_album"
-              ],
-              "extjs_xtype":"textfield",
-              "is_reverse":"1",
-              "display_name":"Parent Albums",
-              "rel_type":"many_to_many"
             },
             "copyright_year":{
               "extjs_xtype":"numberfield",
