@@ -8,6 +8,7 @@ use Catalyst::Utils;
 use SQL::Translator::AutoCRUD::Quick;
 use File::Basename;
 use Scalar::Util 'weaken';
+use List::Util 'first';
 
 __PACKAGE__->mk_classdata(_site_conf_cache => {});
 
@@ -171,9 +172,10 @@ sub bootstrap : Private {
     $c->forward('acl');
     $c->forward('do_meta');
 
-    # support for tables with no pks
-    $c->stash->{cpac}->{g}->{default_sort} = ((scalar @{$c->stash->{cpac}->{tm}->extra('pks')})
-        ? $c->stash->{cpac}->{tm}->extra('pks')->[0] : $c->stash->{cpac}->{tc}->{cols}->[0]);
+    # support for tables with no pks, and prettier sorting
+    $c->stash->{cpac}->{g}->{default_sort} =
+        first {!exists $c->stash->{cpac}->{tc}->{hidden_cols}->{$_}}
+              @{$c->stash->{cpac}->{tc}->{cols}};
 
     # tables that are backend read-only (e.g. views) disallow modification
     foreach my $t (keys %{$c->stash->{cpac}->{m}->t}) {
@@ -330,16 +332,31 @@ sub do_meta : Private {
         my $user = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$site}->{$db}->{$so} || {};
         my $conf = $c->stash->{cpac}->{c}->{$db}->{t}->{$so};
         my $meta = $c->stash->{cpac}->{m}->t->{$so};
+        my $visible = {};
 
         # columns from the user conf can be loaded (for current db only - lazy)
-        # XXX user could supply junk and break things
-        my $visible = ((ref $user->{columns} eq ref []) and scalar @{$user->{columns}})
-            ? $user->{columns} : $meta->extra('fields');
-        my %col_seen = map {$_ => 1} @$visible;
-        my $hidden = [ grep {!exists $col_seen{$_}} @{$meta->extra('fields')} ];
-
-        $conf->{cols} = [ @$visible, @$hidden ];
-        $conf->{hidden_cols} = { map {$_ => 1} @$hidden };
+        if ((ref $user->{columns} eq ref []) and scalar @{$user->{columns}}) {
+            foreach my $c (@{$user->{columns}}) {
+                next unless exists $meta->f->{$c};
+                push @{$conf->{cols}}, $c;
+                ++$visible->{$c};
+            }
+            foreach my $c (@{$meta->extra('fields')}) {
+                next if exists $visible->{$c};
+                push @{$conf->{cols}}, $c;
+                $conf->{hidden_cols}->{$c} = 1;
+            }
+        }
+        # set a default list of cols according to some sane rules
+        else {
+            $conf->{cols} = [@{$meta->extra('fields')}];
+            $conf->{hidden_cols}->{$_} = 1 for grep {
+                $meta->f->{$_}->extra('masked_by') or
+                ($meta->f->{$_}->extra('ref_table')
+                    and $meta->f->{$_}->extra('rel_type') eq 'has_many'
+                    and not $c->stash->{cpac}->{m}->t->{$meta->f->{$_}->extra('ref_table')}->is_data)
+            } @{$meta->extra('fields')};
+        }
 
         # headings from the user conf can be loaded (for current db only - lazy)
         foreach my $f (@{$meta->extra('fields')}) {

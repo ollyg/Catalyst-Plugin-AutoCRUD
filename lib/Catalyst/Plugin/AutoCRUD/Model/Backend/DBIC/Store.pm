@@ -213,7 +213,7 @@ sub list {
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         use Data::Dumper;
-        $c->log->debug( Dumper [$filter, $search_opts] );
+        $c->log->debug( Dumper [$filter, $search_opts, \%delay_page_sort] );
     }
 
     my $rs = $c->model($meta->extra('model'))->search($filter, $search_opts);

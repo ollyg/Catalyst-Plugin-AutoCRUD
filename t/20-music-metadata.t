@@ -83,9 +83,6 @@ my $expected_json = <<'END_JSON';
               "surname":"Surname"
             },
             "display_name":"Artist",
-            "hidden_cols":{
-
-            },
             "cols":[
               "id",
               "born",
@@ -108,9 +105,6 @@ my $expected_json = <<'END_JSON';
               "id":"Id"
             },
             "display_name":"Sleeve Notes",
-            "hidden_cols":{
-
-            },
             "cols":[
               "id",
               "text",
@@ -134,9 +128,6 @@ my $expected_json = <<'END_JSON';
               "releasedate":"Releasedate"
             },
             "display_name":"Track",
-            "hidden_cols":{
-
-            },
             "cols":[
               "id",
               "length",
@@ -162,9 +153,6 @@ my $expected_json = <<'END_JSON';
               "id":"Id"
             },
             "display_name":"Copyright",
-            "hidden_cols":{
-
-            },
             "cols":[
               "id",
               "copyright_year",

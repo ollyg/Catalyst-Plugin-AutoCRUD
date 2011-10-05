@@ -111,8 +111,7 @@
         [% ',' IF NOT loop.first %]{
           header: '[% cpac.tc.headings.$col %]'
           [% SET link = cpac.tm.f.$col.extra('ref_table') %]
-          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) OR cpac.tm.f.$col.extra('masked_by')
-                OR (link.defined AND (cpac.tm.f.$col.extra('rel_type') == 'has_many') AND (NOT cpac.m.t.$link.is_data)) %]
+          [% ',hidden: true' IF cpac.tc.hidden_cols.exists(col) %]
           [% IF (NOT cpac.tm.f.$col.extra('masked_by'))
                 AND (cpac.tm.f.$col.is_foreign_key OR cpac.tm.f.$col.extra('is_reverse')) %]
             [% IF cpac.tm.f.$col.extra('rel_type').match('_many') %]
