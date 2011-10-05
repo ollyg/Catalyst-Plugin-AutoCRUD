@@ -202,7 +202,7 @@ sub list {
     # sort col which can be passed to the db
     if ($dir =~ m/^(?:ASC|DESC)$/ and !exists $delay_page_sort{$sort}
         and not ($meta->f->{$sort}->is_foreign_key or $meta->f->{$sort}->extra('is_reverse'))) {
-        $search_opts->{order_by} = \"me.$sort $dir";
+        $search_opts->{order_by} = { '-'.lc($dir) => "me.$sort" };
     }
 
     # set up pager, if needed (if user filtering by FK then delay paging)
