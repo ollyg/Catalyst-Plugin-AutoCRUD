@@ -44,6 +44,7 @@ sub filter {
             while (my ($local, $remote) = each %proxy) {
                 next if $sqlt_tbl->get_field($local);
 
+                my $auto  = $sqlt->get_table($f_tbl)->get_field($remote)->is_auto_increment;
                 my $type  = $sqlt->get_table($f_tbl)->get_field($remote)->data_type;
                 my $size  = $sqlt->get_table($f_tbl)->get_field($remote)->size;
 
@@ -52,6 +53,7 @@ sub filter {
                     display_name => make_label($local),
                     data_type => $type,
                     size => $size,
+                    is_auto_increment => $auto,
                     extra => {
                         is_proxy => 1,
                         proxy_field => $col,

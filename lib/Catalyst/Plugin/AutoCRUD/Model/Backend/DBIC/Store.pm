@@ -274,8 +274,8 @@ sub list {
             else {
                 # proxy cols must be called as accessors, but normally we'd
                 # prefer to use get_column, so try both, otherwise empty str
-                $data->{$col} = (($col =~ m/\w+/ and $row->can($col))
-                    ? eval{$row->$col} : eval{$row->get_column($col)}) || '';
+                $data->{$col} = eval{$row->get_column($col)}
+                    ? eval{$row->get_column($col)} : (eval{$row->$col} || '');
             }
 
             if ($data->{$col} and $meta->f->{$col}->extra('extjs_xtype')
