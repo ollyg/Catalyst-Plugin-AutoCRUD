@@ -699,14 +699,6 @@ Any columns not included in the hash mapping will use the default title (i.e.
 what the plugin works out for itself). To hide a column from view, use the
 C<columns> option, described above.
 
-=item list_returns [ \@columns | { col => title, ... } ]
-
-This configuration option is I<DEPRECATED>. Please see C<columns> to control
-which columns are displayed to users and, independently, C<headings> to alter
-the titles displayed for any columns. The plugin still respects a
-C<list_returns> configuration setting but will emit a warning to your log that
-you need to migrate to the new, more flexible, alternatives.
-
 =item hidden [ yes | no* ]
 
 If you don't want a schema to be offered to the user, or likewise a particular
@@ -934,45 +926,11 @@ For the issues above, if you're desperate that the feature be implemented
 soon, please drop me a line at the address below, because you might be able to
 buy some of my time for the development.
 
-=head1 REQUIREMENTS
-
-=over 4
-
-=item *
-
-Catalyst::Runtime >= 5.70
-
-=item *
-
-Catalyst::Model::DBIC::Schema
-
-=item *
-
-Catalyst::View::JSON
-
-=item *
-
-Catalyst::View::TT
-
-=item *
-
-Catalyst::Action::RenderView
-
-=item *
-
-MRO::Compat
-
-=back
-
 =head1 SEE ALSO
 
 L<CatalystX::CRUD> and L<CatalystX::CRUD:YUI> are two distributions which
 allow you to create something similar but with full customization, and the
 ability to add more features. So, you trade effort for flexibility and power.
-
-L<CatalystX::ListFramework> is similar but has no dependency on Javascript
-(though it can use it for fancy auto-complete searches), and it also allows
-you to control which columns are rendered in the display.
 
 =head1 ACKNOWLEDGEMENTS
 
