@@ -25,7 +25,7 @@ ok($mech->find_link(class => 'cpac_link', text => 'Id'), 'first heading is Id');
 ok($mech->find_link(class => 'cpac_link', text => 'Deleted'), 'fourth heading is Deleted');
 ok($mech->find_link(class => 'cpac_link', text => 'Recorded'), 'third heading is Recorded');
 ok($mech->find_link(class => 'cpac_link', text => 'Custom Title'), 'second heading is Custom Title');
-ok($mech->find_link(class => 'cpac_link', text => 'Artist Id'), 'fifth heading is Artist Id');
+ok($mech->find_link(class => 'cpac_link', text => 'Artist'), 'fifth heading is Artist Id');
 ok($mech->find_link(class => 'cpac_link', text => 'Sleeve Notes'), 'sixth heading is Sleeve Notes');
 
 __END__

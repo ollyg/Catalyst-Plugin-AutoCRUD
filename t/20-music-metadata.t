@@ -46,7 +46,7 @@ my $expected_json = <<'END_JSON';
               "tracks":"Tracks",
               "sleeve_notes":"Sleeve Notes",
               "deleted":"Deleted",
-              "artist_id":"Artist Id",
+              "artist_id":"Artist",
               "id":"Id",
               "recorded":"Recorded",
               "title":"Custom Title",
@@ -103,7 +103,7 @@ my $expected_json = <<'END_JSON';
           },
           "sleeve_notes":{
             "headings":{
-              "album_id":"Album Id",
+              "album_id":"Album",
               "text":"Custom Text",
               "id":"Id"
             },
@@ -128,7 +128,7 @@ my $expected_json = <<'END_JSON';
               "length":"Length",
               "parent_album":"Parent Album",
               "sales":"Sales",
-              "copyright_id":"Copyright Id",
+              "copyright_id":"Copyright",
               "title":"Title",
               "id":"Id",
               "releasedate":"Releasedate"
@@ -223,7 +223,7 @@ my $expected_json = <<'END_JSON';
                 "id"
               ],
               "extjs_xtype":"textfield",
-              "is_reverse":1,
+              "is_reverse":"1",
               "display_name":"Albums",
               "ref_table":"album",
               "rel_type":"has_many"
@@ -259,7 +259,7 @@ my $expected_json = <<'END_JSON';
                 "id"
               ],
               "extjs_xtype":"textfield",
-              "is_reverse":1,
+              "is_reverse":"1",
               "display_name":"Sleeve Notes",
               "ref_table":"sleeve_notes",
               "rel_type":"might_have"
@@ -272,7 +272,7 @@ my $expected_json = <<'END_JSON';
                 "id"
               ],
               "extjs_xtype":"textfield",
-              "is_reverse":1,
+              "is_reverse":"1",
               "display_name":"Tracks",
               "ref_table":"track",
               "rel_type":"has_many"
@@ -291,7 +291,7 @@ my $expected_json = <<'END_JSON';
               "extjs_xtype":"numberfield",
               "rel_type":"belongs_to",
               "ref_table":"artist",
-              "display_name":"Artist Id"
+              "display_name":"Artist"
             },
             "id":{
               "extjs_xtype":"numberfield",
@@ -311,7 +311,7 @@ my $expected_json = <<'END_JSON';
                 "copyright_id"
               ],
               "extjs_xtype":"textfield",
-              "is_reverse":1,
+              "is_reverse":"1",
               "display_name":"Copyright Ids",
               "rel_type":"many_to_many"
             }
@@ -339,7 +339,7 @@ my $expected_json = <<'END_JSON';
               "extjs_xtype":"numberfield",
               "rel_type":"belongs_to",
               "ref_table":"album",
-              "display_name":"Album Id"
+              "display_name":"Album"
             },
             "text":{
               "extjs_xtype":"textarea",
@@ -402,7 +402,7 @@ my $expected_json = <<'END_JSON';
               "extjs_xtype":"numberfield",
               "rel_type":"belongs_to",
               "ref_table":"copyright",
-              "display_name":"Copyright Id"
+              "display_name":"Copyright"
             },
             "title":{
               "extjs_xtype":"textarea",
@@ -444,7 +444,7 @@ my $expected_json = <<'END_JSON';
                 "id"
               ],
               "extjs_xtype":"textfield",
-              "is_reverse":1,
+              "is_reverse":"1",
               "display_name":"Tracks",
               "ref_table":"track",
               "rel_type":"has_many"
@@ -455,7 +455,7 @@ my $expected_json = <<'END_JSON';
                 "parent_album"
               ],
               "extjs_xtype":"textfield",
-              "is_reverse":1,
+              "is_reverse":"1",
               "display_name":"Parent Albums",
               "rel_type":"many_to_many"
             },
