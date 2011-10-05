@@ -40,12 +40,15 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
         $c->log->debug("autocrud: generated global dispatch table") if $c->debug;
     }
 
-    # we get a list of params if there are filter items in the query string
-    # and the user then also sets a filter - allow grid filter to override
+    # param becomes a list when js grid filter is added to url query string.
+    # suppress that back to a list, and also set up filter_params for use by
+    # the skinny frontend.
     foreach my $k (%{ $c->req->params }) {
-        next unless $k =~ m/^cpac_/
-            and ref $c->req->params->{$k} eq ref [];
-        $c->req->params->{$k} = pop @{ $c->req->params->{$k} };
+        next unless $k =~ m/^cpac_filter\./;
+        $c->stash->{cpac}->{g}->{filter_params}->{$k}
+            = ref $c->req->params->{$k} eq ref [] ? pop @{ $c->req->params->{$k} }
+                                                  : $c->req->params->{$k};
+        $c->req->params->{$k} = $c->stash->{cpac}->{g}->{filter_params}->{$k};
     }
 
     # cpac.c.<schema>.t.<source>.<property>
