@@ -31,7 +31,6 @@ my $expected_json = <<'END_JSON';
       "frontend":"full-fat",
       "site":"default",
       "db":"dbic",
-      "version":"CPAC v0.00031412",
       "backend":"Model::AutoCRUD::Backend::DBIC",
       "table":"album"
     },

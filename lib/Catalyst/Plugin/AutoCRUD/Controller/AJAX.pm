@@ -88,6 +88,9 @@ sub dumpmeta : Chained('base') Args(0) {
         }
     }
 
+    # delete the version as it changes
+    delete $c->stash->{cpac}->{g}->{version};
+
     $c->stash->{json_data} = { cpac => {
         meta => $meta,
         conf => $c->stash->{cpac}->{c},
