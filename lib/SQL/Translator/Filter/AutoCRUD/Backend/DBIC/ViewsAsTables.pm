@@ -10,22 +10,31 @@ package SQL::Translator::Filter::AutoCRUD::Backend::DBIC::ViewsAsTables;
 use strict;
 use warnings FATAL => 'all';
 
+use SQL::Translator::AutoCRUD::Utils;
+
 sub filter {
     my ($sqlt, @args) = @_;
     my $schema = shift @args;
 
     foreach my $tbl_name ($schema->sources) {
         my $source = $schema->source($tbl_name);
-        next unless $source->isa('DBIx::Class::ResultSource::View');
 
-        my $tbl = $sqlt->add_table(name => lc $tbl_name);
-        $tbl->extra(is_read_only => 1);
+        if ($source->isa('DBIx::Class::ResultSource::View')) {
+            my $tbl = $sqlt->add_table(name => lc $tbl_name);
+            $tbl->extra(is_read_only => 1);
 
-        foreach my $field ($source->columns) {
-            $tbl->add_field(
-                name => lc $field,
-                data_type => 'text',
-            );
+            foreach my $field ($source->columns) {
+                $tbl->add_field(
+                    name => lc $field,
+                    data_type => 'text',
+                );
+            }
+        }
+        else {
+            my $from = make_path($source);
+            my $tbl = $sqlt->get_table($from);
+            $tbl->extra(is_read_only => 1)
+                if 0 == scalar $source->primary_columns;
         }
     }
 }

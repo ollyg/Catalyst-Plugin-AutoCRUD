@@ -5,7 +5,7 @@
   * Full support for both composite and compound primary keys
   * Can set filters on has_many and many_to_many type relations
   * URI query string can pre-set filter(s): cpac_filter.$col=$val
-  * Support for tables with no primary key
+  * Support for tables with no primary key (possibly read-only)
   * Support for columns with names that are not Perl identifiers
 
   * Support for Views (in DBIx::Class, both virtual and non-virtual)
