@@ -36,7 +36,7 @@ sub setup_components {
                 if eval "$DBIx::Class::Schema::Loader::VERSION" <= 0.04005;
 
             DBIx::Class::Schema::Loader::make_schema_at(
-                'AutoCRUD::Loader::Schema', {},
+                'AutoCRUD::Loader::Schema', {naming => 'current'},
                 $class->config->{$p}->{connect_info},
             );
 
