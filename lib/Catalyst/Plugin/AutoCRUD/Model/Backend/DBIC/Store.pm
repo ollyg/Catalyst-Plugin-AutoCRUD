@@ -390,13 +390,13 @@ sub _update_txn {
         next COL if $ci->extra('is_reverse') or $ci->extra('masked_by');
 
         if (not $ci->is_foreign_key) {
-            # skip auto-inc cols unless they contain data
-            next COL unless exists $params->{$col}
-                and ($params->{$col} or not $ci->is_auto_increment);
-
             # fix for HTML standard which excludes checkboxes
             $params->{$col} ||= 'false'
                 if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
+
+            # skip auto-inc cols unless they contain data
+            next COL unless exists $params->{$col}
+                and ($params->{$col} or not $ci->is_auto_increment);
 
             # filter data before sending to the database
             if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {
@@ -458,13 +458,13 @@ sub _update_txn {
 
             # basic fields in the related record
             if (exists $params->{"$col.$fcol"}) {
-                # skip auto-inc cols unless they contain data
-                next unless exists $params->{"$col.$fcol"}
-                    and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
-
                 # fix for HTML standard which excludes checkboxes
                 $params->{"$col.$fcol"} ||= 'false'
                     if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
+
+                # skip auto-inc cols unless they contain data
+                next unless exists $params->{"$col.$fcol"}
+                    and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
 
                 # filter data before sending to the database
                 if ($fci->extra('extjs_xtype')
@@ -504,6 +504,11 @@ sub _update_txn {
             });
         }
         $self_row->$rel->update; # save it
+    }
+
+    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        use Data::Dumper;
+        $c->log->debug( Dumper $params );
     }
 
     return $self_row->in_storage ? $self_row->update : $self_row->insert;
