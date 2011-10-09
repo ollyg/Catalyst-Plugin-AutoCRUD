@@ -67,7 +67,6 @@ my $expected_json = <<'END_JSON';
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
-            "editable":1,
             "update_allowed":"yes",
             "dumpmeta_allowed":"yes",
             "hidden":"no"
@@ -92,7 +91,6 @@ my $expected_json = <<'END_JSON';
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
-            "editable":1,
             "update_allowed":"yes",
             "dumpmeta_allowed":"yes",
             "hidden":"no"
@@ -111,7 +109,6 @@ my $expected_json = <<'END_JSON';
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
-            "editable":1,
             "update_allowed":"yes",
             "dumpmeta_allowed":"yes",
             "hidden":"no"
@@ -138,7 +135,6 @@ my $expected_json = <<'END_JSON';
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
-            "editable":1,
             "update_allowed":"yes",
             "dumpmeta_allowed":"yes",
             "hidden":"no"
@@ -161,7 +157,6 @@ my $expected_json = <<'END_JSON';
             ],
             "create_allowed":"yes",
             "delete_allowed":"yes",
-            "editable":1,
             "update_allowed":"yes",
             "dumpmeta_allowed":"yes",
             "hidden":"no"
