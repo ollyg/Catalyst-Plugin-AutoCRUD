@@ -1,8 +1,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=[% cpac_config.html_charset OR 'utf-8' | html %]" />
-<title>[% cpac_title %][% ' - Powered by ' IF cpac_title %][% cpac_version %]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=[% cpac.g.html_charset OR 'utf-8' | html %]" />
+<title>[% cpac.g.title %][% ' - Powered by ' IF cpac.g.title %][% cpac.g.version %]</title>
 
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny_body.css" ) %]" />
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "skinny.css" ) %]" />
@@ -11,34 +11,34 @@
 <body>
 
 <div id="cpac_banner">
-  [% IF cpac_title %]
+  [% IF cpac.g.title %]
     <span id="cpac_banner_icons">
-        [% IF cpac_site == 'default' %]
+        [% IF cpac.g.site == 'default' %]
             <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db] ) %]"
-            title ="[% cpac_dbtitle %] Table Picker">
+            title ="[% cpac.c.$cpac_db.display_name %] Table Picker">
                 <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
-                    alt="[% cpac_dbtitle %] Table Picker" />
+                    alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
             </a>
 
-            [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
-                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db], cpac_meta.main.path ) %]"
+            [% IF c.action.name.match('browse') AND cpac.g.frontend != 'skinny' %]
+                    <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_table'), [cpac_db], cpac_table ) %]"
                 title ="Full-feature JS View">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
-                        alt="[% cpac_dbtitle %] Table Picker" />
+                        alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
                 </a>
             [% END %]
         [% ELSE %]
-            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db] ) %]"
-            title ="[% cpac_dbtitle %] Table Picker">
+            <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac.g.site,cpac_db] ) %]"
+            title ="[% cpac.c.$cpac_db.display_name %] Table Picker">
                 <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "sitemap_color.png" ) %]"
-                    alt="[% cpac_dbtitle %] Table Picker" />
+                    alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
             </a>
 
-            [% IF c.action.name.match('browse') AND site_conf.frontend != 'skinny' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac_site,cpac_db], cpac_meta.main.path ) %]"
-                title ="[% cpac_dbtitle %] Table Picker">
+            [% IF c.action.name.match('browse') AND cpac.g.frontend != 'skinny' %]
+                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('no_source'), [cpac.g.site,cpac_db], cpac_table ) %]"
+                title ="[% cpac.c.$cpac_db.display_name %] Table Picker">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "script_lightning.png" ) %]"
-                        alt="[% cpac_dbtitle %] Table Picker" />
+                        alt="[% cpac.c.$cpac_db.display_name %] Table Picker" />
                 </a>
             [% END %]
         [% END %]
@@ -48,14 +48,14 @@
                     alt="Refresh Page">
             </a>
     </span>
-    [% cpac_title %]
+    [% cpac.g.title %]
   [% ELSE %]
     Catalyst AutoCRUD
   [% END %]
 </div>
 
 <div id="cpac_outer" class="cpac_box">
-  [% IF cpac_title %]
+  [% IF cpac.g.title %]
     <div id="cpac_content">
       [% content %]
     </div>
@@ -66,7 +66,7 @@
   [% END %]
     
     <div id="cpac_footer">
-        Powered by [% cpac_version %]
+        Powered by [% cpac.g.version %]
     </div>
 </div> <!-- box -->
 

@@ -4,7 +4,7 @@
 
     var generate_win = function(method) {
         return new Ext.Window({
-            title: 'Edit [% cpac_meta.main.title %]'
+            title: 'Edit [% cpac.tc.display_name %]'
             ,id: 'main-win'
             ,collapsible: true
             ,closable: true
@@ -18,7 +18,10 @@
                 xtype: 'form'
                 ,id: 'form-panel'
                 ,border: false
-                ,url: '[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac_site,cpac_db], cpac_meta.main.path ) %]/' + method
+                ,url: '[% c.uri_for(
+                    c.controller('AutoCRUD::Root').action_for('source'),
+                    [cpac.g.site,cpac_db], cpac_table
+                ) %]/' + method
                 ,autoHeight: true
                 ,layout: 'fit'
     

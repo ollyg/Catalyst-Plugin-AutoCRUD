@@ -24,9 +24,9 @@ __PACKAGE__->add_columns(
   "copyright_id",
   { data_type => "int", is_foreign_key => 1, is_nullable => 0, size => undef },
   "sales",
-  { data_type => "int", is_nullable => 0, size => undef },
+  { data_type => "int", size => undef },
   "releasedate",
-  { data_type => "date", is_nullable => 0, size => undef },
+  { data_type => "date", is_nullable => 1, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to(
@@ -38,6 +38,7 @@ __PACKAGE__->belongs_to(
   "copyright_id" =>
   "TestApp::Schema::Copyright",
   { id => "copyright_id" },
+  { join_type => 'left' },
 );
 
 

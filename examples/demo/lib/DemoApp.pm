@@ -3,7 +3,7 @@ package # hide from PAUSE
 
 use Catalyst qw/-Debug
                 ConfigLoader
-                Static::Simple
+                Unicode::Encoding
                 AutoCRUD/;
 
 DemoApp->config(

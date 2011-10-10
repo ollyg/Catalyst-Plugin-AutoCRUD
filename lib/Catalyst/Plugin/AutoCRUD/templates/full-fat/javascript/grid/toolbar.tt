@@ -26,15 +26,15 @@
                             // don't submit if still the default, or empty
                             continue;
                         }
-                        params['search.' + key] = curval;
+                        params['cpac_filter.' + key] = curval;
                     }
                     store.baseParams = params;
                     pagebar.doLoad(0); // reset to first page
                 }
             }
-          [% IF site_conf.$cpac_db.$cpac_table.create_allowed == 'yes' %]
+          [% IF cpac.tc.create_allowed == 'yes' %]
             ,'->' ,{
-                text: 'Add New [% cpac_meta.main.title %]'
+                text: 'Add New [% cpac.tc.display_name %]'
                 ,cls: 'x-btn-text-icon'
                 ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "add.png" ) %]'
                 ,handler: function(){

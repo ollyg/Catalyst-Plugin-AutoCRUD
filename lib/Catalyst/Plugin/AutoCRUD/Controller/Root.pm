@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Root;
-BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Controller::Root::VERSION = '1.112770';
+{
+  $Catalyst::Plugin::AutoCRUD::Controller::Root::VERSION = '2.112830_001';
 }
 
 use strict;
@@ -8,7 +8,10 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
 use Catalyst::Utils;
+use SQL::Translator::AutoCRUD::Quick;
 use File::Basename;
+use Scalar::Util 'weaken';
+use List::Util 'first';
 
 __PACKAGE__->mk_classdata(_site_conf_cache => {});
 
@@ -21,13 +24,49 @@ my (undef, $directory, undef) = fileparse(
 sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     my ($self, $c) = @_;
 
-    $c->stash->{current_view} = 'AutoCRUD::TT';
-    $c->stash->{cpac_version} = 'CPAC v'
-        . $Catalyst::Plugin::AutoCRUD::VERSION;
-    $c->stash->{cpac_site} = 'default';
+    $c->stash->{cpac} = {};
     $c->stash->{template} = 'list.tt';
-    $c->stash->{cpac_meta} = {};
+    $c->stash->{current_view} = 'AutoCRUD::TT';
+    $c->stash->{cpac}->{g}->{version} = 'CPAC v'
+        . $Catalyst::Plugin::AutoCRUD::VERSION;
+    $c->stash->{cpac}->{g}->{site} = 'default';
+
+    # load enough metadata to display schema and sources
+    if (!exists $self->_site_conf_cache->{dispatch}) {
+        my $dispatch = {};
+        foreach my $backend ($self->_enumerate_backends($c)) {
+            my $new_dispatch = $c->forward($backend, 'dispatch_table');
+            for (keys %$new_dispatch) {$new_dispatch->{$_}->{backend} = $backend}
+            $dispatch = merge_hashes($dispatch, $new_dispatch);
+        }
+        $self->_site_conf_cache->{dispatch} = $dispatch;
+        $c->log->debug("autocrud: generated global dispatch table") if $c->debug;
+    }
+
+    # param becomes a list when js grid filter is added to url query string.
+    # suppress that back to a list, and also set up filter_params for use by
+    # the skinny frontend.
+    foreach my $k (%{ $c->req->params }) {
+        next unless $k =~ m/^cpac_filter\./;
+        $c->stash->{cpac}->{g}->{filter_params}->{$k}
+            = ref $c->req->params->{$k} eq ref [] ? pop @{ $c->req->params->{$k} }
+                                                  : $c->req->params->{$k};
+        $c->req->params->{$k} = $c->stash->{cpac}->{g}->{filter_params}->{$k};
+    }
+
+    # cpac.c.<schema>.t.<source>.<property>
+    $c->stash->{cpac}->{c} = $self->_site_conf_cache->{dispatch};
 }
+
+sub _enumerate_backends {
+    my ($self, $c) = @_;
+
+    my @backends = @{ $c->config->{'Plugin::AutoCRUD'}->{backends} };
+    $c->log->debug('autocrud: backends are '. join ',', @backends) if $c->debug;
+    return @backends;
+}
+
+sub merge_hashes { return Catalyst::Utils::merge_hashes(@_) }
 
 # =====================================================================
 
@@ -59,7 +98,7 @@ sub table : Chained('db') PathPart('') Args(1) {
 
 sub site : Chained('base') PathPart CaptureArgs(1) {
     my ($self, $c, $site) = @_;
-    $c->stash->{cpac_site} = $site;
+    $c->stash->{cpac}->{g}->{site} = $site;
 }
 
 sub no_schema : Chained('site') PathPart('') Args(0) {
@@ -69,7 +108,8 @@ sub no_schema : Chained('site') PathPart('') Args(0) {
 
 sub schema : Chained('site') PathPart CaptureArgs(1) {
     my ($self, $c, $db) = @_;
-    $c->stash->{cpac_db} = $db;
+    $c->stash->{cpac}->{g}->{db} = $db;
+    $c->detach('err_message') unless exists $c->stash->{cpac}->{c}->{$db};
 }
 
 sub no_source : Chained('schema') PathPart('') Args(0) {
@@ -80,44 +120,179 @@ sub no_source : Chained('schema') PathPart('') Args(0) {
 # we know both the schema and the source here
 sub source : Chained('schema') PathPart Args(1) {
     my ($self, $c) = @_;
-    $c->forward('do_meta');
-    $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' List';
+    $c->forward('bootstrap');
+
+    $c->stash->{cpac}->{g}->{title} = $c->stash->{cpac}->{c}
+        ->{$c->stash->{cpac}->{g}->{db}}
+        ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
 
     # allow frontend override in non-default site (default will be full-fat)
-    $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
-    $c->forward('Controller::AutoCRUD::'. ucfirst $c->stash->{cpac_frontend})
-        if $c->controller('AutoCRUD::'. ucfirst $c->stash->{cpac_frontend});
+    my $fend = 'Controller::AutoCRUD::'. ucfirst $c->stash->{cpac}->{g}->{frontend};
+    if ($c->controller($fend)) {
+        $c->log->debug(sprintf 'autocrud: forwarding to f/end %s', $fend)
+            if $c->debug;
+        $c->forward($fend);
+    }
 }
 
 # for AJAX calls
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
     my ($self, $c) = @_;
-    $c->forward('do_meta');
+    $c->forward('bootstrap');
+    $c->stash->{cpac}->{g}->{backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # =====================================================================
 
-# we know both the schema and the source here
-sub do_meta : Private {
-    my ($self, $c, $table) = @_;
-    $c->stash->{cpac_table} = $table;
-
-    my $db = $c->stash->{cpac_db};
-    my $site = $c->stash->{cpac_site};
-
-    $c->stash->{cpac_backend_store} =
-        $c->stash->{site_conf}->{$db}->{backend_store} ||
-        ('Model::AutoCRUD::Backend::'. ($c->stash->{site_conf}->{$db}->{backend} || 'DBIC'));
-    $c->stash->{cpac_backend_meta} =
-        $c->stash->{site_conf}->{$db}->{backend_meta} ||
-        ('Model::AutoCRUD::Metadata::'. ($c->stash->{site_conf}->{$db}->{backend} || 'DBIC'));
-
+# we know only the schema or no schema, or there is a problem
+sub err_message : Private {
+    my ($self, $c) = @_;
     $c->forward('build_site_config');
 
-    # ACLs on the schema and source from site config
-    if ($c->stash->{site_conf}->{$db}->{hidden}
-        and $c->stash->{site_conf}->{$db}->{hidden} eq 'yes') {
+    # if there's only one schema, then we choose it and skip straight to
+    # the tables display.
+    if (scalar keys %{$c->stash->{cpac}->{c}} == 1) {
+        $c->stash->{cpac}->{g}->{db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
+    }
+    elsif (exists $c->stash->{cpac}->{g}->{db}
+        and !exists $c->stash->{cpac}->{c}->{ $c->stash->{cpac}->{g}->{db} }) {
 
+        delete $c->stash->{cpac}->{g}->{db};
+        delete $c->stash->{cpac_db};
+    }
+
+    $c->stash->{cpac_db} = $c->stash->{cpac}->{g}->{db}
+        if exists $c->stash->{cpac}->{g}->{db};
+
+    delete $c->stash->{cpac}->{g}->{table};
+    delete $c->stash->{cpac_table};
+
+    $c->stash->{template} = 'tables.tt';
+}
+
+# just to factor out the pulling of conf and meta from package caches
+sub bootstrap : Private {
+    my ($self, $c, $table) = @_;
+
+    my $db = $c->stash->{cpac}->{g}->{db};
+    $c->stash->{cpac}->{g}->{table} = $table;
+    $c->detach('err_message') unless exists $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
+
+    $c->forward('build_site_config');
+    $c->forward('acl');
+    $c->forward('do_meta');
+
+    # support for tables with no pks, and prettier sorting
+    $c->stash->{cpac}->{g}->{default_sort} =
+        first {!exists $c->stash->{cpac}->{tc}->{hidden_cols}->{$_}}
+              @{$c->stash->{cpac}->{tc}->{cols}};
+
+    # tables that are backend read-only (e.g. views) disallow modification
+    foreach my $t (keys %{$c->stash->{cpac}->{m}->t}) {
+        next unless $c->stash->{cpac}->{m}->t->{$t}->extra('is_read_only');
+        $c->stash->{cpac}->{c}->{$db}->{t}->{$t}->{$_} = 'no'
+            for qw/create_allowed update_allowed delete_allowed/;
+    }
+}
+
+# build site config for filtering the frontend
+sub build_site_config : Private {
+    my ($self, $c) = @_;
+    my $current = $c->stash->{cpac}->{g}->{site};
+
+    # if we have it cached
+    if (scalar keys %{ $self->_site_conf_cache->{sites}->{$current} }) {
+        $c->log->debug(sprintf "autocrud: retrieving cached config for site [%s]",
+            $current) if $c->debug;
+
+        $c->stash->{cpac}->{c} = merge_hashes(
+            $c->stash->{cpac}->{c},
+            $self->_site_conf_cache->{sites}->{$current});
+        $c->stash->{cpac}->{g} = merge_hashes($c->stash->{cpac}->{g},
+            delete $c->stash->{cpac}->{c}->{cpac_general});
+        return;
+    }
+
+    # percolate user preferences down to table level.
+    # this duplicates everything, but what we actually copy to config is
+    # only the keys in the defaults hashes.
+    my $user = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$current} || {};
+    foreach my $sc (keys %{ $c->stash->{cpac}->{c} }) {
+        $user->{$sc} = merge_hashes(
+            ($user->{$sc} || {}),
+            _one_level_of($user));
+
+        foreach my $so (keys %{ $c->stash->{cpac}->{c}->{$sc}->{t} }) {
+            $user->{$sc}->{$so} = merge_hashes(
+                ($user->{$sc}->{$so} || {}),
+                _one_level_of($user->{$sc}));
+        }
+    }
+
+    my %site_defaults   = ( frontend => 'full-fat' );
+    my %schema_defaults = ( hidden => 'no' );
+    my %source_defaults = (
+        create_allowed => 'yes',
+        update_allowed => 'yes',
+        delete_allowed => 'yes',
+        dumpmeta_allowed => ($ENV{AUTOCRUD_TESTING} ? 'yes' : 'no'),
+        hidden => 'no',
+    );
+
+    # need to end up with a data structure which is easy to use in a
+    # template. the cpac_general key avoids name collision with schema,
+    # and is moved to {g} for use in template stash.
+    my $site = { cpac_general => merge_hashes(
+        \%site_defaults,
+        _one_level_of($user, \%site_defaults)) };
+
+    foreach my $sc (keys %{ $c->stash->{cpac}->{c} }) {
+        $site->{$sc} = merge_hashes(
+            \%schema_defaults,
+            _one_level_of($user->{$sc}, \%schema_defaults));
+
+        foreach my $so (keys %{ $c->stash->{cpac}->{c}->{$sc}->{t} }) {
+            $site->{$sc}->{t}->{$so} = merge_hashes(
+                \%source_defaults,
+                _one_level_of($user->{$sc}->{$so}, \%source_defaults));
+        }
+    }
+
+    $self->_site_conf_cache->{sites}->{$current} = $site;
+    $c->stash->{cpac}->{c} = merge_hashes($c->stash->{cpac}->{c}, $site);
+    $c->stash->{cpac}->{g} = merge_hashes($c->stash->{cpac}->{g},
+        delete $c->stash->{cpac}->{c}->{cpac_general});
+
+    $c->log->debug(sprintf "autocrud: loaded config for site [%s]",
+            $c->stash->{cpac}->{g}->{site}) if $c->debug;
+}
+
+# returns a new hash containing only defined SCALAR values of $hash
+# and optionally, $hash keys will be limited to those keys in $filter
+sub _one_level_of {
+    my ($hash, $filter) = @_;
+    return {} unless ref $hash eq ref {};
+    my $retval = {
+        map {($_ => $hash->{$_})}
+            grep {exists $hash->{$_} and defined $hash->{$_}
+                  and (ref $hash->{$_} eq ref '')} keys %$hash
+    };
+    return $retval unless ref $filter eq ref {};
+    return {
+        map {($_ => $retval->{$_})}
+            grep {exists $retval->{$_}} keys %$filter
+    };
+}
+
+sub acl : Private {
+    my ($self, $c) = @_;
+
+    my $site = $c->stash->{cpac}->{g}->{site};
+    my $db = $c->stash->{cpac}->{g}->{db};
+    my $table = $c->stash->{cpac}->{g}->{table};
+
+    # ACLs on the schema and source from site config
+    if ($c->stash->{cpac}->{c}->{$db}->{hidden} eq 'yes') {
         if ($site eq 'default') {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_db') )]);
         }
@@ -125,9 +300,7 @@ sub do_meta : Private {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_schema'), [$site] )]);
         }
     }
-    if ($c->stash->{site_conf}->{$db}->{$table}->{hidden}
-        and $c->stash->{site_conf}->{$db}->{$table}->{hidden} eq 'yes') {
-
+    if ($c->stash->{cpac}->{c}->{$db}->{t}->{$table}->{hidden} eq 'yes') {
         if ($site eq 'default') {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_table'), [$db] )]);
         }
@@ -135,9 +308,6 @@ sub do_meta : Private {
             $c->detach('verboden', [$c->uri_for( $self->action_for('no_source'), [$site, $db] )]);
         }
     }
-
-    $c->stash->{cpac_meta} = $c->forward($c->stash->{cpac_backend_meta});
-    $c->detach('err_message') if !defined $c->stash->{cpac_meta}->{model};
 }
 
 sub verboden : Private {
@@ -147,169 +317,87 @@ sub verboden : Private {
     # detaches -> end
 }
 
-# when user has not selected a source, we don't know which backend to use
-sub _enumerate_metadata_backends {
+# we know both the schema and the source here
+sub do_meta : Private {
     my ($self, $c) = @_;
-    my $config = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}};
-    my @backends = qw/Model::AutoCRUD::Metadata::DBIC/;
 
-    foreach my $s (sort keys %$config) {
-        next unless exists $config->{$s} and exists $config->{$s}->{backend_meta};
-        push @backends, $config->{$s}->{backend_meta};
+    my $site = $c->stash->{cpac}->{g}->{site};
+    my $db = $c->stash->{cpac}->{g}->{db};
+    my $table = $c->stash->{cpac}->{g}->{table};
+
+    $c->detach('err_message') if !exists $c->stash->{cpac}->{c}->{$db}
+        or !exists $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
+
+    # it's the whole schema, because related table data is also required.
+    if (!exists $self->_site_conf_cache->{meta}->{$db}) {
+        $self->_site_conf_cache->{meta}->{$db} = SQL::Translator::AutoCRUD::Quick->new(
+            $c->forward($c->stash->{cpac}->{c}->{$db}->{backend}, 'schema_metadata'));
+        $c->log->debug("autocrud: generated schema metadata for [$db]") if $c->debug;
     }
-    $c->log->debug(join ':', 'Backends are', ' ', @backends) if $c->debug;
-    return @backends;
-}
 
-# we know only the schema or no schema, or there is a problem
-sub err_message : Private {
-    my ($self, $c) = @_;
+    $c->stash->{cpac}->{m} = $self->_site_conf_cache->{meta}->{$db};
+    $c->log->debug("autocrud: retrieved cached schema metadata for [$db]") if $c->debug;
 
-    $c->forward('build_site_config') if !exists $c->stash->{site_conf};
+    foreach my $so (keys %{ $c->stash->{cpac}->{c}->{$db}->{t} }) {
+        my $user = $c->config->{'Plugin::AutoCRUD'}->{sites}->{$site}->{$db}->{$so} || {};
+        my $conf = $c->stash->{cpac}->{c}->{$db}->{t}->{$so};
+        my $meta = $c->stash->{cpac}->{m}->t->{$so};
+        my $visible = {};
 
-    # forward to each metadata builder to provide db data
-    if (!defined $c->stash->{cpac_meta}->{db2path}) {
-        foreach my $backend ($self->_enumerate_metadata_backends($c)) {
-            $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-                $c->stash->{cpac_meta}, $c->forward($backend));
+        # columns from the user conf can be loaded (for current db only - lazy)
+        if ((ref $user->{columns} eq ref []) and scalar @{$user->{columns}}) {
+            foreach my $c (@{$user->{columns}}) {
+                next unless exists $meta->f->{$c};
+                push @{$conf->{cols}}, $c;
+                ++$visible->{$c};
+            }
+            foreach my $c (@{$meta->extra('fields')}) {
+                next if exists $visible->{$c};
+                push @{$conf->{cols}}, $c;
+                $conf->{hidden_cols}->{$c} = 1;
+            }
+        }
+        # set a default list of cols according to some sane rules
+        else {
+            $conf->{cols} = [@{$meta->extra('fields')}];
+            $conf->{hidden_cols}->{$_} = 1 for grep {
+                $meta->f->{$_}->extra('masked_by') or
+                ($meta->f->{$_}->extra('ref_table')
+                    and $meta->f->{$_}->extra('rel_type') eq 'has_many'
+                    and not $c->stash->{cpac}->{m}->t->{$meta->f->{$_}->extra('ref_table')}->is_data)
+            } @{$meta->extra('fields')};
+        }
+
+        # headings from the user conf can be loaded (for current db only - lazy)
+        foreach my $f (@{$meta->extra('fields')}) {
+            $conf->{headings}->{$f} =
+                $user->{headings}->{$f} || $meta->f->{$f}->extra('display_name');
         }
     }
 
-    # a fugly hack for back-compat - if there is only one schema running,
-    # then set that and re-dispatch to the metadata builder to set sources list
-    if (scalar keys %{$c->stash->{cpac_meta}->{dbpath2model}} == 1) {
-        my $db = [keys %{$c->stash->{cpac_meta}->{dbpath2model}}]->[0];
-        $c->stash->{cpac_db} = $db;
-        my $backend = (exists $c->stash->{site_conf}->{$db}->{backend_meta}
-            ? $c->stash->{site_conf}->{$db}->{backend_meta}
-            : 'Model::AutoCRUD::Metadata::DBIC'); # the default
-        $c->stash->{cpac_meta} = Catalyst::Utils::merge_hashes(
-            $c->stash->{cpac_meta}, $c->forward($backend));
-    }
-
-    $c->stash->{cpac_frontend} ||= $c->stash->{site_conf}->{frontend};
-    $c->stash->{template} = 'tables.tt';
-}
-
-# build site config for filtering the frontend
-sub build_site_config : Private {
-    my ($self, $c) = @_;
-    my $site = $self->_site_conf_cache->{$c->stash->{cpac_site}} ||= {};
-    my $cpac = {};
-
-    # if we have it cached
-    if ($site->{__built}) {
-        $c->stash->{site_conf} = $site;
-        $c->log->debug(sprintf "autocrud: retreived cached config for site [%s]",
-            $c->stash->{cpac_site}) if $c->debug;
-        return;
-    }
-
-    # first, prime our structure of schema and source aliases
-    foreach my $backend ($self->_enumerate_metadata_backends($c)) {
-        # get stash of db path parts
-        my $meta = $c->forward($backend, 'build_db_info');
-        foreach my $db (keys %{$meta->{dbpath2model}}) {
-            $site->{$db} ||= {};
-            # get stash of table path parts
-            $c->forward($backend, 'build_table_info_for_db', [$meta, $db]);
-            foreach my $table (keys %{$meta->{path2model}->{$db}}) {
-                $site->{$db}->{$table} ||= {};
-            }
-        }
-        # store this for setting override on *_allowed later
-        $cpac = Catalyst::Utils::merge_hashes( $cpac, $meta );
-    }
-
-    # load whatever the user set in their site config
-    $site = Catalyst::Utils::merge_hashes(
-        ($c->config->{'Plugin::AutoCRUD'}->{sites}->{$c->stash->{cpac_site}} || {}),
-        $site);
-
-    my %defaults = (
-        frontend => 'full-fat', # needlessly copied to schema & sources
-        create_allowed => 'yes',
-        update_allowed => 'yes',
-        delete_allowed => 'yes',
-        dumpmeta_allowed => 'no',
-        hidden => 'no',
-    );
-    $defaults{dumpmeta_allowed} = 'yes' if $ENV{AUTOCRUD_TESTING};
-
-    # merge defaults into user prefs
-    $site = Catalyst::Utils::merge_hashes (\%defaults, $site);
-
-    # then bubble up the prefs until each source def has a complete set
-    foreach my $sc (keys %{$site}) {
-        next unless ref $site->{$sc} eq 'HASH';
-        $site->{$sc} = Catalyst::Utils::merge_hashes ({
-                map {($_ => $site->{$_})} keys %defaults
-            }, $site->{$sc});
-
-        foreach my $so (keys %{$site->{$sc}}) {
-            next unless ref $site->{$sc}->{$so} eq 'HASH';
-            $site->{$sc}->{$so} = Catalyst::Utils::merge_hashes ({
-                    map {($_ => $site->{$sc}->{$_})} keys %defaults
-                }, $site->{$sc}->{$so});
-
-            # override *_allowed if the source is read only
-            if (not $cpac->{editable}->{$sc}->{$so}) {
-                $site->{$sc}->{$so}->{create_allowed} = 'no';
-                $site->{$sc}->{$so}->{update_allowed} = 'no';
-                $site->{$sc}->{$so}->{delete_allowed} = 'no';
-            }
-
-            # back-compat work for list_returns
-            if (exists $site->{$sc}->{$so}->{list_returns} and
-                    (!exists $site->{$sc}->{$so}->{headings} and !exists $site->{$sc}->{$so}->{columns})) {
-
-                $c->log->warn("AutoCRUD: 'list_returns' is deprecated for site config. ".
-                    "Please migrate to using 'columns' and 'headings' as shown in the Documentation.");
-
-                $site->{$sc}->{$so}->{headings} = delete $site->{$sc}->{$so}->{list_returns};
-
-                # promote arrayref into hashref
-                if (ref $site->{$sc}->{$so}->{headings} eq 'ARRAY') {
-                    $site->{$sc}->{$so}->{headings} =  { map {$_ => undef} @{$site->{$sc}->{$so}->{headings}} };
-                }
-
-                # prettify the column headings 
-                $site->{$sc}->{$so}->{headings}->{$_} ||= (join ' ', map ucfirst, split /[\W_]+/, lc $_)
-                    for keys %{ $site->{$sc}->{$so}->{headings} };
-
-                # columns generated from old list_returns
-                $site->{$sc}->{$so}->{columns} = [ keys %{ $site->{$sc}->{$so}->{headings} } ];
-            }
-
-            # copy columns list as hashref for ease of lookups
-            if (exists $site->{$sc}->{$so}->{columns}
-                    and ref $site->{$sc}->{$so}->{columns} eq 'ARRAY') {
-                $site->{$sc}->{$so}->{col_keys} = { map {$_ => 1} @{$site->{$sc}->{$so}->{columns}} };
-            }
-
-            # need stubs for TT
-            $site->{$sc}->{$so}->{columns}  ||= [];
-            $site->{$sc}->{$so}->{col_keys} ||= {};
-            $site->{$sc}->{$so}->{headings} ||= {};
-        }
-    }
-
-    $site->{__built} = 1;
-    $c->stash->{site_conf} = $site;
-    $self->_site_conf_cache->{$c->stash->{cpac_site}} = $site;
-
-    $c->log->debug(sprintf "autocrud: cached the config for site [%s]",
-            $c->stash->{cpac_site}) if $c->debug;
+    # set up helper variables for templates
+    $c->stash->{cpac_db} = $db;
+    $c->stash->{cpac_table} = $table;
+    $c->stash->{cpac}->{tm} = $c->stash->{cpac}->{m}->t->{$table};
+    $c->stash->{cpac}->{tc} = $c->stash->{cpac}->{c}->{$db}->{t}->{$table};
+    weaken $c->stash->{cpac}->{tm};
+    weaken $c->stash->{cpac}->{tc};
 }
 
 sub helloworld : Chained('base') Args(0) {
     my ($self, $c) = @_;
+    $c->forward('build_site_config');
+    $c->stash->{cpac}->{g}->{title} = 'Hello World';
     $c->stash->{template} = 'helloworld.tt';
 }
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{cpac_frontend} || 'full-fat';
+    my $frontend = $c->stash->{cpac}->{g}->{frontend} || 'full-fat';
+
+    $c->stash->{cpac}->{g} = merge_hashes(
+        $c->stash->{cpac}->{g},
+        _one_level_of($c->config->{'Plugin::AutoCRUD'}));
 
     my $tt_path = $c->config->{'Plugin::AutoCRUD'}->{tt_path};
     $tt_path = (defined $tt_path ? (ref $tt_path eq '' ? [$tt_path] : $tt_path ) : [] );

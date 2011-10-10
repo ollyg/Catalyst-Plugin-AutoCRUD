@@ -5,61 +5,77 @@
     // most of the messing about is to get the right form field types
     // also readonly, validation
 
+    [% SET tab_order = [ '' ] %]
+    [% FOREACH col IN cpac.tc.cols %]
+      [% NEXT UNLESS cpac.tm.f.$col.extra('rel_type') == 'belongs_to' %]
+      [% tab_order.push( col ) %]
+    [% END %]
+
     var tabs = [
-      [% FOREACH tname IN cpac_meta.tab_order.nsort %]
-        [% SET info = cpac_meta.table_info.$tname %]
-        [% SET tbl = info.path %]
-        [% NEXT IF NOT loop.first AND site_conf.$cpac_db.$tbl.create_allowed == 'no' %]
-        [% ',' IF cpac_meta.tab_order.keys.size > 1 AND NOT loop.first %]{
-            [% IF cpac_meta.tab_order.item(tname) == 1 %]
-              title: '[% cpac_meta.main.title %]'
+      [% FOREACH orig_col IN tab_order %]
+        [% SET tbl = cpac.tm.f.$orig_col.extra('ref_table') || cpac_table %]
+        [% SET conf = cpac.c.$cpac_db.t.$tbl %]
+        [% SET meta = cpac.m.t.$tbl %]
+
+        [% NEXT IF conf.create_allowed == 'no' OR conf.update_allowed == 'no' %]
+        [% ',' IF orig_col != '' %]{
+            [% IF orig_col == '' %]
+              title: '[% conf.display_name %]'
             [% ELSE %]
-              title: 'New [% info.title %]'
+              title: 'New [% cpac.tm.f.$orig_col.extra('display_name') %]'
               ,xtype: 'fieldset'
               ,checkboxToggle: true
-              ,checkboxName: 'checkbox.[% info.path %]'
+              ,checkboxName: 'checkbox.[% orig_col %]'
               ,collapsed: true
             [% END %]
 
             ,items: [
               [% SET count = 1 %]
-              [% FOREACH field IN info.col_order %]
-              [% NEXT IF info.cols.$field.is_rr %]
+              [% FOREACH field IN conf.cols %]
+              [% NEXT IF meta.f.$field.extra('is_reverse') OR meta.f.$field.extra('masked_by') %]
+              [% NEXT IF orig_col != '' AND meta.f.$field.extra('is_proxy') %]
                 [% ',' IF count > 1 %]{
-                [% SET count = count + 1 %]
-                  [% IF cpac_meta.tab_order.item(tname) == 1 %]
-                    name: '[% field %]'
-                    ,id: '[% field %]'
+                  [% IF orig_col == '' %]
+                    [% IF count == 1 %]
+                    name: 'cpac__id'
+                    ,id: 'cpac__id'
+                    ,xtype: 'hidden'
+                    },{
+                    [% END %]
+                    name: '[% field | replace('\'', '\\\'') %]'
+                    ,id: '[% field | replace('\'', '\\\'') %]'
                   [% ELSE %]
-                    name: '[% info.path %].[% field %]'
-                    ,id: '[% info.path %].[% field %]'
+                    name: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
+                    ,id: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% IF site_conf.$cpac_db.$tbl.headings.exists(field) AND site_conf.$cpac_db.$tbl.headings.defined(field) %]
-                    ,fieldLabel: '[% site_conf.$cpac_db.$tbl.headings.$field %]'
-                  [% ELSE %]
-                    ,fieldLabel: '[% info.cols.$field.heading %]'
+                  [% SET count = count + 1 %]
+                  [% IF meta.f.$field.is_auto_increment %]
+                    ,xtype: 'hidden'
+                  }[% NEXT %]
                   [% END %]
-                    ,anchor: '-20'
-                    ,autoHeight: true
+
+                  ,fieldLabel: '[% conf.headings.$field %]'
+                  ,anchor: '-20'
+                  ,autoHeight: true
                   
-                  [% IF info.cols.$field.default_value %]
-                    ,value: '[% info.cols.$field.default_value | replace('\'', '\\\'') %]'
+                  [% IF meta.f.$field.default_value %]
+                    ,value: '[% meta.f.$field.default_value | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% UNLESS info.cols.$field.editable %]
-                    ,readOnly: true
-                    ,cls: 'x-item-disabled'
-                    //,disabled: true // argh, prevents submit :-( so use cls
-                  [% ELSIF info.cols.$field.required %]
+                  [% IF NOT meta.f.$field.is_nullable %]
                     ,allowBlank: false
                   [% END %]
 
-                  [% IF info.cols.$field.is_fk AND info.cols.$field.editable %]
+                  [% IF meta.f.$field.is_foreign_key %]
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
-                    ,hiddenName: 'combobox.[% field %]'
+                    [% IF orig_col == '' %]
+                    ,hiddenName: 'combobox.[% field | replace('\'', '\\\'') %]'
+                    [% ELSE %]
+                    ,hiddenName: 'combobox.[% orig_col %].[% field | replace('\'', '\\\'') %]'
+                    [% END %]
                     ,loadingText: 'Searching...'
                     ,forceSelection: true
                     ,selectOnFocus: true
@@ -67,7 +83,10 @@
                     ,pageSize: 5
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
-                        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list_stringified'), [cpac_site,cpac_db,info.path] ) %]'
+                        url: '[% c.uri_for(
+                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            [cpac.g.site,cpac_db,tbl]
+                        ) %]'
                         ,root: 'rows'
                         ,totalProperty: 'total'
                         ,fields: [ 'dbid', 'stringified' ]
@@ -90,7 +109,7 @@
                         }
                     }
                   [% ELSE %]
-                    [% SET localxtype = info.cols.$field.extjs_xtype OR "textarea" %]
+                    [% SET localxtype = meta.f.$field.extra('extjs_xtype') OR "textarea" %]
                     ,xtype: '[% localxtype %]'
 
                     [% SWITCH localxtype %]

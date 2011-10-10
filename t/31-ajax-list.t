@@ -5,331 +5,28 @@ use warnings FATAL => 'all';
 use lib qw( t/lib );
 
 use Test::More 'no_plan';
+use JSON::XS;
 use Storable;
 
 # application loads
 BEGIN { use_ok "Test::WWW::Mechanize::Catalyst::AJAX" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst::AJAX->new;
 
-my $default_album_page = {
-          'total' => 5,
-          'rows' => [
-                      {
-                        'tracks' => [
-                                      'Track 1.1',
-                                      'Track 1.2',
-                                      'Track 1.3'
-                                    ],
-                        'artist_id' => 'Mike Smith',
-                        'id' => 1,
-                        'title' => 'DJ Mix 1',
-                        'recorded' => '1989-01-02',
-                        'sleeve_notes' => '',
-                        'deleted' => 1
-                      },
-                      {
-                        'tracks' => [
-                                      'Track 2.1',
-                                      'Track 2.2',
-                                      'Track 2.3'
-                                    ],
-                        'artist_id' => 'Mike Smith',
-                        'id' => 2,
-                        'title' => 'DJ Mix 2',
-                        'recorded' => '1989-02-02',
-                        'sleeve_notes' => 'SleeveNotes: id(1)',
-                        'deleted' => 1
-                      },
-                      {
-                        'tracks' => [
-                                      'Track 3.1',
-                                      'Track 3.2',
-                                      'Track 3.3'
-                                    ],
-                        'artist_id' => 'Mike Smith',
-                        'id' => 3,
-                        'title' => 'DJ Mix 3',
-                        'recorded' => '1989-03-02',
-                        'sleeve_notes' => '',
-                        'deleted' => 1
-                      },
-                      {
-                        'tracks' => [
-                                      'Pop Song One'
-                                    ],
-                        'artist_id' => 'David Brown',
-                        'id' => 4,
-                        'title' => 'Pop Songs',
-                        'recorded' => '2007-05-30',
-                        'sleeve_notes' => '',
-                        'deleted' => 0
-                      },
-                      {
-                        'tracks' => [
-                                      'Hit Tune',
-                                      'Hit Tune II',
-                                      'Hit Tune 3'
-                                    ],
-                        'artist_id' => 'Adam Smith',
-                        'id' => 5,
-                        'title' => 'Greatest Hits',
-                        'recorded' => '2002-05-21',
-                        'sleeve_notes' => '',
-                        'deleted' => 0
-                      }
-                    ]
-};
+my $default_album_page = JSON::XS::decode_json(<<'END_DEF_ALBUM');
+{"total":5,"rows":[{"cpac__id":"id\u00001","tracks":["Track 1.1","Track 1.2","Track 1.3"],"sleeve_notes":"","deleted":1,"artist_id":"Mike Smith","id":1,"recorded":"1989-01-02","title":"DJ Mix 1","copyright":["Label A","Label B"],"cpac__display_name":"DJ Mix 1"},{"cpac__id":"id\u00002","tracks":["Track 2.1","Track 2.2","Track 2.3"],"sleeve_notes":"SleeveNotes: id(1)","deleted":1,"artist_id":"Mike Smith","id":2,"recorded":"1989-02-02","title":"DJ Mix 2","copyright":["Label A","Label B"],"cpac__display_name":"DJ Mix 2"},{"cpac__id":"id\u00003","tracks":["Track 3.1","Track 3.2","Track 3.3"],"sleeve_notes":"","deleted":1,"artist_id":"Mike Smith","id":3,"recorded":"1989-03-02","title":"DJ Mix 3","copyright":["Label A","Label B"],"cpac__display_name":"DJ Mix 3"},{"cpac__id":"id\u00004","tracks":["Pop Song One"],"sleeve_notes":"","deleted":0,"artist_id":"David Brown","id":4,"recorded":"2007-05-30","title":"Pop Songs","copyright":["Label B"],"cpac__display_name":"Pop Songs"},{"cpac__id":"id\u00005","tracks":["Hit Tune","Hit Tune 3","Hit Tune II"],"sleeve_notes":"","deleted":0,"artist_id":"Adam Smith","id":5,"recorded":"2002-05-21","title":"Greatest Hits","copyright":["Label B"],"cpac__display_name":"Greatest Hits"}]}
+END_DEF_ALBUM
 
-my $sorted_track_page = {
-          'total' => 13,
-            'rows' => [
-                        {
-                          'length' => '1:01',
-                          'parent_album' => 'Pop Songs',
-                          'sales' => 2685000,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Pop Song One',
-                          'id' => 10,
-                          'releasedate' => '1995-01-04'
-                        },
-                        {
-                          'length' => '2:02',
-                          'parent_album' => 'Greatest Hits',
-                          'sales' => 1536000,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Hit Tune',
-                          'id' => 11,
-                          'releasedate' => '1990-11-06'
-                        },
-                        {
-                          'length' => '3:03',
-                          'parent_album' => 'Greatest Hits',
-                          'sales' => 195300,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Hit Tune II',
-                          'id' => 12,
-                          'releasedate' => '1990-11-06'
-                        },
-                        {
-                          'length' => '4:04',
-                          'parent_album' => 'Greatest Hits',
-                          'sales' => 1623000,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Hit Tune 3',
-                          'id' => 13,
-                          'releasedate' => '1990-11-06'
-                        },
-                        {
-                          'length' => '3:30',
-                          'parent_album' => 'DJ Mix 3',
-                          'sales' => 1953540,
-                          'copyright_id' => 'Label A',
-                          'title' => 'Track 3.1',
-                          'id' => 7,
-                          'releasedate' => '1998-06-12'
-                        },
-                        {
-                          'length' => '3:40',
-                          'parent_album' => 'DJ Mix 3',
-                          'sales' => 2668000,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Track 3.2',
-                          'id' => 8,
-                          'releasedate' => '1998-01-04'
-                        },
-                        {
-                          'length' => '3:50',
-                          'parent_album' => 'DJ Mix 3',
-                          'sales' => 20000,
-                          'copyright_id' => 'Label A',
-                          'title' => 'Track 3.3',
-                          'id' => 9,
-                          'releasedate' => '1999-11-14'
-                        },
-                        {
-                          'length' => '2:30',
-                          'parent_album' => 'DJ Mix 2',
-                          'sales' => 153000,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Track 2.1',
-                          'id' => 4,
-                          'releasedate' => '1990-01-04'
-                        },
-                        {
-                          'length' => '2:40',
-                          'parent_album' => 'DJ Mix 2',
-                          'sales' => 1020480,
-                          'copyright_id' => 'Label A',
-                          'title' => 'Track 2.2',
-                          'id' => 5,
-                          'releasedate' => '1991-11-11'
-                        },
-                        {
-                          'length' => '2:50',
-                          'parent_album' => 'DJ Mix 2',
-                          'sales' => 9625543,
-                          'copyright_id' => 'Label B',
-                          'title' => 'Track 2.3',
-                          'id' => 6,
-                          'releasedate' => '1980-07-21'
-                        }
-                    ]
-};
+my $sorted_track_page = JSON::XS::decode_json(<<'END_SORT_TRACK');
+{"total":13,"rows":[{"cpac__id":"id\u000010","length":"1:01","parent_album":"Pop Songs","sales":2685000,"copyright_id":"Label B","title":"Pop Song One","id":10,"cpac__display_name":"Pop Song One","releasedate":"1995-01-04"},{"cpac__id":"id\u000011","length":"2:02","parent_album":"Greatest Hits","sales":1536000,"copyright_id":"Label B","title":"Hit Tune","id":11,"cpac__display_name":"Hit Tune","releasedate":"1990-11-06"},{"cpac__id":"id\u000012","length":"3:03","parent_album":"Greatest Hits","sales":195300,"copyright_id":"Label B","title":"Hit Tune II","id":12,"cpac__display_name":"Hit Tune II","releasedate":"1990-11-06"},{"cpac__id":"id\u000013","length":"4:04","parent_album":"Greatest Hits","sales":1623000,"copyright_id":"Label B","title":"Hit Tune 3","id":13,"cpac__display_name":"Hit Tune 3","releasedate":"1990-11-06"},{"cpac__id":"id\u00007","length":"3:30","parent_album":"DJ Mix 3","sales":1953540,"copyright_id":"Label A","title":"Track 3.1","id":7,"cpac__display_name":"Track 3.1","releasedate":"1998-06-12"},{"cpac__id":"id\u00008","length":"3:40","parent_album":"DJ Mix 3","sales":2668000,"copyright_id":"Label B","title":"Track 3.2","id":8,"cpac__display_name":"Track 3.2","releasedate":"1998-01-04"},{"cpac__id":"id\u00009","length":"3:50","parent_album":"DJ Mix 3","sales":20000,"copyright_id":"Label A","title":"Track 3.3","id":9,"cpac__display_name":"Track 3.3","releasedate":"1999-11-14"},{"cpac__id":"id\u00004","length":"2:30","parent_album":"DJ Mix 2","sales":153000,"copyright_id":"Label B","title":"Track 2.1","id":4,"cpac__display_name":"Track 2.1","releasedate":"1990-01-04"},{"cpac__id":"id\u00005","length":"2:40","parent_album":"DJ Mix 2","sales":1020480,"copyright_id":"Label A","title":"Track 2.2","id":5,"cpac__display_name":"Track 2.2","releasedate":"1991-11-11"},{"cpac__id":"id\u00006","length":"2:50","parent_album":"DJ Mix 2","sales":9625543,"copyright_id":"Label B","title":"Track 2.3","id":6,"cpac__display_name":"Track 2.3","releasedate":"1980-07-21"}]}
+END_SORT_TRACK
 
-my $default_track_page = {
-          'total' => 13,
-          'rows' => [
-                      {
-                        'length' => '1:30',
-                        'album_id' => 'DJ Mix 1',
-                        'sales' => 5460000,
-                        'id' => 1,
-                        'title' => 'Track 1.1',
-                        'copyright_id' => 'Label A',
-                        'releasedate' => '1994-04-05'
-                      },
-                      {
-                        'length' => '1:40',
-                        'album_id' => 'DJ Mix 1',
-                        'sales' => 1775000,
-                        'id' => 2,
-                        'title' => 'Track 1.2',
-                        'copyright_id' => 'Label B',
-                        'releasedate' => '1995-01-15'
-                      },
-                      {
-                        'length' => '1:50',
-                        'album_id' => 'DJ Mix 1',
-                        'sales' => 2100000,
-                        'id' => 3,
-                        'title' => 'Track 1.3',
-                        'copyright_id' => 'Label A',
-                        'releasedate' => '1989-08-18'
-                      },
-                      {
-                        'length' => '2:30',
-                        'album_id' => 'DJ Mix 2',
-                        'sales' => 153000,
-                        'id' => 4,
-                        'title' => 'Track 2.1',
-                        'copyright_id' => 'Label B',
-                        'releasedate' => '1990-01-04'
-                      },
-                      {
-                        'length' => '2:40',
-                        'album_id' => 'DJ Mix 2',
-                        'sales' => 1020480,
-                        'id' => 5,
-                        'title' => 'Track 2.2',
-                        'copyright_id' => 'Label A',
-                        'releasedate' => '1991-11-11'
-                      },
-                      {
-                        'length' => '2:50',
-                        'album_id' => 'DJ Mix 2',
-                        'sales' => 9625543,
-                        'id' => 6,
-                        'title' => 'Track 2.3',
-                        'copyright_id' => 'Label B',
-                        'releasedate' => '1980-07-21'
-                      },
-                      {
-                        'length' => '3:30',
-                        'album_id' => 'DJ Mix 3',
-                        'sales' => 1953540,
-                        'id' => 7,
-                        'title' => 'Track 3.1',
-                        'copyright_id' => 'Label A',
-                        'releasedate' => '1998-06-12'
-                      },
-                      {
-                        'length' => '3:40',
-                        'album_id' => 'DJ Mix 3',
-                        'sales' => 2668000,
-                        'id' => 8,
-                        'title' => 'Track 3.2',
-                        'copyright_id' => 'Label B',
-                        'releasedate' => '1998-01-04'
-                      },
-                      {
-                        'length' => '3:50',
-                        'album_id' => 'DJ Mix 3',
-                        'sales' => 20000,
-                        'id' => 9,
-                        'title' => 'Track 3.3',
-                        'copyright_id' => 'Label A',
-                        'releasedate' => '1999-11-14'
-                      },
-                      {
-                        'length' => '1:01',
-                        'album_id' => 'Pop Songs',
-                        'sales' => 2685000,
-                        'id' => 10,
-                        'title' => 'Pop Song One',
-                        'copyright_id' => 'Label B',
-                        'releasedate' => '1995-01-04'
-                      }
-                    ]
-};
+my $default_track_page = JSON::XS::decode_json(<<'END_DEF_TRACK');
+{"total":13,"rows":[{"cpac__id":"id\u00001","length":"1:30","parent_album":"DJ Mix 1","sales":5460000,"copyright_id":"Label A","title":"Track 1.1","id":1,"cpac__display_name":"Track 1.1","releasedate":"1994-04-05"},{"cpac__id":"id\u00002","length":"1:40","parent_album":"DJ Mix 1","sales":1775000,"copyright_id":"Label B","title":"Track 1.2","id":2,"cpac__display_name":"Track 1.2","releasedate":"1995-01-15"},{"cpac__id":"id\u00003","length":"1:50","parent_album":"DJ Mix 1","sales":2100000,"copyright_id":"Label A","title":"Track 1.3","id":3,"cpac__display_name":"Track 1.3","releasedate":"1989-08-18"},{"cpac__id":"id\u00004","length":"2:30","parent_album":"DJ Mix 2","sales":153000,"copyright_id":"Label B","title":"Track 2.1","id":4,"cpac__display_name":"Track 2.1","releasedate":"1990-01-04"},{"cpac__id":"id\u00005","length":"2:40","parent_album":"DJ Mix 2","sales":1020480,"copyright_id":"Label A","title":"Track 2.2","id":5,"cpac__display_name":"Track 2.2","releasedate":"1991-11-11"},{"cpac__id":"id\u00006","length":"2:50","parent_album":"DJ Mix 2","sales":9625543,"copyright_id":"Label B","title":"Track 2.3","id":6,"cpac__display_name":"Track 2.3","releasedate":"1980-07-21"},{"cpac__id":"id\u00007","length":"3:30","parent_album":"DJ Mix 3","sales":1953540,"copyright_id":"Label A","title":"Track 3.1","id":7,"cpac__display_name":"Track 3.1","releasedate":"1998-06-12"},{"cpac__id":"id\u00008","length":"3:40","parent_album":"DJ Mix 3","sales":2668000,"copyright_id":"Label B","title":"Track 3.2","id":8,"cpac__display_name":"Track 3.2","releasedate":"1998-01-04"},{"cpac__id":"id\u00009","length":"3:50","parent_album":"DJ Mix 3","sales":20000,"copyright_id":"Label A","title":"Track 3.3","id":9,"cpac__display_name":"Track 3.3","releasedate":"1999-11-14"},{"cpac__id":"id\u000010","length":"1:01","parent_album":"Pop Songs","sales":2685000,"copyright_id":"Label B","title":"Pop Song One","id":10,"cpac__display_name":"Pop Song One","releasedate":"1995-01-04"}]}
+END_DEF_TRACK
 
-my $filtered_album_page =
-          {
-            'rows' => [
-                        {
-                          'sleeve_notes' => '',
-                          'tracks' => [
-                                        'Track 1.1',
-                                        'Track 1.2',
-                                        'Track 1.3'
-                                      ],
-                          'artist_id' => 'Mike Smith',
-                          'deleted' => 1,
-                          'recorded' => '1989-01-02',
-                          'title' => 'DJ Mix 1',
-                          'id' => 1
-                        },
-                        {
-                          'sleeve_notes' => 'SleeveNotes: id(1)',
-                          'tracks' => [
-                                        'Track 2.1',
-                                        'Track 2.2',
-                                        'Track 2.3'
-                                      ],
-                          'artist_id' => 'Mike Smith',
-                          'deleted' => 1,
-                          'recorded' => '1989-02-02',
-                          'title' => 'DJ Mix 2',
-                          'id' => 2
-                        },
-                        {
-                          'sleeve_notes' => '',
-                          'tracks' => [
-                                        'Track 3.1',
-                                        'Track 3.2',
-                                        'Track 3.3'
-                                      ],
-                          'artist_id' => 'Mike Smith',
-                          'deleted' => 1,
-                          'recorded' => '1989-03-02',
-                          'title' => 'DJ Mix 3',
-                          'id' => 3
-                        },
-                        {
-                          'sleeve_notes' => '',
-                          'tracks' => [
-                                        'Hit Tune',
-                                        'Hit Tune II',
-                                        'Hit Tune 3'
-                                      ],
-                          'artist_id' => 'Adam Smith',
-                          'deleted' => 0,
-                          'recorded' => '2002-05-21',
-                          'title' => 'Greatest Hits',
-                          'id' => 5
-                        }
-                      ],
-            'total' => 4
-};
+my $filtered_album_page = JSON::XS::decode_json(<<'END_FILTER_ALBUM');
+{"total":4,"rows":[{"cpac__id":"id\u00001","tracks":["Track 1.1","Track 1.2","Track 1.3"],"sleeve_notes":"","deleted":1,"artist_id":"Mike Smith","id":1,"recorded":"1989-01-02","title":"DJ Mix 1","copyright":["Label A","Label B"],"cpac__display_name":"DJ Mix 1"},{"cpac__id":"id\u00002","tracks":["Track 2.1","Track 2.2","Track 2.3"],"sleeve_notes":"SleeveNotes: id(1)","deleted":1,"artist_id":"Mike Smith","id":2,"recorded":"1989-02-02","title":"DJ Mix 2","copyright":["Label A","Label B"],"cpac__display_name":"DJ Mix 2"},{"cpac__id":"id\u00003","tracks":["Track 3.1","Track 3.2","Track 3.3"],"sleeve_notes":"","deleted":1,"artist_id":"Mike Smith","id":3,"recorded":"1989-03-02","title":"DJ Mix 3","copyright":["Label A","Label B"],"cpac__display_name":"DJ Mix 3"},{"cpac__id":"id\u00005","tracks":["Hit Tune","Hit Tune 3","Hit Tune II"],"sleeve_notes":"","deleted":0,"artist_id":"Adam Smith","id":5,"recorded":"2002-05-21","title":"Greatest Hits","copyright":["Label B"],"cpac__display_name":"Greatest Hits"}]}
+END_FILTER_ALBUM
 
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {}, $default_album_page, 'no args');
 
@@ -441,31 +138,30 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {sort => '', dir =
 
 # filter fields : build a WHERE LIKE clause but should not work on numerics
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => ''}, {total => 0, rows => []}, 'filter none');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.id' => ''}, {total => 0, rows => []}, 'filter none');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => ''}, $default_album_page, 'filter none');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => ''}, $default_album_page, 'filter none');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search. ' => ''}, $default_album_page, 'filter col space');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter. ' => ''}, $default_album_page, 'filter col space');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.' => ''}, $default_album_page, 'filter col missing');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.' => ''}, $default_album_page, 'filter col missing');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.foobar' => ''}, $default_album_page, 'filter col nonexistent');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.foobar' => ''}, $default_album_page, 'filter col nonexistent');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => '%'}, {total => 0, rows => []}, 'filter id by %');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.id' => '%'}, {total => 0, rows => []}, 'filter id by %');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => '%'}, $default_album_page, 'filter none');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => '%'}, $default_album_page, 'filter none');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.id' => '!'}, {total => 0, rows => []}, 'filter to none');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.id' => '!'}, {total => 0, rows => []}, 'filter to none');
 
 my $case_correct = Storable::dclone($default_album_page);
 $case_correct->{rows} = [ @{$case_correct->{rows}}[0,1,2] ];
 $case_correct->{total} = 3;
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'Mix'}, $case_correct, 'filter case correct');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'Mix'}, $case_correct, 'filter case correct');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.title' => 'mix'}, $case_correct, 'filter case insensitive');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'mix'}, $case_correct, 'filter case insensitive');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.artist_id' => '%'}, {total => 0, rows => []}, 'emtpy filter by fk');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.artist_id' => '%'}, {total => 0, rows => []}, 'emtpy filter by fk');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'search.artist_id' => 'Smith'}, $filtered_album_page, 'filter by fk');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.artist_id' => 'Smith'}, $filtered_album_page, 'filter by fk');
 
-__END__

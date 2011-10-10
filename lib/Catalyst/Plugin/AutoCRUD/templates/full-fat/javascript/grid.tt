@@ -4,8 +4,6 @@
 
     [% PROCESS javascript/grid/pagebar.tt %]
 
-    [%# PROCESS javascript/grid/view.tt %]
-
     // most of the work in the grid itself is making the filter row work
     // we want clickable filter fields for cols which can be filtered
     // and the clicks ignored on other fields, and the delete col field
@@ -35,7 +33,6 @@
             cellclick: function(g, row, col) {
                 var rec = g.getStore().getAt(row);
                 var fieldName = g.getColumnModel().getDataIndex(col);
-                // var data = rec.get(fieldName);
 
                 // reset the grid selectionModel
                 g.getSelectionModel().deselectRow(row);
@@ -45,24 +42,26 @@
                     return false;
                 }
 
-              [% IF site_conf.$cpac_db.$cpac_table.delete_allowed == 'yes' %]
+              [% IF cpac.tc.delete_allowed == 'yes' %]
                 if (fieldName == 'cpac-delete-column') {
                     if (row === 0) {
                         // edit row is ignored
                         return false;
                     }
 
-                    var data = rec.get('[% cpac_meta.main.pk %]');
                     Ext.MessageBox.confirm (
-                        'Confirm Delete [% cpac_meta.main.title %]'
-                        ,'Are you sure you want to delete [% cpac_meta.main.title %] [% cpac_meta.main.pk %](' + data + ')?'
+                        'Confirm Delete [% cpac.tc.display_name %]'
+                        ,"Are you sure you want to delete '" + rec.get('cpac__display_name') + "'?"
                         ,function (btn) {
                             if (btn == 'yes') {
                                 grid.loadMask.el.mask();
                                 Ext.Ajax.request({
-                                    url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('delete'), [cpac_site,cpac_db,cpac_meta.main.path] ) %]'
+                                    url: '[% c.uri_for(
+                                        c.controller('AutoCRUD::AJAX').action_for('delete'),
+                                        [cpac.g.site,cpac_db,cpac_table]
+                                    ) %]'
                                     ,params: {
-                                        key: data
+                                        key: rec.get('cpac__id')
                                     }
                                     ,success: function(response,options) {
                                         grid.loadMask.el.unmask();
@@ -103,7 +102,7 @@
                     }
                     g.startEditing(row,col);
                 }
-              [% IF site_conf.$cpac_db.$cpac_table.update_allowed == 'yes' %]
+              [% IF cpac.tc.update_allowed == 'yes' %]
                 else {
                     // draw the window!
                     var win = generate_win('update');
@@ -118,15 +117,28 @@
                     // fill in reverse relations
                     mainform.setValues({
                       [% SET count = 1 %]
-                      [% FOREACH tbl IN cpac_meta.tab_order.keys %]
-                      [% NEXT IF cpac_meta.tab_order.item(tbl) == 1 %]
-                        [% FOREACH col IN cpac_meta.table_info.$tbl.cols.keys %]
-                        [% NEXT UNLESS cpac_meta.table_info.$tbl.cols.$col.is_fk
-                                AND NOT cpac_meta.table_info.$tbl.cols.$col.editable %]
+                      [% FOREACH col IN cpac.tc.cols %]
+                        [% NEXT UNLESS cpac.tm.f.$col.extra('is_reverse')
+                                AND cpac.tm.f.$col.extra('rel_type') == 'might_have' %]
+                        [% SET ft = cpac.tm.f.$col.extra('ref_table') %]
+                        [% SET anyfk = cpac.tm.f.$col.extra('ref_fields').first %]
+
+                        [%# work around SQLT's broken contextual return %]
+                        [%# need to carefully work through the SQLT methods to preseve ordering %]
+                        [% IF cpac.tm.extra('pks').size > 1 %]
+                          [% FOREACH fk IN cpac.m.t.$ft.f.$anyfk.foreign_key_reference.fields %]
+                            [% ',' IF count > 1 %]
+                            [% SET count = count + 1 %]
+                            [% SET idx = loop.index %]
+                            '[% ft %].[% fk %]':
+                                rec.data['[% cpac.m.t.$ft.f.$fk.foreign_key_reference.reference_fields.$idx %]']
+                          [% END %]
+                        [% ELSE %]
                           [% ',' IF count > 1 %]
-                            '[% cpac_meta.table_info.$tbl.path %].[% col %]': rec.data['[% cpac_meta.main.pk %]']
                           [% SET count = count + 1 %]
+                          '[% ft %].[% anyfk %]': rec.data['[% cpac.tm.extra('pks').first %]']
                         [% END %]
+
                       [% END %]
                     });
                 }

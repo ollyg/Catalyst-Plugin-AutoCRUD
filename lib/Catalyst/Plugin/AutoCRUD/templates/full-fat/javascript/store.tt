@@ -1,17 +1,15 @@
     // create a data record
     var rowRecord = Ext.data.Record.create([
-      [% FOREACH col IN cpac_meta.main.col_order %]
-        [% ',' IF cpac_meta.main.col_order.size > 1 AND NOT loop.first %]
-        { name: '[% col %]' }
+      [% FOREACH col IN cpac.tc.cols %]
+      [%- ',' IF NOT loop.first %]{ name: '[% col | replace('\'', '\\\'') %]' }
       [% END %]
-      [% FOREACH col IN cpac_meta.main.mfks.keys %]
-        ,{ name: '[% col %]' }
-      [% END %]
+      ,{ name: 'cpac__id' }
+      ,{ name: 'cpac__display_name' }
     ]);
 
     // create the Data Store
     var store = new Ext.data.JsonStore({
-        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [cpac_site,cpac_db,cpac_meta.main.path] ) %]'
+        url: '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [cpac.g.site,cpac_db,cpac_table], cpac.g.filter_params ) %]'
         ,root: 'rows'
         ,fields: rowRecord
         ,remoteSort: true
@@ -19,7 +17,7 @@
     });
 
     // set default sort if we can
-    store.setDefaultSort('[% cpac_meta.main.pk %]', 'ASC');
+    store.setDefaultSort('[% cpac.g.default_sort %]', 'ASC');
 
     // hook to add page num param
     // got this from the extjs forums

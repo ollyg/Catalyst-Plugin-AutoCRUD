@@ -1,14 +1,56 @@
-1.112770  2011-10-04 07:25:12 Europe/London
+2.112830_001 2011-10-10 20:59:11 Europe/London
 
-  * Fix for some Perl warnings (Okku, rt.cpan #71357 and #71356)
+  [ENHANCEMENTS]
 
-1.112560  2011-09-13 10:30:26 Europe/London
+  * Non virtual (DBIx::Class) Views have better displayed names
+  * Two new Demo Apps to highlight other features
 
-  * Removed View::JSON::encode_json to output Unicode. If you want latin1, set
-        <Catalyst::Plugin::AutoCRUD::View::JSON>
-            encoding = latin1
-        </Catalyst::Plugin::AutoCRUD::View::JSON>
-    Thanks to Okko and abraxxa from #catalyst for assistance with this.
+  [BUG FIXES]
+
+  * Fix multiple schema bug reported by Julien Gilles
+  * Demo App now runs under modern Catalyst::ScriptRunner
+  * Unchecking checkboxes now updates the database correctly
+
+2.112780-TRIAL  2011-10-06 00:43:33 Europe/London
+
+  [NEW FEATURES]
+
+  * Full support for both composite and compound primary keys
+  * Can set filters on has_many and many_to_many type relations
+  * URI query string can pre-set filter(s): cpac_filter.$col=$val
+  * Support for tables with no primary key (possibly read-only)
+  * Support for columns with names that are not Perl identifiers
+
+  * Support for Views (in DBIx::Class, both virtual and non-virtual)
+  * DBIx::Class proxy columns are displayed and can be edited
+  * Support custom accessor names on DBIx::Class columns
+
+  [ENHANCEMENTS]
+
+  * Delete dialog boxes use the "friendly" row display_name
+  * Tables can have multiple relations to the same table
+  * Tables can have relations to themselves
+  * Auto-increment columns are not displayed on the Add/Edit form
+  * Default behaviour to hide "uninteresting" columns (e.g. links)
+  * Default sort column is the first unhidden column
+
+  [DEPRECATIONS]
+
+  * The list_returns config option is no longer supported
+  * No longer can edit "reverse" relations (has_one, might_have)
+
+  [OTHER]
+
+  * A new "backend" infrastructure has been implemented. This uses
+    SQL::Translator as an abstraction between the frontend render
+    engine (templates) and the storage engine (such as DBIx::Class).
+    It ought to be possible to deploy AutoCRUD on top of any other
+    storage engine which can provide a table/column-like interface.
+
+  [TODO]
+
+  * Document the new features
+  * Document the backend architecture and APIs
 
 1.110731  2011-03-14 20:14:06 Europe/London
 

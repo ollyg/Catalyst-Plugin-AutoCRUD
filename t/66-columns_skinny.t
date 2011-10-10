@@ -6,6 +6,9 @@ use lib qw( t/lib );
 
 use Test::More 'no_plan';
 
+# the skinny table should have only two columns displayed,
+# the rest skipped. note that accessor drives name for title.
+
 # application loads
 BEGIN {
     $ENV{AUTOCRUD_CONFIG} = 't/lib/columns_extjs.conf';
@@ -20,8 +23,9 @@ $mech->get_ok("/autocrud/dbic/album/browse", "Get HTML for album table");
 
 my @links = $mech->find_all_links(class => 'cpac_link');
 ok(scalar @links == 2, 'number of columns in table');
+#print Dumper \@links;
 
-ok($mech->find_link(class => 'cpac_link', text => 'Title'), 'first heading is Title');
+ok($mech->find_link(class => 'cpac_link', text => 'Custom Title'), 'first heading is Custom Title');
 ok($mech->find_link(class => 'cpac_link', text => 'Recorded'), 'second heading is Recorded');
 
 __END__

@@ -9,45 +9,39 @@ use Storable;
 
 use DBIx::Class;
 
-my $skip_dangling_rels;
-BEGIN {
-    # remove dangling relation from tests if DBIC is too old to avoid
-    # dieing on this cascading delete
-    $skip_dangling_rels = $TestApp::Schema::SleeveNotes::skip_dangling_rels = $DBIx::Class::VERSION <= 0.08127;
-}
-
 # application loads
 BEGIN { use_ok "Test::WWW::Mechanize::Catalyst::AJAX" => "TestApp" }
 my $mech = Test::WWW::Mechanize::Catalyst::AJAX->new;
 
 
 my $default_sleeve_notes_page = {
-          'total' => 1,
-          'rows' => [
-                      {
-                        'id' => 1,
-                        'text' => 'This is a groovy album.',
-                        'album_id' => 'DJ Mix 2',
-                        ( $skip_dangling_rels ? () : ('nonexistent_things' => [])),
-                      }
-                    ]
+    'total' => 1,
+    'rows' => [
+                {
+                    'cpac__id' => "id\0001",
+                    'cpac__display_name' => 'SleeveNotes: id(1)',
+                    'id' => 1,
+                    'text' => 'This is a groovy album.',
+                    'album_id' => 'DJ Mix 2',
+                }
+             ],
 };
 
 $mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {}, {success => '0'}, 'no args');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => ''}, {success => '0'}, 'empty key');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {foobar => ''}, {success => '0'}, 'no key');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
 $mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => 'foobar'}, {success => '0'}, 'no key match');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => '1'}, {success => '1'}, 'delete success');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => "id\0001"}, {success => '1'}, 'delete success');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => '1'}, {success => '0'}, 'delete again fails');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'search.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => "id\0001"}, {success => '0'}, 'delete again fails');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
 

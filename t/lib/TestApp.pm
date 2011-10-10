@@ -28,8 +28,9 @@ __PACKAGE__->__dbfile($dbfile);
 
 __PACKAGE__->config(
     'Plugin::AutoCRUD' => {
-        extjs2 => '/javascript/extjs-2',
+        extjs2 => '/static/ext2',
         basepath => '',
+        # sites => { default => { frontend => 'skinny' } },
     },
     'Model::AutoCRUD::DBIC' => {
         schema_class => 'TestApp::Schema',

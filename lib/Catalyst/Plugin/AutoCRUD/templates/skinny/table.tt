@@ -1,24 +1,18 @@
-[% SET table_info = cpac_meta.main %]
-[% SET table_config = site_conf.$cpac_db.$cpac_table %]
-
 <table class="cpac_table">
     <tr>
-    [% SET col_list = (table_config.columns.size > 0 ? table_config.columns : table_info.col_order) %]
-    [% FOR col IN col_list %]
-      [% NEXT IF table_config.columns.size > 0 AND NOT table_config.col_keys.exists(col) %]
+    [% FOR col IN cpac.tc.cols %]
+        [% NEXT IF cpac.tc.hidden_cols.exists(col)
+            OR (cpac.tm.f.$col.extra('is_reverse') AND cpac.tm.f.$col.extra('rel_type').match('_many')) %]
         <th class="cpac_table_header">
-        [% SET qp = "?sort=" _ col %]
+        [% USE url('', cpac.g.filter_params) %]
+        [% SET qp = "&sort=" _ col %]
         [% SET qp = qp _ "&page=" _ cpac_skinny_pager.current_page IF cpac_skinny_pager %]
         [% SET qp = qp _ "&dir=DESC" IF col == cpac_skinny_sortby AND cpac_skinny_dir != "DESC" %]
         [% SET qp = qp _ "&limit=" _ cpac_skinny_limit IF cpac_skinny_limit %]
 
-            <a class="cpac_link" href="[% qp %]">
-            [% IF table_config.headings.exists(col) AND table_config.headings.defined(col) %]
-                [% table_config.headings.$col %]
-            [% ELSE %]
-                [% table_info.cols.$col.heading %]
-            [% END %]
-            </a>
+        <a class="cpac_link" href="?[% url %][% qp %]">
+            [% cpac.tc.headings.$col %]
+        </a>
 
         [% IF cpac_skinny_sortby %]
           [% IF cpac_skinny_sortby == col %]
@@ -28,7 +22,7 @@
               &uarr;
             [% END %]
           [% END %]
-        [% ELSIF col == table_info.pk %]
+        [% ELSIF col == cpac.g.default_sort %]
               &darr;
         [% END %]
 
@@ -36,9 +30,8 @@
     [% END %]
     </tr>
 
-    [% SET count = 0 %]
+    [% SET stripe = 0 %]
     [% FOR item IN json_data.rows %]
         [% PROCESS row.tt %]
     [% END %]
 </table>
-

@@ -6,6 +6,9 @@ use lib qw( t/lib );
 
 use Test::More 'no_plan';
 
+# normal number of skinny columns, but the headings should be
+# modified as per the config.
+
 # application loads
 BEGIN {
     $ENV{AUTOCRUD_CONFIG} = 't/lib/headings_extjs.conf';
@@ -14,9 +17,6 @@ BEGIN {
 my $mech = Test::WWW::Mechanize::Catalyst::AJAX->new;
 
 $mech->get_ok("/autocrud/dbic/album/browse", "Get HTML for album table");
-#my $content = $mech->content;
-#use Data::Dumper;
-#print STDERR Dumper $content;
 
 my @links = $mech->find_all_links(class => 'cpac_link');
 ok(scalar @links == 6, 'number of columns in table');

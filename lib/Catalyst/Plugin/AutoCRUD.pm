@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
-BEGIN {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '1.112770';
+{
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.112830_001';
 }
 
 use strict;
@@ -10,6 +10,7 @@ use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
 
 our $this_package = __PACKAGE__; # so it can be used in hash keys
+our $VERSION ||= '0.00031412';
 
 sub setup_components {
     my $class = shift;
@@ -21,7 +22,6 @@ sub setup_components {
         Controller::Static
         Controller::AJAX
         Controller::Skinny
-        Model::Metadata::DBIC
         Model::Backend::DBIC
         View::JSON
         View::TT
@@ -39,7 +39,7 @@ sub setup_components {
                 if eval "$DBIx::Class::Schema::Loader::VERSION" <= 0.04005;
 
             DBIx::Class::Schema::Loader::make_schema_at(
-                'AutoCRUD::Loader::Schema', {},
+                'AutoCRUD::Loader::Schema', {naming => 'current'},
                 $class->config->{$p}->{connect_info},
             );
 
@@ -63,6 +63,25 @@ sub setup_components {
         and exists $class->config->{$config_key}->{basepath}) {
         $class->config->{'Controller::AutoCRUD::Root'}->{action}->{base}->{PathPart}
             = $class->config->{$config_key}->{basepath};
+    }
+
+    # any additional backends requested
+    if (exists $class->config->{$config_key}->{backends}) {
+        my @backends = ref $class->config->{$config_key}->{backends} eq ref ''
+            ? $class->config->{$config_key}->{backends}
+            : @{ $class->config->{$config_key}->{backends} };
+
+        # they will be componentized below
+        push @packages, map {'Model::Backend::' . $_} @backends;
+
+        # this so that they can be forwarded to in the controller
+        my %m = map {('Model::AutoCRUD::Backend::' . $_) => 1} @backends;
+        ++$m{'Model::AutoCRUD::Backend::DBIC'};
+        $class->config->{$config_key}->{backends} = [ keys %m ];
+    }
+    else {
+        $class->config->{$config_key}->{backends} =
+            [ 'Model::AutoCRUD::Backend::DBIC' ];
     }
 
     foreach my $orig (@packages) {
@@ -101,17 +120,32 @@ sub setup_components {
 # we subvert the pretty print error screen for dumpmeta
 sub dump_these {
     my $c = shift;
+
     my $params = {
             map {$_ => $c->stash->{$_}}
                 grep {ref $c->stash->{$_} eq ''}
                 grep {$_ =~ m/^cpac_/}
                      keys %{$c->stash},
     };
+
+    # strip the SQLT objects
+    my $meta = undef;
+    if (exists $c->stash->{cpac}->{m}) {
+        $meta = scalar $c->stash->{cpac}->{m}->extra;
+        foreach my $t (values %{$c->stash->{cpac}->{m}->t}) {
+            $meta->{t}->{$t->name} = scalar $t->extra;
+            foreach my $f (values %{$t->f}) {
+                $meta->{t}->{$t->name}->{f}->{$f->name} = scalar $f->extra;
+            }
+        }
+    }
+
     if ($c->stash->{dumpmeta}) {
         return (
-            [ 'CPAC Parameters' => $params ],
-            [ 'Site Configuration' => $c->stash->{site_conf} ],
-            [ 'Storage Metadata'   => $c->stash->{cpac_meta} ],
+            [ 'CPAC Parameters (cpac_*)' => $params ],
+            [ 'Global Configuration (g)' => $c->stash->{cpac}->{g} ],
+            [ 'Site Configuration (c)' => $c->stash->{cpac}->{c} ],
+            [ 'Storage Metadata (m)' => $meta ],
             [ 'Response' => $c->response ], # only to pacify log_request
         );
     }
@@ -157,7 +191,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 1.112770
+version 2.112830_001
 
 =head1 SYNOPSIS
 
@@ -680,14 +714,6 @@ Any columns not included in the hash mapping will use the default title (i.e.
 what the plugin works out for itself). To hide a column from view, use the
 C<columns> option, described above.
 
-=item list_returns [ \@columns | { col => title, ... } ]
-
-This configuration option is I<DEPRECATED>. Please see C<columns> to control
-which columns are displayed to users and, independently, C<headings> to alter
-the titles displayed for any columns. The plugin still respects a
-C<list_returns> configuration setting but will emit a warning to your log that
-you need to migrate to the new, more flexible, alternatives.
-
 =item hidden [ yes | no* ]
 
 If you don't want a schema to be offered to the user, or likewise a particular
@@ -771,22 +797,35 @@ server (e.g. Apache) which is different from the default site itself.
 
 =head1 TROUBLESHOOTING
 
+=head2 Displaying Unicode
+
+It is essential that you load the L<Catalyst::Plugin::Unicode::Encoding>
+plugin to ensure proper decoding/encoding of incoming request parameters and
+the outgoing body response respectively. This is done in your C<MyApp.pm>:
+
+ use Catalyst qw/ -Debug ConfigLoader Unicode::Encoding AutoCRUD /;
+
+Additionally, when connecting to the database, add a flag to the connection
+parameters, specific to your database engine, that enables Unicode. See the
+following link for more details:
+
+=over 4
+
+=item *
+
+https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode
+
+=back
+
 =head2 Foreign keys should be configured with C<is_foreign_key>
 
 Any column in your result classes which contains the primary key of another
 table should have the C<< is_foreign_key => 1 >> option added to its
 configuration.
 
-Not doing this will cause the affected column to appear twice in your table,
-with a C<(REF)> suffix on the heading, rather than once with an C<(FK)>
-suffix.  The technical reason for this, if you are interested, is that
-C<is_foreign_key> is used by this plugin to differentiate between C<has_one>
-and C<belongs_to> type relations. The plugin will emit an error level log
-message if it detects this problem.
-
 If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent development release from CPAN to have this
-automatically configured for you.
+version 0.05 or the most recent release from CPAN to have this automatically
+configured for you.
 
 =head2 Make sure C<belongs_to> follows C<add_columns>
 
@@ -797,12 +836,10 @@ to C<add_column()>, after the C<DO NOT MODIFY THIS OR ANYTHING ABOVE> line.
 
 If you do not follow this guideline, then you won't see any related data in 
 the views generated by this plugin. Furthermore, you'll be losing much of
-the advantage of C<DBIx::Class>, so this plugin will emit an error log
-level message if it detects this problem.
+the advantage of C<DBIx::Class>.
 
 A better solution is to re-generate your result class using a recent version
-of C<DBIx::Class::Schema::Loader> from the CPAN (which may be 0.05 or a
-pre-release).
+of C<DBIx::Class::Schema::Loader> from the CPAN (which may be 0.05 or later).
 
 =head2 Optional C<belongs_to> relations must have a C<join_type>
 
@@ -819,15 +856,14 @@ like so:
      { join_type => 'LEFT OUTER' }    # attributes
  );
 
-If you don't do this, some database records will be missing! The plugin will
-emit an error level log message if it detects this problem. The technical
+If you don't do this, some database records will be missing! The technical
 reason for this, if you are interested, is that C<DBIx::Class> defaults to an
-INNER join for the C<belongs_to()> relation, but if the column can be null (that
-is, C<is_nullable>) then you most likely want a LEFT OUTER join.
+INNER join for the C<belongs_to()> relation, but if the column can be null
+(that is, C<is_nullable>) then you most likely want a LEFT OUTER join.
 
 If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent development release from CPAN to have this
-automatically configured for you.
+version 0.05 or the most recent release from CPAN to have this automatically
+configured for you.
 
 =head2 Columns with auto-increment data types
 
@@ -838,17 +874,12 @@ value for new or updated records. The interface will look much better as a
 result.
 
 If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent development release from CPAN to have this
-automatically configured for you.
+version 0.05 or the most recent release from CPAN to have this automatically
+configured for you.
 
-=head1 EXAMPLES
+=head1 INSTANT DEMO APPLICATIONS
 
-The code examples given above in this manual are also supplied in the form of
-a sample application. You'll find the application itself in the
-C<examples/app/> directory of this distribution, and the SQLite3 data source
-in the C<examples/sql/> directory.
-
-=head1 INSTANT DEMO APPLICATION
+=head2 Automagic Loading
 
 If you want to run an instant demo of this module, with minimal configuration,
 then a simple application for that is shipped with this distribution. For this
@@ -859,7 +890,7 @@ to work, you must have:
 =item *
 
 The very latest version of L<DBIx::Class::Schema::Loader> installed on your
-system (at least 0.05, or the most recent developemnt release from CPAN).
+system (at least 0.05, or the most recent release from CPAN).
 
 =item *
 
@@ -876,31 +907,37 @@ like so:
 
  demo> perl ./server.pl
 
-Although the instruction at the end of the output says to visit (something
-like) C<http://localhost:3000>, you I<must> instead visit
-C<http://localhost:3000/autocrud> (i.e. add C</autocrud> to the end). Et
-voila!
+Visit C<http://localhost:3000> in your browser as instructed at the end of
+the output from this command.
 
 To use your own database rather than the SQLite demo, edit
 C<examples/demo/demo.conf> so that it contains the correct C<dsn>, username,
 and password for your database. Upon restarting the application you should see
 your own data source instead.
 
+=head2 Row Display Names
+
+An alternate application exists which demonstrates use of the C<display_name>
+method on a L<DBIx::Class> Row, to give row entries "friendly names". Follow
+all the instructions above but instead run the following server script:
+
+ demo> perl ./server_with_display_name.pl
+
+=head2 Other Features
+
+Finally, the kitchen sink of other features supported by this module are
+demonstrated in a separate application. This contains many tables, each of
+which highlights one or more aspects of a relational database backend being
+rendered in AutoCRUD.
+
+Follow all the instructions above, but instead run the following server
+script:
+
+ demo> perl ./server_other_features.pl
+
 =head1 LIMITATIONS
 
 =over 4
-
-=item Single column primary key
-
-There's no support for multiple column primary keys (composite/compound
-keys). This has saved a lot of time in development because it greatly
-simplifies the L<Catalyst> and L<DBIx::Class> code.
-
-=item No two columns in a given table may have the same FK constraint
-
-If you have two columns which both have foreign key constraints to the same
-table, it's very likely AutoCRUD will not work. Again this is a simplification
-which speeded the initial development.
 
 =item Time Zone settings are lost during SELECT/UPDATE
 
@@ -915,45 +952,11 @@ For the issues above, if you're desperate that the feature be implemented
 soon, please drop me a line at the address below, because you might be able to
 buy some of my time for the development.
 
-=head1 REQUIREMENTS
-
-=over 4
-
-=item *
-
-Catalyst::Runtime >= 5.70
-
-=item *
-
-Catalyst::Model::DBIC::Schema
-
-=item *
-
-Catalyst::View::JSON
-
-=item *
-
-Catalyst::View::TT
-
-=item *
-
-Catalyst::Action::RenderView
-
-=item *
-
-MRO::Compat
-
-=back
-
 =head1 SEE ALSO
 
 L<CatalystX::CRUD> and L<CatalystX::CRUD:YUI> are two distributions which
 allow you to create something similar but with full customization, and the
 ability to add more features. So, you trade effort for flexibility and power.
-
-L<CatalystX::ListFramework> is similar but has no dependency on Javascript
-(though it can use it for fancy auto-complete searches), and it also allows
-you to control which columns are rendered in the display.
 
 =head1 ACKNOWLEDGEMENTS
 

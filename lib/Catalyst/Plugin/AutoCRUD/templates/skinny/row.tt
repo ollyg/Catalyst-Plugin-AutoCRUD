@@ -1,14 +1,14 @@
-<tr class="cpac_row[% ' cpac_stripe' IF count % 2 %]">
-[% SET col_list = (table_config.columns.size > 0 ? table_config.columns : table_info.col_order) %]
-[% FOR col IN col_list %]
-    [% NEXT IF table_config.columns.size > 0 AND NOT table_config.col_keys.exists(col) %]
+<tr class="cpac_row[% ' cpac_stripe' IF stripe % 2 %]">
+[% FOR col IN cpac.tc.cols %]
+    [% NEXT IF cpac.tc.hidden_cols.exists(col)
+        OR (cpac.tm.f.$col.extra('is_reverse') AND cpac.tm.f.$col.extra('rel_type').match('_many')) %]
     <td class="cpac_cell">
         [% PROCESS cell.tt
             value = item.$col
-            properties = cpac_meta.main.cols.$col
+            meta  = cpac.tm.f.$col
         %]
     </td>
 [% END %]
 </tr>
 
-[% SET count = count + 1 %]
+[% SET stripe = stripe + 1 %]

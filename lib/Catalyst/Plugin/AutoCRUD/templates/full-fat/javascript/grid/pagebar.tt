@@ -53,7 +53,7 @@
                     // clear search opts
                     store.baseParams = {};
                     // private? clear sorting config
-                    store.sortInfo = { field: '[% cpac_meta.main.pk %]', direction: 'ASC' }
+                    store.sortInfo = { field: '[% cpac.g.default_sort %]', direction: 'ASC' }
                     // reset page size to default of 10
                     pagebar.pageSize = 10;
                     Ext.getCmp('pgsz-combo').setValue(10);
@@ -62,23 +62,16 @@
                     // changed via UI that it *reconfigures* the col, hence us
                     // doing this manually in a loop for each col index.
                     [% SET colidx = 0 %]
-                    [% FOREACH col IN site_conf.$cpac_db.$cpac_table.columns.merge(cpac_meta.main.col_order).unique %]
-                        [% IF site_conf.$cpac_db.$cpac_table.columns.size > 0 AND NOT site_conf.$cpac_db.$cpac_table.col_keys.exists(col) %]
+                    [% FOREACH col IN cpac.tc.cols %]
+                        [% SET link = cpac.tm.f.$col.extra('ref_table') %]
+                        [% IF cpac.tc.hidden_cols.exists(col) %]
                             cm.setHidden([% colidx %], true);
                         [% ELSE %]
                             cm.setHidden([% colidx %], false);
                         [% END %]
                         [% SET colidx = colidx + 1 %]
                     [% END %]
-                    [% FOREACH col IN cpac_meta.main.mfks.keys %]
-                        [% IF site_conf.$cpac_db.$cpac_table.columns.size > 0 AND NOT site_conf.$cpac_db.$cpac_table.col_keys.exists(col) %]
-                            cm.setHidden([% colidx %], true);
-                        [% ELSE %]
-                            cm.setHidden([% colidx %], false);
-                        [% END %]
-                        [% SET colidx = colidx + 1 %]
-                    [% END %]
-                    [% IF site_conf.$cpac_db.$cpac_table.delete_allowed == 'yes' %]
+                    [% IF cpac.tc.delete_allowed == 'yes' %]
                         cm.setHidden([% colidx %], false);
                     [% END %]
 

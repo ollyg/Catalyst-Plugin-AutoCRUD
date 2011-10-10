@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Skinny;
-BEGIN {
-  $Catalyst::Plugin::AutoCRUD::Controller::Skinny::VERSION = '1.112770';
+{
+  $Catalyst::Plugin::AutoCRUD::Controller::Skinny::VERSION = '2.112830_001';
 }
 
 use strict;
@@ -28,6 +28,7 @@ sub rpc_browse : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
 sub table : Chained('/autocrud/root/db') PathPart('') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('/autocrud/root/source');
+    $c->stash->{cpac}->{g}->{backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # re-set the template and some params defaults for Skinny frontend
@@ -35,23 +36,27 @@ sub base : Chained('table') PathPart('') CaptureArgs(0) {
     my ($self, $c) = @_;
 
     my $page = $c->req->params->{'page'};
-    $page = 1 if !defined $page or $page !~ m/^\d+$/;
+    $page = 1
+        if !defined $page or $page !~ m/^\d+$/;
     $c->stash->{cpac_skinny_page} = $page;
 
     my $limit = $c->req->params->{'limit'};
-    $limit = 20 if !defined $limit or ($limit ne 'all' and $limit !~ m/^\d+$/);
+    $limit = 20
+        if !defined $limit or ($limit ne 'all' and $limit !~ m/^\d+$/);
     $c->stash->{cpac_skinny_limit} = $limit;
   
-    # XXX we don't call the stash var sort, as that upsets TT
+    # we don't call the stash var sort, as that upsets TT
     my $sortby = $c->req->params->{'sort'};
-    $sortby = $c->stash->{cpac_meta}->{main}->{pk} if !defined $sortby or $sortby !~ m/^\w+$/;
+    $sortby = $c->stash->{cpac}->{g}->{default_sort}
+        if !defined $sortby or $sortby !~ m/^\w+$/;
     $c->stash->{cpac_skinny_sortby} = $sortby;
 
     my $dir = $c->req->params->{'dir'};
-    $dir = 'ASC' if !defined $dir or $dir !~ m/^\w+$/g;
+    $dir = 'ASC'
+        if !defined $dir or $dir !~ m/^\w+$/g;
     $c->stash->{cpac_skinny_dir} = $dir;
 
-    $c->stash->{cpac_frontend} = 'skinny';
+    $c->stash->{cpac}->{g}->{frontend} = 'skinny';
 }
 
 # pull in data by forwarding to JSON .../list, then send page and render
@@ -73,12 +78,12 @@ sub browse : Chained('base') Args(0) {
     $pager->current_page($c->stash->{cpac_skinny_page});
 
     $c->stash->{cpac_skinny_pager} = $pager;
-    $c->stash->{cpac_title} = $c->stash->{cpac_meta}->{main}->{title} .' Browser';
-    $c->stash->{template} = 'list.tt';
+    $c->stash->{cpac}->{g}->{title} = $c->stash->{cpac}->{c}
+        ->{$c->stash->{cpac}->{g}->{db}}
+        ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
 
+    $c->stash->{template} = 'list.tt';
     $c->forward('/autocrud/root/end');
 }
 
 1;
-
-__END__
