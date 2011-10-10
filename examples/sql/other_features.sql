@@ -89,6 +89,16 @@ CREATE TABLE bookmark (
 INSERT INTO bookmark (link) VALUES (1);
 
 --
+-- Table: bookmark_with_link_proxy
+--
+CREATE TABLE bookmark_with_link_proxy (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  link INTEGER REFERENCES link(id)
+);
+
+INSERT INTO bookmark_with_link_proxy (link) VALUES (1);
+
+--
 -- Table: unicode_test
 --
 CREATE TABLE unicode_test (
