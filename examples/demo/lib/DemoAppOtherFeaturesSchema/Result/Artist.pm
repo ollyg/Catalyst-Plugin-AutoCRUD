@@ -58,7 +58,7 @@ __PACKAGE__->add_columns(
   "surname",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "pseudonym",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
+  { data_type => "varchar", is_nullable => 1, size => 255, accessor => 'alias' },
   "born",
   { data_type => "date", is_nullable => 1 },
 );
