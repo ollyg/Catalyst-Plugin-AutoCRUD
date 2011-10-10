@@ -278,7 +278,7 @@ sub list {
                     ? eval{$row->get_column($col)} : (eval{$row->$col} || '');
             }
 
-            if ($data->{$col} and $meta->f->{$col}->extra('extjs_xtype')
+            if ($meta->f->{$col}->extra('extjs_xtype')
                 and exists $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }) {
                 $data->{$col} =
                     $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }->{from_db}->(
