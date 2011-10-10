@@ -18,9 +18,10 @@ sub filter {
 
     foreach my $tbl_name ($schema->sources) {
         my $source = $schema->source($tbl_name);
+        my $from = make_path($source);
 
         if ($source->isa('DBIx::Class::ResultSource::View')) {
-            my $tbl = $sqlt->add_table(name => lc $tbl_name);
+            my $tbl = $sqlt->add_table(name => lc $from);
             $tbl->extra(is_read_only => 1);
 
             foreach my $field ($source->columns) {
@@ -29,9 +30,10 @@ sub filter {
                     data_type => 'text',
                 );
             }
+
+            $tbl->primary_key($_) for $source->primary_columns;
         }
         else {
-            my $from = make_path($source);
             my $tbl = $sqlt->get_table($from);
             $tbl->extra(is_read_only => 1)
                 if 0 == scalar $source->primary_columns;

@@ -1,4 +1,5 @@
 Catalyst-Plugin-AutoCRUD-*
 lib/Catalyst/Plugin/AutoCRUD/static/ext2
 examples/sandpit/dbictest.sql
-examples/sql/__autocrud_testapp.sqlite
+examples/sql/__autocrud_demo_app.sqlite
+examples/sql/__autocrud_other_features.sqlite

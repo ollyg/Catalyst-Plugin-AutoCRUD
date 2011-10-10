@@ -62,7 +62,7 @@ sub filter {
         my $source = $schema->source($tbl_name);
         my $from = make_path($source);
         my $sqlt_tbl = $sqlt->get_table($from)
-            or die "mismatched table name between SQLT and DBIC: [$tbl_name]\n";
+            or die "mismatched (rel) table name between SQLT and DBIC: [$from, $tbl_name]\n";
         my $new_cols = $rels->{$from} ||= {};
 
         foreach my $r ($source->relationships) {

@@ -17,7 +17,7 @@ sub filter {
         my $source = $schema->source($tbl_name);
         my $from = make_path($source);
         my $sqlt_tbl = $sqlt->get_table($from)
-            or die "mismatched table name between SQLT and DBIC: [$tbl_name]\n";
+            or die "mismatched (proxy) table name between SQLT and DBIC: [$tbl_name]\n";
 
         foreach my $r ($source->relationships) {
             my $rel_info = $source->relationship_info($r);

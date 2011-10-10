@@ -11,9 +11,15 @@ BEGIN {
 
 sub make_path {
     my $rs = shift;
+
     my $from = ref $rs->from ? ${$rs->from} : $rs->from;
     return lc $from if $from =~ m/^\w+$/;
-    return lc $rs->source_name;
+
+    my $name = $rs->source_name;
+    $name =~ s/([a-z])([A-Z])/$1_$2/g;
+    $name =~ s/([a-zA-Z])([0-9])/$1_$2/g;
+    $name =~ s/([0-9])([A-Za-z])/$1_$2/g;
+    return lc $name;
 }
 
 sub make_label {
