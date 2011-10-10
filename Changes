@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+2.112830_001 2011-10-10 20:59:11 Europe/London
+
   [ENHANCEMENTS]
 
   * Non virtual (DBIx::Class) Views have better displayed names
