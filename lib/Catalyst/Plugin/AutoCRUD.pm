@@ -782,6 +782,26 @@ server (e.g. Apache) which is different from the default site itself.
 
 =head1 TROUBLESHOOTING
 
+=head2 Displaying Unicode
+
+It is essential that you load the L<Catalyst::Plugin::Unicode::Encoding>
+plugin to ensure proper decoding/encoding of incoming request parameters and
+the outgoing body response respectively. This is done in your C<MyApp.pm>:
+
+ use Catalyst qw/ -Debug ConfigLoader Unicode::Encoding AutoCRUD /;
+
+Additionally, when connecting to the database, add a flag to the connection
+parameters, specific to your database engine, that enables Unicode. See the
+following link for more details:
+
+=over 4
+
+=item *
+
+https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode
+
+=back
+
 =head2 Foreign keys should be configured with C<is_foreign_key>
 
 Any column in your result classes which contains the primary key of another
