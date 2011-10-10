@@ -1,5 +1,18 @@
 {{$NEXT}}
 
+  [ENHANCEMENTS]
+
+  * Non virtual (DBIx::Class) Views have better displayed names
+  * Two new Demo Apps to highlight other features
+
+  [BUG FIXES]
+
+  * Fix multiple schema bug reported by Julien Gilles
+  * Demo App now runs under modern Catalyst::ScriptRunner
+  * Unchecking checkboxes now updates the database correctly
+
+2.112780  2011-10-06 00:43:33 Europe/London
+
   [NEW FEATURES]
 
   * Full support for both composite and compound primary keys
