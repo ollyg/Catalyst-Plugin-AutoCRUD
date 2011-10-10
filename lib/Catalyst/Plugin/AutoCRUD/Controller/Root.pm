@@ -148,14 +148,14 @@ sub err_message : Private {
 
     # if there's only one schema, then we choose it and skip straight to
     # the tables display.
-    if (exists $c->stash->{cpac}->{g}->{db}
+    if (scalar keys %{$c->stash->{cpac}->{c}} == 1) {
+        $c->stash->{cpac}->{g}->{db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
+    }
+    elsif (exists $c->stash->{cpac}->{g}->{db}
         and !exists $c->stash->{cpac}->{c}->{ $c->stash->{cpac}->{g}->{db} }) {
 
         delete $c->stash->{cpac}->{g}->{db};
         delete $c->stash->{cpac_db};
-    }
-    elsif (scalar keys %{$c->stash->{cpac}->{c}} == 1) {
-        $c->stash->{cpac}->{g}->{db} = [keys %{$c->stash->{cpac}->{c}}]->[0];
     }
 
     $c->stash->{cpac_db} = $c->stash->{cpac}->{g}->{db}
