@@ -1,15 +1,15 @@
 package # hide from PAUSE
-    DemoApp;
+    DemoAppOtherFeatures;
 
 use Catalyst qw/-Debug
                 ConfigLoader
                 Unicode::Encoding
                 AutoCRUD/;
 
-DemoApp->config(
+DemoAppOtherFeatures->config(
     root => "$FindBin::Bin/root",
-    'Plugin::ConfigLoader' => { file => "$FindBin::Bin/demo.conf" },
+    'Plugin::ConfigLoader' => { file => "$FindBin::Bin/demo_other_features.conf" },
 );
 
-DemoApp->setup();
+DemoAppOtherFeatures->setup();
 1;

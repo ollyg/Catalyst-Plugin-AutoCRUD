@@ -7,22 +7,23 @@
 use DBI;
 use Data::Dumper;
 
-my $dbfile = "__autocrud_testapp.sqlite";
+foreach my $name (qw/demo_app other_features/) {
+    my $dbfile = "__autocrud_$name.sqlite";
 
-if (-e $dbfile) { unlink $dbfile or die "Failed to unlink $dbfile: $!"; }
+    if (-e $dbfile) { unlink $dbfile or die "Failed to unlink $dbfile: $!"; }
 
-my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","");
+    my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile",'','',{ sqlite_unicode => 1 });
 
-open my $sql_fh, 'test_app.sql' or die "Can't read SQL file: $!";
-local $/ = "";  ## empty line(s) are delimeters
-while (my $sql = <$sql_fh>) {
-    print $sql;
-    $dbh->do($sql);
+    open my $sql_fh, "$name.sql" or die "Can't read SQL file: $!";
+    local $/ = "";  ## empty line(s) are delimeters
+    while (my $sql = <$sql_fh>) {
+        print $sql;
+        $dbh->do($sql);
+    }
+
+    # to test it went in okay
+    # print Dumper $dbh->selectall_arrayref('SELECT * FROM artist', { Slice => {} });
+
+    $dbh->disconnect;
+    close $sql_fh;
 }
-
-# to test it went in okay
-print Dumper $dbh->selectall_arrayref('SELECT * FROM artist', { Slice => {} });
-
-$dbh->disconnect;
-close $sql_fh;
-
