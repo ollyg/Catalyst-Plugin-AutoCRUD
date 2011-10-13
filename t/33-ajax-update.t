@@ -105,24 +105,25 @@ my $second_artist_page = {
             'total' => 1
 };
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {}, {success => '0'}, 'add row, no data');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {}, {success => '0'}, 'add row, no data');
+$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {}, {success => '0'}, 'update row, no data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'Greatest Hits'}, $default_album_page, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {
     'cpac__id' => "id\0005",
     id => 5,
     'combobox.artist_id' => 3,
     title     => 'Greatest Hits',
     recorded  => '2002-05-21',
-}, {success => '1'}, 'add row, dupe data');
+}, {success => '0'}, 'add row, dupe data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'Greatest Hits'}, $default_album_page, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {
     'combobox.artist_id' => "id\0001",
     recorded  => '2002-05-21',
 }, {success => '0'}, 'add row, duff data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {
     'combobox.artist_id' => "id\0001",
     title     => 'Testing Hits',
 }, {success => '1'}, 'add minimal row');
@@ -194,7 +195,7 @@ $default_album_page->{rows}->[0]->{artist_id} = 'Bob Thornton';
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'Greatest Hits 2'}, $default_album_page, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'cpac_filter.surname' => 'Thornton'}, $new_artist_page, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {
     'artist.forename' => 'Charlie',
     'artist.surname' => 'Thornton',
     'checkbox.artist_id' => 'on',
@@ -202,7 +203,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
 }, {success => '0'}, 'add row, duff data, with related');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'cpac_filter.forename' => 'Charlie'}, {total => 0, rows => []}, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {
     'checkbox.artist_id' => 'on',
     'artist_id.surname' => 'Thornton',
     'combobox.artist_id' => "id\0001",
@@ -212,7 +213,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'Testing Hits 2'}, {total => 0, rows => []}, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'cpac_filter.surname' => 'Thornton'}, $new_artist_page, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/album/create', {
     'checkbox.artist_id' => 'on',
     'artist_id.forename' => 'Charlie',
     'artist_id.surname' => 'Thornton',
@@ -222,7 +223,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/album/update', {
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.title' => 'Testing Hits 2'}, $new_album_page, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/artist/list', {'cpac_filter.forename' => 'Charlie'}, $second_artist_page, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/track/create', {
     title => 'Track Title',
     'combobox.album_id' => '',
     'checkbox.album_id' => 'on',
@@ -235,7 +236,7 @@ $mech->ajax_ok('/site/default/schema/dbic/source/track/list', {'cpac_filter.titl
 $mech->ajax_ok('/site/default/schema/dbic/source/copyright/list', {'cpac_filter.rights owner' => 'Label D'}, {total => 0, rows => []}, 'check data');
 $mech->ajax_ok('/site/default/schema/dbic/source/album/list', {'cpac_filter.recorded' => '1999-05-21'}, {total => 0, rows => []}, 'check data');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/track/update', {
+$mech->ajax_ok('/site/default/schema/dbic/source/track/create', {
     'parent_album.title' => 'Testing Hits 3',
     'checkbox.parent_album' => 'on',
     'checkbox.copyright_id' => 'on',

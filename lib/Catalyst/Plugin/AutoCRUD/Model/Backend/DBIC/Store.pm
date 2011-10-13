@@ -103,12 +103,6 @@ sub _likeop_for {
     return $ops{$sqlt_type} || '-ilike';
 }
 
-# allows us to pseudo-acl the create call separately from update
-sub create {
-    my ($self, $c) = @_;
-    return $self->update($c);
-}
-
 sub list {
     my ($self, $c) = @_;
     my $conf = $c->stash->{cpac}->{tc};
@@ -344,8 +338,29 @@ sub list {
     return $self;
 }
 
+sub create {
+    my ($self, $c) = @_;
+    return &_create_update_txn($c, sub {
+        my $c = shift;
+        my $meta = $c->stash->{cpac}->{tm};
+        my $rs = $c->model( $meta->extra('model') );
+        return $rs->new({});
+    });
+}
+
 sub update {
     my ($self, $c) = @_;
+    return &_create_update_txn($c, sub {
+        my $c = shift;
+        my $params = $c->req->params;
+        my $meta = $c->stash->{cpac}->{tm};
+        my $rs = $c->model( $meta->extra('model') );
+        return $rs->find(_extract_ID($params->{'cpac__id'} || ''), {key => 'primary'});
+    });
+}
+
+sub _create_update_txn {
+    my ($c, $mk_self_row) = @_;
     my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
 
@@ -355,35 +370,28 @@ sub update {
 
     my $success =
         eval{ $c->model($meta->extra('model'))
-            ->result_source->storage->txn_do(\&_update_txn, $c) };
+            ->result_source->storage->txn_do(\&_create_update_core, $c, $mk_self_row) };
     $response->{'success'} = (($success && !$@) ? 1 : 0);
     $c->log->debug($@) if $c->debug;
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
     }
-
-    return $self;
 }
 
-sub _update_txn {
-    my $c = shift;
+sub _create_update_core {
+    my ($c, $mk_self_row) = @_;
     my $meta = $c->stash->{cpac}->{tm};
-
     my $params = $c->req->params;
-    my $update = {};
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         use Data::Dumper;
         $c->log->debug( Dumper $params );
     }
 
-    # cope with PK being composite/compound by extracting cpac__id
-    my $rs = $c->model( $meta->extra('model') );
-    my $self_row = $params->{'cpac__id'}
-        ? $rs->find(_extract_ID($params->{'cpac__id'}), {key => 'primary'})
-        : $rs->new({});
+    my $self_row = $mk_self_row->($c);
     my $proxy_updates = {};
+    my $update = {};
 
     COL: foreach my $col (@{$meta->extra('fields')}) {
         my $ci = $meta->f->{$col};
