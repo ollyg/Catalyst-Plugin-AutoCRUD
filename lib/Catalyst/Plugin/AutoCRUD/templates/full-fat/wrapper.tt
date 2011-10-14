@@ -60,7 +60,7 @@
                 [% ELSE %]
                     <select id="cpac_picker" onchange="window.location = document.getElementById(this.id).value">
                       [% FOREACH tpath IN cpac.c.$cpac_db.t.keys.sort %]
-                        [% NEXT IF cpac.c.$cpac_db.$tpath.hidden == 'yes' %]
+                        [% NEXT IF cpac.c.$cpac_db.t.$tpath.hidden == 'yes' %]
                         [% IF cpac.g.site == 'default' %]
                             <option value="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], tpath ) %]"
                         [% ELSE %]
