@@ -125,8 +125,11 @@ sub filter {
 
             foreach my $lrel (keys %{$rels->{$link}}) {
                 next if $rels->{$link}->{$lrel}->{ref_table} eq $from;
-                $new_cols->{ $rels->{$link}->{$lrel}->{ref_table} } = {
-                    name => $rels->{$link}->{$lrel}->{ref_table},
+                my $name = $rels->{$link}->{$lrel}->{ref_table};
+                $name .= "_via_$link"
+                    if exists $new_cols->{ $rels->{$link}->{$lrel}->{ref_table} };
+                $new_cols->{ $name } = {
+                    name => $name,
                     rel_type => 'many_to_many',
                     via => [$r, $lrel],
                 };

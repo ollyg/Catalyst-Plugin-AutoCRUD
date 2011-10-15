@@ -188,3 +188,21 @@ INSERT INTO artist_undirected_map (id1,id2) VALUES (2,3);
 --
 CREATE VIEW artists_called_mike AS
     SELECT * FROM artist WHERE forename = 'Mike';
+
+--
+-- Reference Tables test, from rt.cpan.org #64455
+--
+CREATE TABLE reference (
+  id INTEGER PRIMARY KEY AUTOINCREMENT
+);
+
+CREATE TABLE a (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reference INTEGER REFERENCES reference(id)
+);
+
+CREATE TABLE b (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  a INTEGER REFERENCES a(id),
+  reference INTEGER REFERENCES reference(id)
+);

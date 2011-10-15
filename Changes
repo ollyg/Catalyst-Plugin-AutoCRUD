@@ -4,6 +4,7 @@
 
     * Fix for hidden table configuration (F. Elliott)
     * Implement separate create() and update() in DBIC backend (davewood)
+    * Fix for when m2m gets generated with same name as existing rel
 
 2.112830_001 2011-10-10 20:59:11 Europe/London
 
