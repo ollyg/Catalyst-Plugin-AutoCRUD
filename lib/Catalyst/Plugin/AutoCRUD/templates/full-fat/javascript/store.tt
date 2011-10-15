@@ -28,3 +28,7 @@
         options.params.page = Math.floor(start / limit) + 1;
         return true;
     });
+
+    store.on('loadexception', function() {
+        Ext.Msg.alert('Error', 'Failed to load records, please check your data source configuration.');
+    });
