@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+  [BUG FIXES]
+
+    * Fix for hidden table configuration (F. Elliott)
+    * Implement separate create() and update() in DBIC backend (davewood)
+
 2.112830_001 2011-10-10 20:59:11 Europe/London
 
   [ENHANCEMENTS]
