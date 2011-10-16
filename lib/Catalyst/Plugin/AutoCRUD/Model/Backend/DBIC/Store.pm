@@ -158,7 +158,7 @@ sub list {
 
         # for numberish types the case insensitive functions may not work
         # plus, an exact match is probably what the user wants (i.e. 1 not 1*)
-        if (exists $is_numberish->{$meta->f->{$col}->data_type}) {
+        if (exists $is_numberish->{lc $meta->f->{$col}->data_type}) {
             $filter->{"me.$col"} = $c->req->params->{"cpac_filter.$col"};
             next;
         }
