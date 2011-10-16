@@ -74,9 +74,11 @@
             </div>
             <div class="cpac_right">
               [% IF cpac.g.site == 'default' %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], cpac_table, 'browse', cpac.g.filter_params ) %]"
+                <a id="cpac_browse_link" href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'),
+                                                        [cpac_db], cpac_table, 'browse', cpac.g.filter_params ) %]"
               [% ELSE %]
-                <a href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site,cpac_db], cpac_table, 'browse', cpac.g.filter_params ) %]"
+                <a id="cpac_browse_link" href="[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'),
+                                                        [cpac.g.site,cpac_db], cpac_table, 'browse', cpac.g.filter_params ) %]"
               [% END %]
                     title="Skinny (non-JS) Browser">
                     <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "application_view_detail.png" ) %]"

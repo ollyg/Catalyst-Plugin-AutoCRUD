@@ -52,8 +52,16 @@
                     Ext.state.Manager.getProvider().clear('search-grid');
                     // clear search opts
                     store.baseParams = {};
-                    // need to reset to remove query string
-                    store.proxy.conn.url = '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [cpac.g.site,cpac_db,cpac_table] ) %]'
+                    // need to remove query string to reset
+                    store.proxy.conn.url = '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'),
+                                                    [cpac.g.site,cpac_db,cpac_table] ) %]'
+                    [% IF cpac.g.site == 'default' %]
+                    Ext.get('cpac_browse_link').set({href: '[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'),
+                            [cpac_db], cpac_table, 'browse' ) %]'});
+                    [% ELSE %]
+                    Ext.get('cpac_browse_link').set({href: '[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'),
+                            [cpac.g.site,cpac_db], cpac_table, 'browse' ) %]'});
+                    [% END %]
                     // private? clear sorting config
                     store.sortInfo = { field: '[% cpac.g.default_sort %]', direction: 'ASC' }
                     // reset page size to default of 10
