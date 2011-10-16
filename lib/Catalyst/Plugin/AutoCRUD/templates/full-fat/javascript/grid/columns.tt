@@ -42,6 +42,8 @@
             if (value) {
                 // create an id, attached to a span, and hang a button off it
                 var id = Ext.id();
+                // if the related table is "hidden" we are not passed field,
+                // so this get() fails and the plain value is displayed
                 var pk = record.get('cpac__pk_for_' + field);
                 if (pk) {
                     createGridButton.defer(1, this, [id, table, url, pk]);
@@ -179,18 +181,22 @@
             ,editor: fk_combo_[% col | replace('\'', '\\\'') %] //reference to combo instance
             // pass combo instance to reusable renderer
             [% SET ref_table = cpac.tm.f.$col.extra('ref_table') %]
-            // takes the combo-name, table display name (for tooltip), col
-            // name (for retrieving FK's PK data), and target URL for POST
-            ,renderer: Ext.util.Format.comboRenderer(
-                fk_combo_[% col %]
-                ,'[% cpac.c.$cpac_db.t.$ref_table.display_name %]'
-                ,'[% col | replace('\'', '\\\'') %]'
-                [% IF cpac.g.site == 'default' %]
-                  ,'[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], ref_table ) %]'
-                [% ELSE %]
-                  ,'[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site,cpac_db], ref_table ) %]'
-                [% END %]
-            )
+            [% IF cpac.c.$cpac_db.t.$ref_table.hidden == 'yes' %]
+              ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %])
+            [% ELSE %]
+              // takes the combo-name, table display name (for tooltip), col
+              // name (for retrieving FK's PK data), and target URL for POST
+              ,renderer: Ext.util.Format.comboRenderer(
+                  fk_combo_[% col %]
+                  ,'[% cpac.c.$cpac_db.t.$ref_table.display_name %]'
+                  ,'[% col | replace('\'', '\\\'') %]'
+                  [% IF cpac.g.site == 'default' %]
+                    ,'[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], ref_table ) %]'
+                  [% ELSE %]
+                    ,'[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site,cpac_db], ref_table ) %]'
+                  [% END %]
+              )
+            [% END %]
             [% END %]
           [% ELSE %]
             ,dataIndex: '[% col | replace('\'', '\\\'') %]'
