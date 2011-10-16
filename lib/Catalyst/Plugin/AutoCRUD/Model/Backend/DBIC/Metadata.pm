@@ -132,6 +132,7 @@ sub schema_metadata {
         filters => [
             ['AutoCRUD::Backend::DBIC::ViewsAsTables', $dbic],
             ['AutoCRUD::Backend::DBIC::Relationships', $dbic],
+            ['AutoCRUD::Backend::DBIC::DynamicDefault', $dbic],
             ['AutoCRUD::CatalystModel',
                 $self->_schema_cache->{handles}->{$db}->{sources}],
             ['AutoCRUD::Backend::DBIC::ProxyColumns', $dbic],

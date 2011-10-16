@@ -64,6 +64,20 @@ INSERT INTO fourkeys_to_twokeys (f_foo, f_bar, f_hello, f_goodbye, t_artist, t_c
 INSERT INTO fourkeys_to_twokeys (f_foo, f_bar, f_hello, f_goodbye, t_artist, t_cd, autopilot) VALUES (5, 4, 3, 6, 2, 1, 'y');
 
 --
+-- Table: dynamic_default
+--
+CREATE TABLE dynamic_default (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(100) NOT NULL,
+  on_create VARCHAR(100),
+  on_create_and_update VARCHAR(100)
+);
+
+INSERT INTO dynamic_default (name) VALUES ('Charlie');
+
+INSERT INTO dynamic_default (name) VALUES ('Bobby');
+
+--
 -- Table: link
 --
 CREATE TABLE link (

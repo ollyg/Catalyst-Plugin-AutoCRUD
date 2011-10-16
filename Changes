@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * Add hyperlink icon from any FK to the related table+record
+  * Support DBIC Dynamic Default components such as DBIx::Class::TimeStamp
 
   [ENHANCEMENTS]
 
