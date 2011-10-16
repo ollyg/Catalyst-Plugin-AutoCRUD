@@ -49,25 +49,25 @@
                     ,id: '[% orig_col %].[% field | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% SET count = count + 1 %]
+                  [%= SET count = count + 1 %]
                   [% IF meta.f.$field.is_auto_increment %]
                     ,xtype: 'hidden'
                   }[% NEXT %]
-                  [% END %]
+                  [% END -%]
 
                   ,fieldLabel: '[% conf.headings.$field %]'
                   ,anchor: '-20'
                   ,autoHeight: true
                   
-                  [% IF meta.f.$field.default_value %]
+                  [%= IF meta.f.$field.default_value %]
                     ,value: '[% meta.f.$field.default_value | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [% IF NOT meta.f.$field.is_nullable %]
+                  [%= IF NOT meta.f.$field.is_nullable %]
                     ,allowBlank: false
                   [% END %]
 
-                  [% IF meta.f.$field.is_foreign_key %]
+                  [%= IF meta.f.$field.is_foreign_key %]
                     ,xtype: 'combo'
                     ,displayField: 'stringified'
                     ,valueField: 'dbid'
@@ -112,7 +112,7 @@
                     [% SET localxtype = meta.f.$field.extra('extjs_xtype') OR "textarea" %]
                     ,xtype: '[% localxtype %]'
 
-                    [% SWITCH localxtype %]
+                    [%= SWITCH localxtype %]
                     [% CASE 'timefield' %]
                     ,format: 'H:i:s'
                     [% CASE 'datefield' %]
