@@ -66,6 +66,8 @@ sub browse : Chained('base') Args(0) {
 
     # get data from backend into stash
     $c->forward('/autocrud/ajax/list');
+    # FIXME need to shift off the filters row (until AJAX != ExtJS)
+    shift @{ $c->stash->{json_data}->{rows} };
 
     my $pager = Data::Page->new;
     $pager->total_entries($c->stash->{json_data}->{total});
