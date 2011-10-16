@@ -18,16 +18,20 @@ examples/demo/lib/DemoAppMusicSchema/Result/SleeveNote.pm
 examples/demo/lib/DemoAppMusicSchema/Result/Track.pm
 examples/demo/lib/DemoAppOtherFeatures.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema.pm
+examples/demo/lib/DemoAppOtherFeaturesSchema/Result/A.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Artist.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/ArtistUndirectedMap.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/ArtistsCalledMike.pm
+examples/demo/lib/DemoAppOtherFeaturesSchema/Result/B.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Bookmark.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/BookmarkWithLinkProxy.pm
+examples/demo/lib/DemoAppOtherFeaturesSchema/Result/DynamicDefault.pm.off
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Fourkey.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/FourkeysToTwokey.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Link.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Noprimarykey.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/PunctuatedColumnName.pm
+examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Reference.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/SelfRef.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/SelfRefAlias.pm
 examples/demo/lib/DemoAppOtherFeaturesSchema/Result/Twokey.pm
@@ -67,6 +71,7 @@ lib/Catalyst/Plugin/AutoCRUD/static/script_lightning.png
 lib/Catalyst/Plugin/AutoCRUD/static/sitemap_color.png
 lib/Catalyst/Plugin/AutoCRUD/static/skinny.css
 lib/Catalyst/Plugin/AutoCRUD/static/skinny_body.css
+lib/Catalyst/Plugin/AutoCRUD/static/table_go.png
 lib/Catalyst/Plugin/AutoCRUD/static/xdatetime.js
 lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/javascript/grid.tt
 lib/Catalyst/Plugin/AutoCRUD/templates/full-fat/javascript/grid/columns.tt
@@ -90,6 +95,7 @@ lib/Catalyst/Plugin/AutoCRUD/templates/tables.tt
 lib/SQL/Translator/AutoCRUD/Quick.pm
 lib/SQL/Translator/AutoCRUD/Utils.pm
 lib/SQL/Translator/Filter/AutoCRUD/Backend/DBIC/AccessorDisplayName.pm
+lib/SQL/Translator/Filter/AutoCRUD/Backend/DBIC/DynamicDefault.pm
 lib/SQL/Translator/Filter/AutoCRUD/Backend/DBIC/ProxyColumns.pm
 lib/SQL/Translator/Filter/AutoCRUD/Backend/DBIC/Relationships.pm
 lib/SQL/Translator/Filter/AutoCRUD/Backend/DBIC/ViewsAsTables.pm
@@ -104,6 +110,7 @@ t/12-extjs-local.t
 t/13-extjs-cachefly.t
 t/14-with-html-charset.t
 t/14-without-html-charset.t
+t/15-hidden-table.t
 t/20-music-metadata.t
 t/31-ajax-list.t
 t/32-ajax-delete.t
@@ -148,6 +155,7 @@ t/lib/columns_extjs.conf
 t/lib/headings_and_columns_extjs.conf
 t/lib/headings_byhash.conf
 t/lib/headings_extjs.conf
+t/lib/hide_table.conf
 t/lib/html_charset.conf
 t/lib/list_returns_byhash.conf
 t/lib/list_returns_bylist.conf

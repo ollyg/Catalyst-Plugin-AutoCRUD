@@ -52,6 +52,8 @@
                     Ext.state.Manager.getProvider().clear('search-grid');
                     // clear search opts
                     store.baseParams = {};
+                    // need to reset to remove query string
+                    store.proxy.conn.url = '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [cpac.g.site,cpac_db,cpac_table] ) %]'
                     // private? clear sorting config
                     store.sortInfo = { field: '[% cpac.g.default_sort %]', direction: 'ASC' }
                     // reset page size to default of 10
@@ -63,7 +65,6 @@
                     // doing this manually in a loop for each col index.
                     [% SET colidx = 0 %]
                     [% FOREACH col IN cpac.tc.cols %]
-                        [% SET link = cpac.tm.f.$col.extra('ref_table') %]
                         [% IF cpac.tc.hidden_cols.exists(col) %]
                             cm.setHidden([% colidx %], true);
                         [% ELSE %]

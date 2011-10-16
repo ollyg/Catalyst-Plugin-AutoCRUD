@@ -1,3 +1,20 @@
+2.112890_002 2011-10-16 10:43:02 Europe/London
+
+  [NEW FEATURES]
+
+  * Add hyperlink icon from any FK to the related table+record
+  * Support DBIC Dynamic Default components such as DBIx::Class::TimeStamp
+
+  [ENHANCEMENTS]
+
+  * Display alert message when table data load fails (Getty)
+  * Implement separate create() and update() in DBIC backend (davewood)
+
+  [BUG FIXES]
+  
+  * Fix for hidden table configuration (F. Elliott)
+  * Fix for when m2m gets generated with same name as existing rel
+
 2.112830_001 2011-10-10 20:59:11 Europe/London
 
   [ENHANCEMENTS]

@@ -2,7 +2,7 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    version 2.112830_001
+    version 2.112890_002
 
 SYNOPSIS
     If you already have a Catalyst app with DBIx::Class models configured:
@@ -416,11 +416,6 @@ SITES CONFIGURATION
             </sites>
          </Plugin::AutoCRUD>
 
-        Although this is a separate option from "create_allowed", below, *be
-        warned!* Both creation and editing of records are in fact "update"
-        actions, so the *only* way to secure the application from creation
-        and editing of records is to set this option to "no".
-
     create_allowed [ yes* | no ]
         This can be applied to either a schema or a source; if applied to a
         schema it percolates to all the sources, unless the source has a
@@ -438,12 +433,6 @@ SITES CONFIGURATION
                 </default>
             </sites>
          </Plugin::AutoCRUD>
-
-        *Important Note:* this is purely a cosmetic action, and it is still
-        possible for a user to call the AJAX API published by this
-        application in order to create a new record. The only way truely to
-        prevent record creation is also to set the "update_allowed" option
-        to "no", as shown above.
 
     delete_allowed [ yes* | no ]
         This can be applied to either a schema or a source; if applied to a

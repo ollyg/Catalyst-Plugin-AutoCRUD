@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.112830_001';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.112890_002';
 }
 
 use strict;
@@ -191,7 +191,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.112830_001
+version 2.112890_002
 
 =head1 SYNOPSIS
 
@@ -613,11 +613,6 @@ also be removed from the user interface so as not to confuse users.
     </sites>
  </Plugin::AutoCRUD>
 
-Although this is a separate option from C<create_allowed>, below, I<be warned!>
-Both creation and editing of records are in fact C<update> actions, so the
-I<only> way to secure the application from creation and editing of records is
-to set this option to C<no>.
-
 =item create_allowed [ yes* | no ]
 
 This can be applied to either a schema or a source; if applied to a schema it
@@ -634,11 +629,6 @@ removed from the user interface so as not to confuse users.
         </default>
     </sites>
  </Plugin::AutoCRUD>
-
-I<Important Note:> this is purely a cosmetic action, and it is still possible
-for a user to call the AJAX API published by this application in order to
-create a new record. The only way truely to prevent record creation is also
-to set the C<update_allowed> option to C<no>, as shown above.
 
 =item delete_allowed [ yes* | no ]
 

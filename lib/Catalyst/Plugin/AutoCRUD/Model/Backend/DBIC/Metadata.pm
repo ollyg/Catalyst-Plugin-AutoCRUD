@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata;
 {
-  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata::VERSION = '2.112830_001';
+  $Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata::VERSION = '2.112890_002';
 }
 
 use strict;
@@ -135,6 +135,7 @@ sub schema_metadata {
         filters => [
             ['AutoCRUD::Backend::DBIC::ViewsAsTables', $dbic],
             ['AutoCRUD::Backend::DBIC::Relationships', $dbic],
+            ['AutoCRUD::Backend::DBIC::DynamicDefault', $dbic],
             ['AutoCRUD::CatalystModel',
                 $self->_schema_cache->{handles}->{$db}->{sources}],
             ['AutoCRUD::Backend::DBIC::ProxyColumns', $dbic],

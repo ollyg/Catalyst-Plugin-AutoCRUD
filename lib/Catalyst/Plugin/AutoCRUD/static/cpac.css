@@ -3,6 +3,18 @@
  *
  */
 
+/* make icon buttons have no "buttony" style */
+div.x-grid3-cell-inner .x-btn-text-icon * {
+    background-image: none;
+}
+
+div.x-grid3-cell-inner .x-btn-wrap {
+    float: left;
+    margin-top: -4px;
+    margin-left: -4px;
+    margin-left: -5px;
+}
+
 /* make grid cells wrap long lines */
 .x-grid3-cell-inner, .x-grid3-hd-inner { white-space:normal !important; } 
 

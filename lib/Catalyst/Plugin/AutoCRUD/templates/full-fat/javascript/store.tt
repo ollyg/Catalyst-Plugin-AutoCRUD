@@ -2,6 +2,9 @@
     var rowRecord = Ext.data.Record.create([
       [% FOREACH col IN cpac.tc.cols %]
       [%- ',' IF NOT loop.first %]{ name: '[% col | replace('\'', '\\\'') %]' }
+        [%- IF cpac.tm.f.$col.extra('rel_type') == 'belongs_to' %]
+        ,{ name: 'cpac__pk_for_[% col | replace('\'', '\\\'') %]' }
+        [% END %]
       [% END %]
       ,{ name: 'cpac__id' }
       ,{ name: 'cpac__display_name' }
@@ -27,4 +30,8 @@
         var start = options.params.start;
         options.params.page = Math.floor(start / limit) + 1;
         return true;
+    });
+
+    store.on('loadexception', function() {
+        Ext.Msg.alert('Error', 'Failed to load records, please check your data source configuration.');
     });

@@ -1,12 +1,36 @@
-    // the column model has information about grid columns
+    // the column model has information about grid columns.
     // dataIndex maps the column to the specific data field in
     // the data store
+
+    // returns a little icon which, when clicked on, redirects the browser to
+    // the grid of a related table
+    function createGridButton(id, table, url, pk) {
+        new Ext.Button({
+            cls: 'x-btn-text-icon'
+            ,tooltip: 'Jump to this ' + table
+            ,handler: function(btn, e) {
+                Ext.DomHelper.append(
+                    Ext.getBody()
+                    ,{
+                        tag: 'form'
+                        ,name: 'transportform'
+                        ,id: 'transportform'
+                        ,action: url
+                        ,method: 'POST'
+                        ,cn: pk
+                    }
+                ).submit();
+            }
+            ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                                            "table_go.png" ) %]'
+        }).render(document.body, id);
+    }
 
     // text added to FK combo list to hint for the full-text-search option
     var fk_combo_comment = ' (all matches)';
 
     // create reusable renderer
-    Ext.util.Format.comboRenderer = function(combo) {
+    Ext.util.Format.comboRenderer = function(combo, table, field, url) {
         return function(value,metadata,record,rowindex,colindex,store) {
             // choose what to render from the combobox store's data
             if (rowindex === 0) {
@@ -14,7 +38,18 @@
                 var retval = rec ? rec.get(combo.displayField) : value;
                 return (retval.indexOf(fk_combo_comment) !== -1) ? value : retval;
             }
-            return value;
+
+            if (value) {
+                // create an id, attached to a span, and hang a button off it
+                var id = Ext.id();
+                var pk = record.get('cpac__pk_for_' + field);
+                if (pk) {
+                    createGridButton.defer(1, this, [id, table, url, pk]);
+                    return ('<span id="' + id + '"></span>' + value);
+                }
+                return value;
+            }
+            return '';
         }
     };
 
@@ -142,7 +177,20 @@
             [% ELSE %]
             ,dataIndex: '[% col | replace('\'', '\\\'') %]'
             ,editor: fk_combo_[% col | replace('\'', '\\\'') %] //reference to combo instance
-            ,renderer: Ext.util.Format.comboRenderer(fk_combo_[% col %]) // pass combo instance to reusable renderer
+            // pass combo instance to reusable renderer
+            [% SET ref_table = cpac.tm.f.$col.extra('ref_table') %]
+            // takes the combo-name, table display name (for tooltip), col
+            // name (for retrieving FK's PK data), and target URL for POST
+            ,renderer: Ext.util.Format.comboRenderer(
+                fk_combo_[% col %]
+                ,'[% cpac.c.$cpac_db.t.$ref_table.display_name %]'
+                ,'[% col | replace('\'', '\\\'') %]'
+                [% IF cpac.g.site == 'default' %]
+                  ,'[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'), [cpac_db], ref_table ) %]'
+                [% ELSE %]
+                  ,'[% c.uri_for( c.controller('AutoCRUD::Root').action_for('source'), [cpac.g.site,cpac_db], ref_table ) %]'
+                [% END %]
+            )
             [% END %]
           [% ELSE %]
             ,dataIndex: '[% col | replace('\'', '\\\'') %]'

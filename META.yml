@@ -58,4 +58,4 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Catalyst-Plugin-AutoCRUD
   homepage: https://github.com/ollyg/Catalyst-Plugin-AutoCRUD/wiki
   repository: git://github.com/ollyg/Catalyst-Plugin-AutoCRUD.git
-version: 2.112830_001
+version: 2.112890_002
