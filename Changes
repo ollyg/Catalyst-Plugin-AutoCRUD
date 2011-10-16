@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+2.112890_003 2011-10-16 11:02:30 Europe/London
+
   [BUG FIXES]
 
   * Hidden table must not be linked to from an FK hyperlink icon
