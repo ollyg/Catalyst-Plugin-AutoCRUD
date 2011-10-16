@@ -2,6 +2,9 @@
     var rowRecord = Ext.data.Record.create([
       [% FOREACH col IN cpac.tc.cols %]
       [%- ',' IF NOT loop.first %]{ name: '[% col | replace('\'', '\\\'') %]' }
+        [%- IF cpac.tm.f.$col.extra('rel_type') == 'belongs_to' %]
+        ,{ name: 'cpac__json_[% col | replace('\'', '\\\'') %]' }
+        [% END %]
       [% END %]
       ,{ name: 'cpac__id' }
       ,{ name: 'cpac__display_name' }

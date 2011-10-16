@@ -41,8 +41,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     }
 
     # param becomes a list when js grid filter is added to url query string.
-    # suppress that back to a list, and also set up filter_params for use by
-    # the skinny frontend.
+    # suppress that back to single item, and also set up filter_params for ease
     foreach my $k (%{ $c->req->params }) {
         next unless $k =~ m/^cpac_filter\./;
         $c->stash->{cpac}->{g}->{filter_params}->{$k}

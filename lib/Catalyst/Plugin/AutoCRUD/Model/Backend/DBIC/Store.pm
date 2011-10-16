@@ -71,6 +71,18 @@ sub _sfy {
     );
 }
 
+# create a JSON dict for this row's PK
+sub _create_JSON_ID {
+    my $row = shift;
+    return undef if !defined $row or !blessed $row;
+    return [map {{
+        tag => 'input',
+        type => 'hidden',
+        name => 'cpac_filter.'. $_,
+        value => $row->get_column($_),
+    }} $row->primary_columns];
+}
+
 # create a unique identifier for this row from PKs
 sub _create_ID {
     my $row = shift;
@@ -254,6 +266,7 @@ sub list {
                 else {
                     # here assume table names are sane perl identifiers
                     $data->{$col} = _sfy($row->$col);
+                    $data->{"cpac__json_$col"} = _create_JSON_ID($row->$col);
 
                     # check filter on FK, might want to skip further processing/storage
                     if (exists $c->req->params->{"cpac_filter.$col"}

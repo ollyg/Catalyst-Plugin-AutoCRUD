@@ -10,6 +10,8 @@
                 // XXX private method to refresh
                 ,handler: function (){
                     store.baseParams = {}; // clear search opts
+                    // need to reset to remove query string
+                    store.proxy.conn.url = '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'), [cpac.g.site,cpac_db,cpac_table] ) %]'
                     pagebar.doLoad(pagebar.cursor);
                 }
             }
