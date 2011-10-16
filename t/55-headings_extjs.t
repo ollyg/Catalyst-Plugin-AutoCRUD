@@ -23,12 +23,13 @@ my $content = $mech->content;
 #print STDERR Dumper $content;
 
 # nasty, but simple
-my ($colmodel) = ($content =~ m/Ext.grid.ColumnModel\((.+?)\);/s);
-my @cols = ($colmodel =~ m/{(.+?)}\s+,/sg);
+my ($colmodel) = ($content =~ m/Ext.grid.ColumnModel\(\[(.+?)\]\);/s);
+#print STDERR $colmodel;
+my @cols = ($colmodel =~ m/{(.+?)}\s*,/sg);
 #use Data::Dumper;
 #print STDERR Dumper \@cols;
 
-ok(scalar @cols == 6, 'number of columns in ColumnModel');
+ok(scalar @cols == 8, 'number of columns in ColumnModel');
 
 ok($cols[1] =~ m/header:\s+'Deleted'/, 'second heading is TheTitle');
 ok($cols[2] =~ m/header:\s+'Recorded'/, 'undefined heading is ignored');

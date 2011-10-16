@@ -57,7 +57,31 @@ sub create : Chained('base') Args(0) {
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
+    my $conf = $c->stash->{cpac}->{tc};
+    my $meta = $c->stash->{cpac}->{tm};
+    my @columns = @{$conf->{cols}};
+
+    # forward to backend action to get data
     $c->forward($c->stash->{cpac}->{g}->{backend}, 'list');
+
+    # sneak in a 'top' row for applying the filters
+    my %searchrow = ();
+    foreach my $col (@columns) {
+        my $ci = $meta->f->{$col};
+
+        if ($ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox') {
+            $searchrow{$col} = '';
+        }
+        else {
+            if (exists $c->req->params->{ 'cpac_filter.'. $col }) {
+                $searchrow{$col} = $c->req->params->{ 'cpac_filter.'. $col };
+            }
+            else {
+                $searchrow{$col} = '(click to add filter)';
+            }
+        }
+    }
+    unshift @{$c->stash->{json_data}->{rows}}, \%searchrow;
 }
 
 sub update : Chained('base') Args(0) {

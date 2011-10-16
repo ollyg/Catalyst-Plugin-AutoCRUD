@@ -324,25 +324,6 @@ sub list {
         $response->{total} = $pg->total_entries;
     }
 
-    # sneak in a 'top' row for applying the filters
-    my %searchrow = ();
-    foreach my $col (@columns) {
-        my $ci = $meta->f->{$col};
-
-        if ($ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox') {
-            $searchrow{$col} = '';
-        }
-        else {
-            if (exists $c->req->params->{ 'cpac_filter.'. $col }) {
-                $searchrow{$col} = $c->req->params->{ 'cpac_filter.'. $col };
-            }
-            else {
-                $searchrow{$col} = '(click to add filter)';
-            }
-        }
-    }
-    unshift @{$response->{rows}}, \%searchrow;
-
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         $c->log->debug( Dumper $response );
         $c->model($meta->extra('model'))->result_source->storage->debug(0);

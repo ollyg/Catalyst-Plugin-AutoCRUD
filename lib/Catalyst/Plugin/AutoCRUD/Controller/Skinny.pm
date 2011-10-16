@@ -64,9 +64,8 @@ sub browse : Chained('base') Args(0) {
     @{$c->stash}{qw/ cpac_page cpac_limit cpac_sortby cpac_dir /}
         = @{$c->stash}{qw/ cpac_skinny_page cpac_skinny_limit cpac_skinny_sortby cpac_skinny_dir /};
 
+    # get data from backend into stash
     $c->forward('/autocrud/ajax/list');
-    # need to shift off the filters row
-    shift @{ $c->stash->{json_data}->{rows} };
 
     my $pager = Data::Page->new;
     $pager->total_entries($c->stash->{json_data}->{total});
