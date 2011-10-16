@@ -32,7 +32,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     if (!exists $self->_site_conf_cache->{dispatch}) {
         my $dispatch = {};
         foreach my $backend ($self->_enumerate_backends($c)) {
-            my $new_dispatch = $c->forward($backend, 'dispatch_table');
+            my $new_dispatch = $c->forward($backend, 'dispatch_table') || {};
             for (keys %$new_dispatch) {$new_dispatch->{$_}->{backend} = $backend}
             $dispatch = merge_hashes($dispatch, $new_dispatch);
         }
