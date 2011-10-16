@@ -1,10 +1,18 @@
 {{$NEXT}}
 
-  [BUG FIXES]
+  [NEW FEATURES]
 
-    * Fix for hidden table configuration (F. Elliott)
-    * Implement separate create() and update() in DBIC backend (davewood)
-    * Fix for when m2m gets generated with same name as existing rel
+  * Add hyperlink icon from any FK to the related table+record
+
+  [ENHANCEMENTS]
+
+  * Display alert message when table data load fails (Getty)
+  * Implement separate create() and update() in DBIC backend (davewood)
+
+  [BUG FIXES]
+  
+  * Fix for hidden table configuration (F. Elliott)
+  * Fix for when m2m gets generated with same name as existing rel
 
 2.112830_001 2011-10-10 20:59:11 Europe/London
 

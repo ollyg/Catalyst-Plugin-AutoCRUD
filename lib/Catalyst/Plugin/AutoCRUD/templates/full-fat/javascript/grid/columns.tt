@@ -42,7 +42,7 @@
             if (value) {
                 // create an id, attached to a span, and hang a button off it
                 var id = Ext.id();
-                var pk = record.get('cpac__json_' + field);
+                var pk = record.get('cpac__pk_for_' + field);
                 if (pk) {
                     createGridButton.defer(1, this, [id, table, url, pk]);
                     return ('<span id="' + id + '"></span>' + value);

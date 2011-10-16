@@ -266,7 +266,7 @@ sub list {
                 else {
                     # here assume table names are sane perl identifiers
                     $data->{$col} = _sfy($row->$col);
-                    $data->{"cpac__json_$col"} = _create_JSON_ID($row->$col);
+                    $data->{"cpac__pk_for_$col"} = _create_JSON_ID($row->$col);
 
                     # check filter on FK, might want to skip further processing/storage
                     if (exists $c->req->params->{"cpac_filter.$col"}
