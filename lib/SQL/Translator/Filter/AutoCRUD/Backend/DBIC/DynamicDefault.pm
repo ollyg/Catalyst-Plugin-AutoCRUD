@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::Backend::DBIC::DynamicDefault;
 {
-  $SQL::Translator::Filter::AutoCRUD::Backend::DBIC::DynamicDefault::VERSION = '2.112890_002';
+  $SQL::Translator::Filter::AutoCRUD::Backend::DBIC::DynamicDefault::VERSION = '2.112890_003';
 }
 
 # DBIx:Class extensions such as DBIx::Class::TimeStamp or
