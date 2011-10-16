@@ -10,54 +10,28 @@ BEGIN {
 }
 
 use Data::Page;
-use List::Util qw(first);
 use List::MoreUtils qw(zip uniq);
 use Scalar::Util qw(blessed);
 use overload ();
 
-sub _filter_datetime {
-    my $val = shift;
-    if (eval { $val->isa( 'DateTime' ) }) {
-        my $iso = $val->iso8601;
-        $iso =~ s/T/ /;
-        return $iso;
-    }
-    else {
-        $val =~ s/(\.\d+)?[+-]\d\d$//;
-        return $val;
-    }
-}
-
-my %filter_for = (
-    timefield => {
-        from_db => \&_filter_datetime,
-        to_db   => sub { shift },
-    },
-    xdatetime => {
-        from_db => \&_filter_datetime,
-        to_db   => sub { shift },
-    },
-    checkbox => {
-        from_db => sub {
-            my $val = shift;
-            return 1 if $val eq 'true' or $val eq '1';
-            return 0;
-        },
-        to_db   => sub {
-            my $val = shift;
-            return 1 if $val eq 'on' or $val eq '1';
-            return 0;
-        },
-    },
-    numberfield => {
-        from_db => sub { shift },
-        to_db   => sub {
-            my $val = shift;
-            return undef if !defined $val or $val eq '';
-            return $val;
-        },
-    },
-);
+my $is_numberish = { map {$_ => 1} qw/
+    bigint
+    bigserial
+    dec
+    decimal
+    double precision
+    float
+    int
+    integer
+    mediumint
+    money
+    numeric
+    real
+    smallint
+    serial
+    tinyint
+    year
+/ };
 
 # stringify a row of fields according to rules described in our POD
 sub _sfy {
@@ -184,8 +158,7 @@ sub list {
 
         # for numberish types the case insensitive functions may not work
         # plus, an exact match is probably what the user wants (i.e. 1 not 1*)
-        if ($meta->f->{$col}->extra('extjs_xtype')
-            and $meta->f->{$col}->extra('extjs_xtype') eq 'numberfield') {
+        if (exists $is_numberish->{$meta->f->{$col}->data_type}) {
             $filter->{"me.$col"} = $c->req->params->{"cpac_filter.$col"};
             next;
         }
@@ -284,13 +257,6 @@ sub list {
                 $data->{$col} = eval{$row->get_column($col)}
                     ? eval{$row->get_column($col)} : (eval{$row->$col} || '');
             }
-
-            if ($meta->f->{$col}->extra('extjs_xtype')
-                and exists $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }) {
-                $data->{$col} =
-                    $filter_for{ $meta->f->{$col}->extra('extjs_xtype') }->{from_db}->(
-                        $data->{$col});
-            }
         }
 
         #if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
@@ -366,7 +332,7 @@ sub _create_update_txn {
         eval{ $c->model($meta->extra('model'))
             ->result_source->storage->txn_do(\&_create_update_core, $c, $mk_self_row) };
     $response->{'success'} = (($success && !$@) ? 1 : 0);
-    $c->log->debug($@) if $c->debug;
+    $c->log->debug($@) if $@ and $c->debug;
 
     if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
@@ -394,19 +360,11 @@ sub _create_update_core {
         if (not $ci->is_foreign_key) {
             # fix for HTML standard which excludes checkboxes
             $params->{$col} ||= 'false'
-                if $ci->extra('extjs_xtype') and $ci->extra('extjs_xtype') eq 'checkbox';
+                if $ci->data_type and $ci->data_type eq 'boolean';
 
             # skip auto-inc cols unless they contain data
             next COL unless exists $params->{$col}
                 and ($params->{$col} or not $ci->is_auto_increment);
-
-            # filter data before sending to the database
-            if ($ci->extra('extjs_xtype') and exists $filter_for{ $ci->extra('extjs_xtype') }) {
-                $params->{$col} =
-                    $filter_for{ $ci->extra('extjs_xtype') }->{to_db}->(
-                        $params->{$col}
-                    );
-            }
 
             # only works if user doesn't change the FK val
             if ($ci->extra('is_proxy')) {
@@ -462,21 +420,11 @@ sub _create_update_core {
             if (exists $params->{"$col.$fcol"}) {
                 # fix for HTML standard which excludes checkboxes
                 $params->{"$col.$fcol"} ||= 'false'
-                    if $fci->extra('extjs_xtype') and $fci->extra('extjs_xtype') eq 'checkbox';
+                    if $fci->data_type and $fci->data_type eq 'boolean';
 
                 # skip auto-inc cols unless they contain data
                 next unless exists $params->{"$col.$fcol"}
                     and ($params->{"$col.$fcol"} or not $fci->is_auto_increment);
-
-                # filter data before sending to the database
-                if ($fci->extra('extjs_xtype')
-                    and exists $filter_for{ $fci->extra('extjs_xtype') }) {
-
-                    $params->{"$col.$fcol"} =
-                        $filter_for{ $fci->extra('extjs_xtype') }->{to_db}->(
-                            $params->{"$col.$fcol"}
-                        );
-                }
 
                 $new_related->{$fcol} = $params->{"$col.$fcol"};
             }

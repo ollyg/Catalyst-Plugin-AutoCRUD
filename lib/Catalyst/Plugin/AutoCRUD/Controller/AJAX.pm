@@ -5,6 +5,50 @@ use warnings FATAL => 'all';
 
 use base 'Catalyst::Controller';
 
+sub _filter_datetime {
+    my $val = shift;
+    if (eval { $val->isa( 'DateTime' ) }) {
+        my $iso = $val->iso8601;
+        $iso =~ s/T/ /;
+        return $iso;
+    }
+    else {
+        $val =~ s/(\.\d+)?[+-]\d\d$//;
+        return $val;
+    }
+}
+
+my %filter_for = (
+    timefield => {
+        to_ext => \&_filter_datetime,
+        from_ext   => sub { shift },
+    },
+    xdatetime => {
+        to_ext => \&_filter_datetime,
+        from_ext   => sub { shift },
+    },
+    checkbox => {
+        to_ext => sub {
+            my $val = shift;
+            return 1 if $val eq 'true' or $val eq '1';
+            return 0;
+        },
+        from_ext   => sub {
+            my $val = shift;
+            return 1 if $val eq 'on' or $val eq '1';
+            return 0;
+        },
+    },
+    numberfield => {
+        to_ext => sub { shift },
+        from_ext   => sub {
+            my $val = shift;
+            return undef if !defined $val or $val eq '';
+            return $val;
+        },
+    },
+);
+
 # we're going to check that calls to this RPC operation are allowed
 sub acl : Private {
     my ($self, $c) = @_;
@@ -50,19 +94,75 @@ sub base : Chained('/autocrud/root/call') PathPart('') CaptureArgs(0) {
 
 sub end : ActionClass('RenderView') {}
 
-sub create : Chained('base') Args(0) {
-    my ($self, $c) = @_; 
-    $c->forward($c->stash->{cpac}->{g}->{backend}, 'create');
-}
-
-sub list : Chained('base') Args(0) {
+sub filter_from_ext : Private {
     my ($self, $c) = @_;
     my $conf = $c->stash->{cpac}->{tc};
     my $meta = $c->stash->{cpac}->{tm};
     my @columns = @{$conf->{cols}};
 
+    my $do_filter = sub {
+        my ($c, $ci, $col) = @_;
+        return unless exists $c->req->params->{$col}
+            and defined $c->req->params->{$col};
+
+        if ($ci->extra('extjs_xtype')
+            and exists $filter_for{ $ci->extra('extjs_xtype') }) {
+
+            $c->req->params->{$col} =
+                $filter_for{ $ci->extra('extjs_xtype') }->{from_ext}->(
+                    $c->req->params->{$col}
+                );
+        }
+    };
+
+    # filter data types coming from the Ext form
+    foreach my $col (@columns) {
+        my $ci = $meta->f->{$col};
+        if ($ci->is_foreign_key) {
+            next unless $ci->extra('ref_table');
+            my $link = $c->stash->{cpac}->{m}->t->{ $ci->extra('ref_table') };
+            next unless $link->extra('fields');
+
+            foreach my $fcol (@{$link->extra('fields')}) {
+                my $fci = $link->f->{$fcol};
+                $do_filter->($c, $fci, "$col.$fcol");
+            }
+        }
+        else {
+            $do_filter->($c, $ci, $col);
+        }
+    }
+}
+
+sub create : Chained('base') Args(0) {
+    my ($self, $c) = @_; 
+    $c->forward('filter_from_ext');
+    $c->forward($c->stash->{cpac}->{g}->{backend}, 'create');
+}
+
+sub list : Chained('base') Args(0) {
+    my ($self, $c) = @_;
     # forward to backend action to get data
     $c->forward($c->stash->{cpac}->{g}->{backend}, 'list');
+
+    my $conf = $c->stash->{cpac}->{tc};
+    my $meta = $c->stash->{cpac}->{tm};
+    my @columns = @{$conf->{cols}};
+
+    # filter data types coming from the db for Ext
+    foreach my $row (@{$c->stash->{json_data}->{rows}}) {
+        foreach my $col (@columns) {
+            my $ci = $meta->f->{$col};
+
+            if ($ci->extra('extjs_xtype')
+                and exists $filter_for{ $ci->extra('extjs_xtype') }) {
+
+                $row->{$col} =
+                    $filter_for{ $ci->extra('extjs_xtype') }->{to_ext}->(
+                        $row->{$col});
+            }
+        }
+    }
 
     # sneak in a 'top' row for applying the filters
     my %searchrow = ();
@@ -86,6 +186,7 @@ sub list : Chained('base') Args(0) {
 
 sub update : Chained('base') Args(0) {
     my ($self, $c) = @_;
+    $c->forward('filter_from_ext');
     $c->forward($c->stash->{cpac}->{g}->{backend}, 'update');
 }
 
