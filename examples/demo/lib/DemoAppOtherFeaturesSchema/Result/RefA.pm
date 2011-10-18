@@ -1,4 +1,4 @@
-package DemoAppOtherFeaturesSchema::Result::A;
+package DemoAppOtherFeaturesSchema::Result::RefA;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
@@ -15,7 +15,7 @@ DemoAppOtherFeaturesSchema::Result::A
 
 =cut
 
-__PACKAGE__->table("a");
+__PACKAGE__->table("ref_a");
 
 =head1 ACCESSORS
 
@@ -72,9 +72,9 @@ Related object: L<DemoAppOtherFeaturesSchema::Result::B>
 =cut
 
 __PACKAGE__->has_many(
-  "bs",
-  "DemoAppOtherFeaturesSchema::Result::B",
-  { "foreign.a" => "self.id" },
+  "ref_bs",
+  "DemoAppOtherFeaturesSchema::Result::RefB",
+  { "foreign.ref_a" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 

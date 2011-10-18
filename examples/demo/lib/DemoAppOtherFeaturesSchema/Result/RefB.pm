@@ -1,4 +1,4 @@
-package DemoAppOtherFeaturesSchema::Result::B;
+package DemoAppOtherFeaturesSchema::Result::RefB;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
@@ -15,7 +15,7 @@ DemoAppOtherFeaturesSchema::Result::B
 
 =cut
 
-__PACKAGE__->table("b");
+__PACKAGE__->table("ref_b");
 
 =head1 ACCESSORS
 
@@ -42,7 +42,7 @@ __PACKAGE__->table("b");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "a",
+  "ref_a",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "reference",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
@@ -80,9 +80,9 @@ Related object: L<DemoAppOtherFeaturesSchema::Result::A>
 =cut
 
 __PACKAGE__->belongs_to(
-  "a",
-  "DemoAppOtherFeaturesSchema::Result::A",
-  { id => "a" },
+  "ref_a",
+  "DemoAppOtherFeaturesSchema::Result::RefA",
+  { id => "ref_a" },
   {
     is_deferrable => 1,
     join_type     => "LEFT",

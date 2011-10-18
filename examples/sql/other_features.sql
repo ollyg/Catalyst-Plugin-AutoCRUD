@@ -42,7 +42,7 @@ INSERT INTO twokeys (artist, cd) VALUES (1, 1);
 
 INSERT INTO twokeys (artist, cd) VALUES (1, 2);
 
-INSERT INTO twokeys (artist, cd) VALUES (2, 2);
+INSERT INTO twokeys (artist, cd) VALUES (2, 1);
 
 --
 -- Table: fourkeys_to_twokeys
@@ -210,13 +210,24 @@ CREATE TABLE reference (
   id INTEGER PRIMARY KEY AUTOINCREMENT
 );
 
-CREATE TABLE a (
+INSERT INTO reference (id) VALUES (1);
+
+INSERT INTO reference (id) VALUES (2);
+
+CREATE TABLE ref_a (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   reference INTEGER REFERENCES reference(id)
 );
 
-CREATE TABLE b (
+INSERT INTO ref_a (reference) VALUES (2);
+
+CREATE TABLE ref_b (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  a INTEGER REFERENCES a(id),
+  ref_a INTEGER REFERENCES ref_a(id),
   reference INTEGER REFERENCES reference(id)
 );
+
+INSERT INTO ref_b (ref_a, reference) VALUES (1,1);
+
+INSERT INTO ref_b (ref_a, reference) VALUES (1,2);
+

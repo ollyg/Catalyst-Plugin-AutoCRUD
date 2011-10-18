@@ -44,8 +44,8 @@ Related object: L<DemoAppOtherFeaturesSchema::Result::A>
 =cut
 
 __PACKAGE__->has_many(
-  "a",
-  "DemoAppOtherFeaturesSchema::Result::A",
+  "ref_a",
+  "DemoAppOtherFeaturesSchema::Result::RefA",
   { "foreign.reference" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -59,8 +59,8 @@ Related object: L<DemoAppOtherFeaturesSchema::Result::B>
 =cut
 
 __PACKAGE__->has_many(
-  "bs",
-  "DemoAppOtherFeaturesSchema::Result::B",
+  "ref_bs",
+  "DemoAppOtherFeaturesSchema::Result::RefB",
   { "foreign.reference" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
