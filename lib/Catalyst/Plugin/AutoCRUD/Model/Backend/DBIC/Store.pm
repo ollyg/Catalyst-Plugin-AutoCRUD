@@ -190,7 +190,7 @@ sub list {
         $search_opts->{rows} = $limit;
     }
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         use Data::Dumper;
         $c->log->debug( Dumper [$filter, $search_opts, \%delay_page_sort] );
     }
@@ -198,7 +198,7 @@ sub list {
     my $rs = $c->model($meta->extra('model'))->search($filter, $search_opts);
     $response->{rows} ||= [];
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(1);
     }
 
@@ -259,7 +259,7 @@ sub list {
             }
         }
 
-        #if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+        #if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         #    $c->log->debug( Dumper ['item:', $data] );
         #}
 
@@ -290,7 +290,7 @@ sub list {
         $response->{total} = $pg->total_entries;
     }
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         $c->log->debug( Dumper $response );
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
     }
@@ -324,7 +324,7 @@ sub _create_update_txn {
     my $meta = $c->stash->{cpac}->{tm};
     my $response = $c->stash->{json_data} = {};
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(1);
     }
 
@@ -334,7 +334,7 @@ sub _create_update_txn {
     $response->{'success'} = (($success && !$@) ? 1 : 0);
     $c->log->debug($@) if $@ and $c->debug;
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
     }
 }
@@ -344,7 +344,7 @@ sub _create_update_core {
     my $meta = $c->stash->{cpac}->{tm};
     my $params = $c->req->params;
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         use Data::Dumper;
         $c->log->debug( Dumper $params );
     }
@@ -456,7 +456,7 @@ sub _create_update_core {
         $self_row->$rel->update; # save it
     }
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         use Data::Dumper;
         $c->log->debug( Dumper $params );
     }
@@ -472,7 +472,7 @@ sub delete {
     return unless $c->req->params->{key};
     my $filter = _extract_ID($c->req->params->{key});
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(1);
     }
     my $row = eval { $c->model($meta->extra('model'))->find($filter) };
@@ -481,7 +481,7 @@ sub delete {
         $response->{'success'} = 1;
     }
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         $c->model($meta->extra('model'))->result_source->storage->debug(0);
     }
     return $self;
@@ -536,7 +536,7 @@ sub list_stringified {
     $response->{rows} = [ $pg->splice(\@data) ];
     $response->{total} = $pg->total_entries;
 
-    if ($ENV{AUTOCRUD_TRACE} and $c->debug) {
+    if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
         use Data::Dumper;
         $c->log->debug( Dumper $response->{rows} );
     }
