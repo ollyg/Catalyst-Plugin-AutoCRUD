@@ -34,14 +34,18 @@ my $is_numberish = { map {$_ => 1} qw/
 / };
 
 # stringify a row of fields according to rules described in our POD
-sub _sfy {
+sub _stringify {
     my $row = shift;
-    return '' if !defined $row or !blessed $row;
+    return () if !defined $row or !blessed $row;
     return (
-        eval { $row->display_name }
-        || (overload::Method($row, '""') ? $row.''
-            : ( $row->result_source->source_name
-                .": ". join(', ', map { "$_(${\$row->get_column($_)})" } $row->primary_columns) ))
+        eval { $row->display_name } || (
+            overload::Method($row, '""')
+        ? $row.''
+        : (
+            $row->result_source->source_name .': '.
+            join (', ', map { $_ .'('. $row->get_column($_) .')' }
+                            $row->primary_columns)
+        ))
     );
 }
 
@@ -107,7 +111,7 @@ sub list {
     $sort = $c->stash->{cpac}->{g}->{default_sort}
         if $meta->f->{$sort}->extra('rel_type') and $meta->f->{$sort}->extra('rel_type') =~ m/_many$/;
 
-    # we want to prefetch all related data for _sfy
+    # we want to prefetch all related data for _stringify
     foreach my $rel (@columns) {
         next unless ($meta->f->{$rel}->is_foreign_key or $meta->f->{$rel}->extra('is_reverse'));
         next if $meta->f->{$rel}->extra('rel_type') and $meta->f->{$rel}->extra('rel_type') =~ m/_many$/;
@@ -218,13 +222,13 @@ sub list {
                     my $target = $meta->f->{$col}->extra('via')->[1];
 
                     $data->{$col} = $row->can($link) ?
-                        [ uniq sort map { _sfy($_) } map {$_->$target} $row->$link->all ] : [];
+                        [ uniq sort map { _stringify($_) } map {$_->$target} $row->$link->all ] : [];
                 }
                 elsif ($meta->f->{$col}->extra('rel_type')
                        and $meta->f->{$col}->extra('rel_type') =~ m/has_many$/) {
 
                     $data->{$col} = $row->can($col) ?
-                        [ uniq sort map { _sfy($_) } $row->$col->all ] : [];
+                        [ uniq sort map { _stringify($_) } $row->$col->all ] : [];
 
                     # check filter on FK, might want to skip further processing/storage
                     if (exists $c->req->params->{"cpac_filter.$col"}
@@ -238,7 +242,7 @@ sub list {
                 }
                 else {
                     # here assume table names are sane perl identifiers
-                    $data->{$col} = _sfy($row->$col);
+                    $data->{$col} = _stringify($row->$col);
                     $data->{"cpac__pk_for_$col"} = _create_JSON_ID($row->$col);
 
                     # check filter on FK, might want to skip further processing/storage
@@ -265,7 +269,7 @@ sub list {
 
         # these are used for delete and update to overcome ExtJS single col PK
         $data->{cpac__id} = _create_ID($row);
-        $data->{cpac__display_name} = _sfy($row);
+        $data->{cpac__display_name} = _stringify($row);
         push @{$response->{rows}}, $data;
     }
 
@@ -518,13 +522,13 @@ sub list_stringified {
     if (my $single_result = eval{ $rs->find($query) }) {
         @data = ({
             dbid => _create_ID($single_result),
-            stringified => _sfy($single_result),
+            stringified => _stringify($single_result),
         });
     }
     else {
         # do the full text search
-        my @results =  map  { { dbid => _create_ID($_), stringified => _sfy($_) } }
-                       grep { _sfy($_) =~ m/$query_re/ } $rs->all;
+        my @results =  map  { { dbid => _create_ID($_), stringified => _stringify($_) } }
+                       grep { _stringify($_) =~ m/$query_re/ } $rs->all;
         @data = sort { $a->{stringified} cmp $b->{stringified} } @results;
     }
 
