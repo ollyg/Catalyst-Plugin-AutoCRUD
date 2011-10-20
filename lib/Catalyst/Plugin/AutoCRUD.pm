@@ -18,7 +18,8 @@ sub setup_components {
         Controller::Root
         Controller::Static
         Controller::AJAX
-        Controller::Skinny
+        Controller::DisplayEngine::ExtJS2
+        Controller::DisplayEngine::Skinny
         Model::Backend::DBIC
         View::JSON
         View::TT
@@ -710,12 +711,12 @@ shown in the user interface.
 This can be applied to either a schema or source; if applied to a schema it
 overrides all child sources, B<even if> a source has a different setting.
 
-=item frontend [ full-fat | skinny | ... ]
+=item frontend [ extjs2 | skinny | ... ]
 
 With this option you can swap out the set of templates used to generate the
 web front-end, and completely change its look and feel.
 
-Currently you have two choices: either C<full-fat> which is the default and
+Currently you have two choices: either C<extjs2> which is the default and
 provides the standard full-featured ExtJS frontend, or C<skinny> which is a
 read-only non-JavaScript alternative supporting listing, paging and sorting
 only.

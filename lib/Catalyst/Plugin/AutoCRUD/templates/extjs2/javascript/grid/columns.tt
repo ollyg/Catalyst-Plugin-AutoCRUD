@@ -81,12 +81,12 @@
           ,store: new Ext.data.JsonStore ({
               [% IF cpac.tm.f.$col.extra('rel_type') == 'many_to_many' %]
                 url: '[% c.uri_for(
-                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            c.controller('AutoCRUD::DisplayEngine::ExtJS2').action_for('list_stringified'),
                             [ cpac.g.site, cpac_db, cpac.tm.f.$col.extra('via').0 ]
                      ) %]'
               [% ELSE %]
                 url: '[% c.uri_for(
-                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            c.controller('AutoCRUD::DisplayEngine::ExtJS2').action_for('list_stringified'),
                             [ cpac.g.site, cpac_db, cpac_table ]
                      ) %]'
               [% END %]

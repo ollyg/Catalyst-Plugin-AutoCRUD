@@ -19,8 +19,8 @@ my $default_artist_page = <<'END_ARTIST_EXPECTED';
 {"total":3,"rows":[{"cpac__id":"id\u00001","album":["Album: id(1)","Album: id(2)"],"forename":"Mike","born":"1970-02-28","surname":"Smith","artist_albums":["ArtistAlbum: id(1)","ArtistAlbum: id(2)"],"pseudonym":"Alpha Artist","id":1,"cpac__display_name":"Artist: id(1)"},{"cpac__id":"id\u00002","album":["Album: id(3)"],"forename":"David","born":"1992-05-30","surname":"Brown","artist_albums":["ArtistAlbum: id(3)"],"pseudonym":"Band Beta","id":2,"cpac__display_name":"Artist: id(2)"},{"cpac__id":"id\u00003","album":["Album: id(5)"],"forename":"Adam","born":"1981-05-10","surname":"Smith","artist_albums":["ArtistAlbum: id(4)"],"pseudonym":"Gamma Group","id":3,"cpac__display_name":"Artist: id(3)"}]}
 END_ARTIST_EXPECTED
 
-$mech->ajax_ok( '/site/default/schema/dbic/source/album/list', {}, JSON::XS::decode_json($default_album_page), 'album no args' );
+$mech->ajax_ok( '/site/default/schema/dbic/source/album/extjs2/list', {}, JSON::XS::decode_json($default_album_page), 'album no args' );
 
-$mech->ajax_ok( '/site/default/schema/dbic/source/artist/list', {}, JSON::XS::decode_json($default_artist_page), 'artist no args' );
+$mech->ajax_ok( '/site/default/schema/dbic/source/artist/extjs2/list', {}, JSON::XS::decode_json($default_artist_page), 'artist no args' );
 
 __END__

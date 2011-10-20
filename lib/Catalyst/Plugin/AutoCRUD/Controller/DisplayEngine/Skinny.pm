@@ -1,4 +1,4 @@
-package Catalyst::Plugin::AutoCRUD::Controller::Skinny;
+package Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::Skinny;
 
 use strict;
 use warnings FATAL => 'all';
@@ -25,7 +25,8 @@ sub rpc_browse : Chained('/autocrud/root/call') PathPart('browse') Args(0) {
 sub table : Chained('/autocrud/root/db') PathPart('') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('/autocrud/root/source');
-    $c->stash->{cpac}->{g}->{backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
+    $c->stash->{cpac}->{g}->{backend}
+        = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # re-set the template and some params defaults for Skinny frontend
@@ -66,8 +67,6 @@ sub browse : Chained('base') Args(0) {
 
     # get data from backend into stash
     $c->forward('/autocrud/ajax/list');
-    # FIXME need to shift off the filters row (until AJAX != ExtJS)
-    shift @{ $c->stash->{json_data}->{rows} };
 
     my $pager = Data::Page->new;
     $pager->total_entries($c->stash->{json_data}->{total});

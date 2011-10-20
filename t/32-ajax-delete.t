@@ -28,21 +28,21 @@ my $default_sleeve_notes_page = {
              ],
 };
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {}, {success => '0'}, 'no args');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/delete', {}, {success => '0'}, 'no args');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => ''}, {success => '0'}, 'empty key');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/delete', {key => ''}, {success => '0'}, 'empty key');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {foobar => ''}, {success => '0'}, 'no key');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/delete', {foobar => ''}, {success => '0'}, 'no key');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => 'foobar'}, {success => '0'}, 'no key match');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/delete', {key => 'foobar'}, {success => '0'}, 'no key match');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/list', {'cpac_filter.text' => 'This is a groovy album.'}, $default_sleeve_notes_page, 'check no delete');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => "id\0001"}, {success => '1'}, 'delete success');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/delete', {key => "id\0001"}, {success => '1'}, 'delete success');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/list', {'cpac_filter.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
 
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/delete', {key => "id\0001"}, {success => '0'}, 'delete again fails');
-$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/list', {'cpac_filter.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/delete', {key => "id\0001"}, {success => '0'}, 'delete again fails');
+$mech->ajax_ok('/site/default/schema/dbic/source/sleeve_notes/extjs2/list', {'cpac_filter.text' => 'This is a groovy album.'}, {total => 0, rows => []}, 'check deleted');
 

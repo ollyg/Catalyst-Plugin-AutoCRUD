@@ -11,7 +11,7 @@
                 ,handler: function (){
                     store.baseParams = {}; // clear search opts
                     // need to remove query string to reset
-                    store.proxy.conn.url = '[% c.uri_for( c.controller('AutoCRUD::AJAX').action_for('list'),
+                    store.proxy.conn.url = '[% c.uri_for( c.controller('AutoCRUD::DisplayEngine::ExtJS2').action_for('list'),
                                                     [cpac.g.site,cpac_db,cpac_table] ) %]'
                     [% IF cpac.g.site == 'default' %]
                     Ext.get('cpac_browse_link').set({href: '[% c.uri_for( c.controller('AutoCRUD::Root').action_for('table'),

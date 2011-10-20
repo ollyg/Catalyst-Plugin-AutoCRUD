@@ -84,7 +84,7 @@
                     ,triggerAction: 'all'
                     ,store: new Ext.data.JsonStore ({
                         url: '[% c.uri_for(
-                            c.controller('AutoCRUD::AJAX').action_for('list_stringified'),
+                            c.controller('AutoCRUD::DisplayEngine::ExtJS2').action_for('list_stringified'),
                             [cpac.g.site,cpac_db,tbl]
                         ) %]'
                         ,root: 'rows'

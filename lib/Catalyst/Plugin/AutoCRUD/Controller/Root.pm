@@ -122,9 +122,11 @@ sub source : Chained('schema') PathPart Args(1) {
         ->{$c->stash->{cpac}->{g}->{db}}
         ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
 
-    # allow frontend override in non-default site (default will be full-fat)
-    my $fend = 'Controller::AutoCRUD::'. ucfirst $c->stash->{cpac}->{g}->{frontend};
-    if ($c->controller($fend)) {
+    # allow frontend override in non-default site
+    my $fend = $c->stash->{cpac}->{g}->{frontend};
+    my @controllers = grep {m/^$fend$/i}
+                      grep {m/^Controller::AutoCRUD::/} $c->controllers;
+    if ((1 == scalar @controllers) and $c->controller($controllers[0])) {
         $c->log->debug(sprintf 'autocrud: forwarding to f/end %s', $fend)
             if $c->debug;
         $c->forward($fend);
@@ -225,7 +227,7 @@ sub build_site_config : Private {
         }
     }
 
-    my %site_defaults   = ( frontend => 'full-fat' );
+    my %site_defaults   = ( frontend => 'extjs2' );
     my %schema_defaults = ( hidden => 'no' );
     my %source_defaults = (
         create_allowed => 'yes',
@@ -389,7 +391,7 @@ sub helloworld : Chained('base') Args(0) {
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{cpac}->{g}->{frontend} || 'full-fat';
+    my $frontend = $c->stash->{cpac}->{g}->{frontend} || 'extjs2';
 
     $c->stash->{cpac}->{g} = merge_hashes(
         $c->stash->{cpac}->{g},
