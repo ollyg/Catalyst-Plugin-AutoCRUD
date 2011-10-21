@@ -1,8 +1,8 @@
-    [% PROCESS javascript/grid/columns.tt %]
+    [% PROCESS extjs2/javascript/grid/columns.tt %]
 
-    [% PROCESS javascript/grid/toolbar.tt %]
+    [% PROCESS extjs2/javascript/grid/toolbar.tt %]
 
-    [% PROCESS javascript/grid/pagebar.tt %]
+    [% PROCESS extjs2/javascript/grid/pagebar.tt %]
 
     // most of the work in the grid itself is making the filter row work
     // we want clickable filter fields for cols which can be filtered

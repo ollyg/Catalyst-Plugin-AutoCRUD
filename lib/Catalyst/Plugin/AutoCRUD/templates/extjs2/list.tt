@@ -24,16 +24,16 @@ Ext.onReady(function(){
     });
 
     // utility functions
-    [% PROCESS javascript/util.tt %]
+    [% PROCESS extjs2/javascript/util.tt %]
 
     // create the Data Store
-    [% PROCESS javascript/store.tt %]
+    [% PROCESS extjs2/javascript/store.tt %]
 
     // bring in the form for add/edit
-    [% PROCESS javascript/update.tt %]
+    [% PROCESS extjs2/javascript/update.tt %]
 
     // set up the list grid
-    [% PROCESS javascript/grid.tt %]
+    [% PROCESS extjs2/javascript/grid.tt %]
 
     grid.render();
 

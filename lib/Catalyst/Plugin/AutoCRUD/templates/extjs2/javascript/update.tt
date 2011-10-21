@@ -21,6 +21,6 @@
         }
     };
 
-    [% PROCESS javascript/update/tabs.tt %]
+    [% PROCESS extjs2/javascript/update/tabs.tt %]
 
-    [% PROCESS javascript/update/window.tt %]
+    [% PROCESS extjs2/javascript/update/window.tt %]
