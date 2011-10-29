@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.113020_004';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.113020_005';
 }
 
 use strict;
@@ -192,7 +192,22 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.113020_004
+version 2.113020_005
+
+=head1 PURPOSE
+
+You have a database, and wish to have a basic web interface supporting Create,
+Retrieve, Update, Delete and Search, with little effort. This module is able
+to create such interfaces on the fly. They are a bit whizzy and all Web
+2.0-ish.
+
+=over 4
+
+=item *
+
+See the demo at: L<http://demo.autocrud.pl/>
+
+=back
 
 =head1 SYNOPSIS
 
@@ -233,21 +248,6 @@ L<DBIx::Class> ORM frontend to your database, which it is expected that you
 have already set up (although see L</USAGE>, below). This means that any
 change in database schema ought to be reflected immediately in the web
 interface after a page refresh.
-
-=head1 PURPOSE
-
-You have a database, and wish to have a basic web interface supporting Create,
-Retrieve, Update, Delete and Search, with little effort. This module is able
-to create such interfaces on the fly. They are a bit whizzy and all Web
-2.0-ish.
-
-=over 4
-
-=item *
-
-See the demo at: L<http://demo.autocrud.pl/>
-
-=back
 
 =head1 USAGE
 
@@ -405,7 +405,7 @@ following link for more details:
 
 =item *
 
-https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode
+L<https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode>
 
 =back
 

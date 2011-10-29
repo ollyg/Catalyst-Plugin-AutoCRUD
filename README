@@ -2,7 +2,15 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    version 2.113020_004
+    version 2.113020_005
+
+PURPOSE
+    You have a database, and wish to have a basic web interface supporting
+    Create, Retrieve, Update, Delete and Search, with little effort. This
+    module is able to create such interfaces on the fly. They are a bit
+    whizzy and all Web 2.0-ish.
+
+    *   See the demo at: <http://demo.autocrud.pl/>
 
 SYNOPSIS
     If you already have a Catalyst app with DBIx::Class models configured:
@@ -42,14 +50,6 @@ DESCRIPTION
     have already set up (although see "USAGE", below). This means that any
     change in database schema ought to be reflected immediately in the web
     interface after a page refresh.
-
-PURPOSE
-    You have a database, and wish to have a basic web interface supporting
-    Create, Retrieve, Update, Delete and Search, with little effort. This
-    module is able to create such interfaces on the fly. They are a bit
-    whizzy and all Web 2.0-ish.
-
-    *   See the demo at: <http://demo.autocrud.pl/>
 
 USAGE
   Read Me First
@@ -190,8 +190,8 @@ TIPS AND TRICKS
     connection parameters, specific to your database engine, that enables
     Unicode. See the following link for more details:
 
-    *   https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unic
-        ode
+    *   <https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Uni
+        code>
 
   Representing related records
     When the web interface wants to display a column which references

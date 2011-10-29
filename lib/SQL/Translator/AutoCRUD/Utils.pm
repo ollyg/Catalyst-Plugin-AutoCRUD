@@ -1,6 +1,6 @@
 package SQL::Translator::AutoCRUD::Utils;
 {
-  $SQL::Translator::AutoCRUD::Utils::VERSION = '2.113020_004';
+  $SQL::Translator::AutoCRUD::Utils::VERSION = '2.113020_005';
 }
 
 use strict;

@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ProxyColumns;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ProxyColumns::VERSION = '2.113020_004';
+  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ProxyColumns::VERSION = '2.113020_005';
 }
 
 # The DBIC Relation proxy atribute can be used to import accessors from

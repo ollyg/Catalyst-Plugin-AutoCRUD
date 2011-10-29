@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::DBIC;
 {
-  $Catalyst::Plugin::AutoCRUD::Model::DBIC::VERSION = '2.113020_004';
+  $Catalyst::Plugin::AutoCRUD::Model::DBIC::VERSION = '2.113020_005';
 }
 
 use strict;

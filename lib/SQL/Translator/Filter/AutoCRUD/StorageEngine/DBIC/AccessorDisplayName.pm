@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::AccessorDisplayName;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::AccessorDisplayName::VERSION = '2.113020_004';
+  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::AccessorDisplayName::VERSION = '2.113020_005';
 }
 
 # Although AutoCRUD is "safe" for columns of any weird name you like,
