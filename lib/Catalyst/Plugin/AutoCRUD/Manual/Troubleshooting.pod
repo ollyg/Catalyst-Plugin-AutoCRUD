@@ -1,6 +1,6 @@
 =head1 NAME
 
-Catayst::Plugin::AutoCRUD::Manual::Troubleshooting - Troubleshooting Advice
+Catalyst::Plugin::AutoCRUD::Manual::Troubleshooting - Troubleshooting Advice
 
 =head1 Debug Trace
 

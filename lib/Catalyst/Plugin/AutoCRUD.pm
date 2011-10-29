@@ -179,6 +179,8 @@ sub _get_subref {
 
 # ABSTRACT: Instant AJAX web front-end for DBIx::Class
 
+=begin :prelude
+
 =head1 PURPOSE
 
 You have a database, and wish to have a basic web interface supporting Create,
@@ -193,6 +195,8 @@ to create such interfaces on the fly. They are a bit whizzy and all Web
 See the demo at: L<http://demo.autocrud.pl/>
 
 =back
+
+=end :prelude
 
 =head1 SYNOPSIS
 
@@ -390,7 +394,7 @@ following link for more details:
 
 =item *
 
-https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode
+L<https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode>
 
 =back
 
