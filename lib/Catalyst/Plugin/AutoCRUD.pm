@@ -186,6 +186,14 @@ Retrieve, Update, Delete and Search, with little effort. This module is able
 to create such interfaces on the fly. They are a bit whizzy and all Web
 2.0-ish.
 
+=over 4
+
+=item *
+
+See the demo at: L<http://demo.autocrud.pl/>
+
+=back
+
 =head1 SYNOPSIS
 
 If you already have a L<Catalyst> app with L<DBIx::Class> models configured:
