@@ -1,4 +1,4 @@
-package SQL::Translator::Filter::AutoCRUD::Backend::DBIC::AccessorDisplayName;
+package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::AccessorDisplayName;
 
 # Although AutoCRUD is "safe" for columns of any weird name you like,
 # if the user has specified a DBIC Column accessor then it's nice

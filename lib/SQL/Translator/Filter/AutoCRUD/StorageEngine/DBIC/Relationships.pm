@@ -1,4 +1,4 @@
-package SQL::Translator::Filter::AutoCRUD::Backend::DBIC::Relationships;
+package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships;
 
 use strict;
 use warnings FATAL => 'all';

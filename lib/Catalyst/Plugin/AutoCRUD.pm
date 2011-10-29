@@ -20,7 +20,7 @@ sub setup_components {
         Controller::AJAX
         Controller::DisplayEngine::ExtJS2
         Controller::DisplayEngine::Skinny
-        Model::Backend::DBIC
+        Model::StorageEngine::DBIC
         View::JSON
         View::TT
     );
@@ -70,16 +70,16 @@ sub setup_components {
             : @{ $class->config->{$config_key}->{backends} };
 
         # they will be componentized below
-        push @packages, map {'Model::Backend::' . $_} @backends;
+        push @packages, map {'Model::StorageEngine::' . $_} @backends;
 
         # this so that they can be forwarded to in the controller
-        my %m = map {('Model::AutoCRUD::Backend::' . $_) => 1} @backends;
-        ++$m{'Model::AutoCRUD::Backend::DBIC'};
+        my %m = map {('Model::AutoCRUD::StorageEngine::' . $_) => 1} @backends;
+        ++$m{'Model::AutoCRUD::StorageEngine::DBIC'};
         $class->config->{$config_key}->{backends} = [ keys %m ];
     }
     else {
         $class->config->{$config_key}->{backends} =
-            [ 'Model::AutoCRUD::Backend::DBIC' ];
+            [ 'Model::AutoCRUD::StorageEngine::DBIC' ];
     }
 
     foreach my $orig (@packages) {

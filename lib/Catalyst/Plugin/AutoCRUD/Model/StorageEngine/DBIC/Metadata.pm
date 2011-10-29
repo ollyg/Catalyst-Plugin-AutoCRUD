@@ -1,4 +1,4 @@
-package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Metadata;
+package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::Metadata;
 
 use strict;
 use warnings FATAL => 'all';
@@ -130,16 +130,16 @@ sub schema_metadata {
         parser => 'SQL::Translator::Parser::DBIx::Class',
         parser_args => { package => $dbic },
         filters => [
-            ['AutoCRUD::Backend::DBIC::ViewsAsTables', $dbic],
-            ['AutoCRUD::Backend::DBIC::Relationships', $dbic],
-            ['AutoCRUD::Backend::DBIC::DynamicDefault', $dbic],
+            ['AutoCRUD::StorageEngine::DBIC::ViewsAsTables', $dbic],
+            ['AutoCRUD::StorageEngine::DBIC::Relationships', $dbic],
+            ['AutoCRUD::StorageEngine::DBIC::DynamicDefault', $dbic],
             ['AutoCRUD::CatalystModel',
                 $self->_schema_cache->{handles}->{$db}->{sources}],
-            ['AutoCRUD::Backend::DBIC::ProxyColumns', $dbic],
+            ['AutoCRUD::StorageEngine::DBIC::ProxyColumns', $dbic],
             'AutoCRUD::ColumnsAndPKs',
             'AutoCRUD::DisplayName',
             'AutoCRUD::ExtJSxType',
-            ['AutoCRUD::Backend::DBIC::AccessorDisplayName', $dbic],
+            ['AutoCRUD::StorageEngine::DBIC::AccessorDisplayName', $dbic],
         ],
         producer => 'SQL::Translator::Producer::POD', # something cheap
     ) or die SQL::Translator->error;

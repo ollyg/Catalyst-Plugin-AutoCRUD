@@ -1,4 +1,4 @@
-package SQL::Translator::Filter::AutoCRUD::Backend::DBIC::DynamicDefault;
+package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault;
 
 # DBIx:Class extensions such as DBIx::Class::TimeStamp or
 # DBIx::Class::DynamicDefault will set column values on create/update.

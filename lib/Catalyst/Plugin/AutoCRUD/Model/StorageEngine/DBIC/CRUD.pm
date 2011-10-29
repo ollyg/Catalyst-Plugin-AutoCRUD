@@ -1,4 +1,4 @@
-package Catalyst::Plugin::AutoCRUD::Model::Backend::DBIC::Store;
+package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::CRUD;
 
 use strict;
 use warnings FATAL => 'all';

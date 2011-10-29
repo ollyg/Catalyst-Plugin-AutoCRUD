@@ -31,12 +31,12 @@ my $expected_json = <<'END_JSON';
       "frontend":"extjs2",
       "site":"default",
       "db":"dbic",
-      "backend":"Model::AutoCRUD::Backend::DBIC",
+      "backend":"Model::AutoCRUD::StorageEngine::DBIC",
       "table":"album"
     },
     "conf":{
       "dbic":{
-        "backend":"Model::AutoCRUD::Backend::DBIC",
+        "backend":"Model::AutoCRUD::StorageEngine::DBIC",
         "hidden":"no",
         "display_name":"Dbic",
         "t":{
