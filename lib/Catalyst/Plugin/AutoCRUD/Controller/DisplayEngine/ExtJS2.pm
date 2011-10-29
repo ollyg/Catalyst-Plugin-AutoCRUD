@@ -51,6 +51,7 @@ my %filter_for = (
 
 sub base : Chained('/autocrud/ajax/base') PathPart('extjs2') CaptureArgs(0) {}
 sub end : ActionClass('RenderView') {}
+sub process : Private {}
 
 sub list : Chained('base') Args(0) {
     my ($self, $c) = @_;
