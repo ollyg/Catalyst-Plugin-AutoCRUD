@@ -1,5 +1,5 @@
-[% INCLUDE pager.tt %]
+[% INCLUDE skinny/pager.tt %]
 
-[% INCLUDE table.tt %]
+[% INCLUDE skinny/table.tt %]
 
-[% INCLUDE pager.tt %]
+[% INCLUDE skinny/pager.tt %]

@@ -9,7 +9,7 @@ use JSON::XS;
 
 # application loads
 BEGIN {
-    $ENV{AUTOCRUD_TESTING} = 1;
+    $ENV{AUTOCRUD_DEBUG} = 1;
     use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp"
 }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
@@ -28,15 +28,15 @@ my $expected_json = <<'END_JSON';
   "cpac":{
     "global":{
       "default_sort":"id",
-      "frontend":"full-fat",
+      "frontend":"extjs2",
       "site":"default",
       "db":"dbic",
-      "backend":"Model::AutoCRUD::Backend::DBIC",
+      "backend":"Model::AutoCRUD::StorageEngine::DBIC",
       "table":"album"
     },
     "conf":{
       "dbic":{
-        "backend":"Model::AutoCRUD::Backend::DBIC",
+        "backend":"Model::AutoCRUD::StorageEngine::DBIC",
         "hidden":"no",
         "display_name":"Dbic",
         "t":{

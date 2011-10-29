@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Root;
 {
-  $Catalyst::Plugin::AutoCRUD::Controller::Root::VERSION = '2.112890_003';
+  $Catalyst::Plugin::AutoCRUD::Controller::Root::VERSION = '2.113020_004';
 }
 
 use strict;
@@ -35,7 +35,7 @@ sub base : Chained PathPart('autocrud') CaptureArgs(0) {
     if (!exists $self->_site_conf_cache->{dispatch}) {
         my $dispatch = {};
         foreach my $backend ($self->_enumerate_backends($c)) {
-            my $new_dispatch = $c->forward($backend, 'dispatch_table');
+            my $new_dispatch = $c->forward($backend, 'dispatch_table') || {};
             for (keys %$new_dispatch) {$new_dispatch->{$_}->{backend} = $backend}
             $dispatch = merge_hashes($dispatch, $new_dispatch);
         }
@@ -125,12 +125,14 @@ sub source : Chained('schema') PathPart Args(1) {
         ->{$c->stash->{cpac}->{g}->{db}}
         ->{t}->{$c->stash->{cpac}->{g}->{table}}->{display_name} .' List';
 
-    # allow frontend override in non-default site (default will be full-fat)
-    my $fend = 'Controller::AutoCRUD::'. ucfirst $c->stash->{cpac}->{g}->{frontend};
-    if ($c->controller($fend)) {
-        $c->log->debug(sprintf 'autocrud: forwarding to f/end %s', $fend)
+    # call frontend's process() (might be a noop)
+    my $fend = $c->stash->{cpac}->{g}->{frontend};
+    my @controllers = grep {m/::$fend$/i}
+                      grep {m/^AutoCRUD::DisplayEngine::/} $c->controllers;
+    if ((1 == scalar @controllers) and $c->controller($controllers[0])) {
+        $c->log->debug(sprintf 'autocrud: forwarding to f/end %s', $controllers[0])
             if $c->debug;
-        $c->forward($fend);
+        $c->forward($controllers[0]);
     }
 }
 
@@ -138,7 +140,6 @@ sub source : Chained('schema') PathPart Args(1) {
 sub call : Chained('schema') PathPart('source') CaptureArgs(1) {
     my ($self, $c) = @_;
     $c->forward('bootstrap');
-    $c->stash->{cpac}->{g}->{backend} = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # =====================================================================
@@ -192,6 +193,10 @@ sub bootstrap : Private {
         $c->stash->{cpac}->{c}->{$db}->{t}->{$t}->{$_} = 'no'
             for qw/create_allowed update_allowed delete_allowed/;
     }
+
+    # set which backend we are calling (for Store)
+    $c->stash->{cpac}->{g}->{backend}
+        = $c->stash->{cpac}->{c}->{$c->stash->{cpac}->{g}->{db}}->{backend};
 }
 
 # build site config for filtering the frontend
@@ -228,13 +233,13 @@ sub build_site_config : Private {
         }
     }
 
-    my %site_defaults   = ( frontend => 'full-fat' );
+    my %site_defaults   = ( frontend => 'extjs2' );
     my %schema_defaults = ( hidden => 'no' );
     my %source_defaults = (
         create_allowed => 'yes',
         update_allowed => 'yes',
         delete_allowed => 'yes',
-        dumpmeta_allowed => ($ENV{AUTOCRUD_TESTING} ? 'yes' : 'no'),
+        dumpmeta_allowed => ($ENV{AUTOCRUD_DEBUG} ? 'yes' : 'no'),
         hidden => 'no',
     );
 
@@ -392,7 +397,7 @@ sub helloworld : Chained('base') Args(0) {
 
 sub end : ActionClass('RenderView') {
     my ($self, $c) = @_;
-    my $frontend = $c->stash->{cpac}->{g}->{frontend} || 'full-fat';
+    my $frontend = $c->stash->{cpac}->{g}->{frontend} || 'extjs2';
 
     $c->stash->{cpac}->{g} = merge_hashes(
         $c->stash->{cpac}->{g},

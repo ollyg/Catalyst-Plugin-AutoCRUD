@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::DisplayName;
 {
-  $SQL::Translator::Filter::AutoCRUD::DisplayName::VERSION = '2.112890_003';
+  $SQL::Translator::Filter::AutoCRUD::DisplayName::VERSION = '2.113020_004';
 }
 
 use strict;

@@ -32,6 +32,6 @@
 
     [% SET stripe = 0 %]
     [% FOR item IN json_data.rows %]
-        [% PROCESS row.tt %]
+        [% PROCESS skinny/row.tt %]
     [% END %]
 </table>

@@ -21,12 +21,12 @@ my $content = $mech->content;
 #print STDERR Dumper $content;
 
 # nasty, but simple
-my ($colmodel) = ($content =~ m/Ext.grid.ColumnModel\((.+?)\);/s);
-my @cols = ($colmodel =~ m/{(.+?)}\s+,/sg);
+my ($colmodel) = ($content =~ m/Ext.grid.ColumnModel\(\[(.+?)\]\);/s);
+my @cols = ($colmodel =~ m/{(.+?)}\s*,/sg);
 #use Data::Dumper;
 #print STDERR Dumper \@cols;
 
-ok(scalar @cols == 6, 'number of columns in ColumnModel');
+ok(scalar @cols == 8, 'number of columns in ColumnModel');
 
 foreach my $id (0,1,2,3,4,5) {
     ok($cols[$id] !~ m/hidden/, "col pos $id is not hidden");

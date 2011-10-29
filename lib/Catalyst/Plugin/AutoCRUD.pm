@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.112890_003';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.113020_004';
 }
 
 use strict;
@@ -21,8 +21,9 @@ sub setup_components {
         Controller::Root
         Controller::Static
         Controller::AJAX
-        Controller::Skinny
-        Model::Backend::DBIC
+        Controller::DisplayEngine::ExtJS2
+        Controller::DisplayEngine::Skinny
+        Model::StorageEngine::DBIC
         View::JSON
         View::TT
     );
@@ -72,16 +73,16 @@ sub setup_components {
             : @{ $class->config->{$config_key}->{backends} };
 
         # they will be componentized below
-        push @packages, map {'Model::Backend::' . $_} @backends;
+        push @packages, map {'Model::StorageEngine::' . $_} @backends;
 
         # this so that they can be forwarded to in the controller
-        my %m = map {('Model::AutoCRUD::Backend::' . $_) => 1} @backends;
-        ++$m{'Model::AutoCRUD::Backend::DBIC'};
+        my %m = map {('Model::AutoCRUD::StorageEngine::' . $_) => 1} @backends;
+        ++$m{'Model::AutoCRUD::StorageEngine::DBIC'};
         $class->config->{$config_key}->{backends} = [ keys %m ];
     }
     else {
         $class->config->{$config_key}->{backends} =
-            [ 'Model::AutoCRUD::Backend::DBIC' ];
+            [ 'Model::AutoCRUD::StorageEngine::DBIC' ];
     }
 
     foreach my $orig (@packages) {
@@ -191,7 +192,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.112890_003
+version 2.113020_004
 
 =head1 SYNOPSIS
 
@@ -240,23 +241,38 @@ Retrieve, Update, Delete and Search, with little effort. This module is able
 to create such interfaces on the fly. They are a bit whizzy and all Web
 2.0-ish.
 
+=over 4
+
+=item *
+
+See the demo at: L<http://demo.autocrud.pl/>
+
+=back
+
 =head1 USAGE
 
 =head2 Read Me First
 
-If you created your C<DBIx::Class> Schema some time ago, perhaps using an
-older version of C<DBIx::Class::Schema::Loader>, then it might well be lacking
-some configuration which is required to get the best results from this plugin.
+=over 4
 
-Common omissions in column configurations include C<is_foreign_key>,
-C<join_type>, C<is_nullable>, and C<is_auto_increment>. Of course it's also
-good practice to have your C<DBIx::Class> Schema closely reflect the database
-schema anyway.
+=item *
 
-To automatically bring things up to date, download the latest version of
-L<DBIx::Class::Schema::Loader> from CPAN (which may be 0.05 or a pre-release),
-and use the output from that. If you don't yet have a Schema, continue reading
-and Scenario 2, below, will cover the steps required.
+If you get stuck, read the
+L<Troubleshooting|Catalyst::Plugin::AutoCRUD::Manual::Troubleshooting> documentation.
+
+=item *
+
+L<DBIx::Class> users should read
+L<DBIx::Class Tips|Catalyst::Plugin::AutoCRUD::Manual::DBICTips>.
+
+=item *
+
+This plugin provides no user-based access authentication or authorization.
+Please take care when deploying, and consider who will have access.  It is
+possible to restrict the add/update/delete operations on data.  See L</TIPS
+AND TRICKS> for other suggestions.
+
+=back
 
 =head2 Scenario 1: Plugin to an existing Catalyst App
 
@@ -328,7 +344,7 @@ database (in the configuration example above we used C<My::Database::Schema>).
 Then use the following command-line incantation:
 
  perl -MDBIx::Class::Schema::Loader=make_schema_at,dump_to_dir:. -e \
-     'make_schema_at("DBIC::Database::Foo::Schema", { debug => 1 }, \
+     'make_schema_at("DBIC::Database::Foo::Schema", { debug => 1, naming => 'current' }, \
      ["dbi:Pg:dbname=foodb;host=mydbhost.example.com","user","pass" ])'
 
 This will create a directory (such as C<DBIC>) which you need to move into
@@ -373,22 +389,25 @@ of the foreign table, the names of the primary keys, and associated values
 
 =head1 TIPS AND TRICKS
 
-=head2 Update your C<DBIx::Class> Result Classes
+=head2 Displaying Unicode
 
-If you created your C<DBIx::Class> Schema some time ago, perhaps using an
-older version of C<DBIx::Class::Schema::Loader>, then it might well be lacking
-some configuration which is required to get the best results from this plugin.
+It is essential that you load the L<Catalyst::Plugin::Unicode::Encoding>
+plugin to ensure proper decoding/encoding of incoming request parameters and
+the outgoing body response respectively. This is done in your C<MyApp.pm>:
 
-Common omissions in column configurations include C<is_foreign_key>,
-C<join_type>, C<is_nullable>, and C<is_auto_increment>. Of course it's also
-good practice to have your C<DBIx::Class> Schema closely reflect the database
-schema anyway.
+ use Catalyst qw/ -Debug ConfigLoader Unicode::Encoding AutoCRUD /;
 
-To automatically bring things up to date, download the latest version of
-L<DBIx::Class::Schema::Loader> from CPAN (which may be 0.05 or a pre-release),
-and use the output from that.
+Additionally, when connecting to the database, add a flag to the connection
+parameters, specific to your database engine, that enables Unicode. See the
+following link for more details:
 
-More detail is given in the L</TROUBLESHOOTING> section, below.
+=over 4
+
+=item *
+
+https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode
+
+=back
 
 =head2 Representing related records
 
@@ -485,7 +504,7 @@ you'll want to use your own hosted copy, for instance if you are serving HTTPS
 
 In which case, you'll need to download the ExtJS Javascript Library (version
 2.2+ recommended), from this web page:
-L<http://extjs.com/products/extjs/download.php>.
+L<http://www.sencha.com/products/extjs/download/>.
 
 Install it to your web server in a location that it is able to serve as static
 content. Make a note of the path used in a URL to retrieve this content, as it
@@ -535,16 +554,29 @@ configuration file:
 This C<tt_path> directive can be included multiple times to set a list of
 override paths, which will be processed in the order given.
 
-If you want to override any of the CSS used in the app, copy the C<wrapper.tt>
+Within the specified directory you should mirror the file structure where the
+overridden templates have come from, including the frontend name. For example:
+
+ extjs2
+ extjs2/wrapper
+ extjs2/wrapper/footer.tt
+ skinny
+ skinny/wrapper
+ skinny/wrapper/footer.tt
+
+If you want to override any of the CSS used in the app, copy the C<head.tt>
 template from whichever C<site> you are using, edit, and install in a local
 C<tt_path> set with this directive.
 
 =head1 SITES CONFIGURATION
 
-Another feature borrowed from the original L<CatalystX::ListFramework> is the
-ability to have multiple views of your data, tailored in various ways.
-For example you might choose to hide some tables, or columns within tables,
-rename headings of columns, or disable updates or deletes.
+It's possible to have multiple views of the source data, tailored in various
+ways. For example you might choose to hide some tables, or columns within
+tables, rename headings of columns, or disable updates or deletes.
+
+This is all achieved through the C<sites> configuration. Altering the default
+site simply allows for control of column naming, hiding, etc. Creating a new
+site allows you to present alternate configurations of the same source data.
 
 =head2 Altering the Default Site
 
@@ -563,31 +595,25 @@ the options listed below:
 
 =head2 Configuration Options for Sites
 
-=head3 Notes
-
-In the discussion below, the term I<schema> is used to mean the database, and
-I<source> is used to mean table. These are just more accurate terms for the
-purposes of this plugin.
-
 In general, when you apply a setting to something at a higher level (say, a
-schema), it I<percolates> down to the child sections (i.e. the sources). For
-example, setting C<delete_allowed no> on a schema will prevent records from
-any source within that from being deleted.
+database), it I<percolates> down to the child sections (i.e. the tables). For
+example, setting C<delete_allowed no> on a database will prevent records from
+any table within that from being deleted.
 
-Some of the options are I<global> for a site, others apply to the schema or
-sources within it. To specify an option for one or the other, use the schema
-and source names I<as they appear in the URL path>:
+Some of the options are I<global> for a site, others apply to the database or
+table within it. To specify an option for one or the other, use the database
+and table names I<as they appear in the URL path>:
 
  <Plugin::AutoCRUD>
     <sites>
         <default>
             # global settings for the site, here
-            <myschema>
+            <mydb>
                 # override settings here
-                <somesource>
+                <sometable>
                     # and/or override settings here
-                </somesource
-            </myschema>
+                </sometable
+            </mydb>
         </default>
     </sites>
  </Plugin::AutoCRUD>
@@ -598,8 +624,8 @@ and source names I<as they appear in the URL path>:
 
 =item update_allowed [ yes* | no ]
 
-This can be applied to either a schema or a source; if applied to a schema it
-percolates to all the sources, unless the source has a different setting.
+This can be applied to either a database or a table; if applied to a database it
+percolates to all the tables, unless the table has a different setting.
 
 The default is to allow updates to be made to existing records. Set this to a
 value of C<no> to prevent this operation from being permitted.  Widgets will
@@ -615,8 +641,8 @@ also be removed from the user interface so as not to confuse users.
 
 =item create_allowed [ yes* | no ]
 
-This can be applied to either a schema or a source; if applied to a schema it
-percolates to all the sources, unless the source has a different setting.
+This can be applied to either a database or a table; if applied to a database it
+percolates to all the tables, unless the table has a different setting.
 
 The default is to allow new records to be created. Set this to a value of
 C<no> to prevent this operation from being allowed.  Widgets will also be
@@ -632,10 +658,10 @@ removed from the user interface so as not to confuse users.
 
 =item delete_allowed [ yes* | no ]
 
-This can be applied to either a schema or a source; if applied to a schema it
-percolates to all the sources, unless the source has a different setting.
+This can be applied to either a database or a table; if applied to a database it
+percolates to all the tables, unless the table has a different setting.
 
-The default is to allow deletions of records in the sources. Set this to a
+The default is to allow deletions of records in the tables. Set this to a
 value of C<no> to prevent deletions from being allowed. Widgets will also be
 removed from the user interface so as not to confuse users.
 
@@ -654,24 +680,24 @@ as they are displayed to the user. Second, by omitting columns from this list
 you can hide them from the main table views.
 
 Provide a list of the column names (as the data source knows them) to this
-setting. This option must appear at the source level of your site config
+setting. This option must appear at the table level of your site config
 hierarchy. In C<Config::General> format, this would look something like:
 
  <Plugin::AutoCRUD>
     <sites>
         <default>
-            <myschema>
-                <thesource>
+            <mydb>
+                <thetable>
                     columns  id
                     columns  title
                     columns  length
-                </thesource>
-            </myschema>
+                </thetable>
+            </mydb>
         </default>
     </sites>
  </Plugin::AutoCRUD>
 
-Any columns existing in the source, but not mentioned there, will not be
+Any columns existing in the table, but not mentioned there, will not be
 displayed in the main table. They'll still appear in the record edit form, as
 some fields are required by the database schema so cannot be hidden. Columns
 will be displayed in the same order that you list them in the configuration.
@@ -680,22 +706,22 @@ will be displayed in the same order that you list them in the configuration.
 
 You can alter the title given to any column in the user interface, by
 providing a hash mapping of column names (as the data source knows them) to
-titles you wish displayed to the user. This option must appear at the source
+titles you wish displayed to the user. This option must appear at the table
 level of your site config hierarchy. In C<Config::General> format, this would
 look something like:
 
  <Plugin::AutoCRUD>
     <sites>
         <default>
-            <myschema>
-                <thesource>
+            <mydb>
+                <thetable>
                     <headings>
                         id      Key
                         title   Name
                         length  Time
                     </headings>
-                </thesource>
-            </myschema>
+                </thetable>
+            </mydb>
         </default>
     </sites>
  </Plugin::AutoCRUD>
@@ -706,37 +732,37 @@ C<columns> option, described above.
 
 =item hidden [ yes | no* ]
 
-If you don't want a schema to be offered to the user, or likewise a particular
-source, then set this option to C<yes>. By default, all schema and sources are
+If you don't want a database to be offered to the user, or likewise a particular
+table, then set this option to C<yes>. By default, all databases and tables are
 shown in the user interface.
 
  <Plugin::AutoCRUD>
     <sites>
         <default>
-            <myschema>
-                <secretsource>
+            <mydb>
+                <secrettable>
                     hidden yes
-                </secretsource>
-            </myschema>
+                </secrettable>
+            </mydb>
         </default>
     </sites>
  </Plugin::AutoCRUD>
 
-This can be applied to either a schema or source; if applied to a schema it
-overrides all child sources, B<even if> a source has a different setting.
+This can be applied to either a database or table; if applied to a database it
+overrides all child tables, B<even if> a table has a different setting.
 
-=item frontend [ full-fat | skinny | ... ]
+=item frontend [ extjs2 | skinny | ... ]
 
 With this option you can swap out the set of templates used to generate the
 web front-end, and completely change its look and feel.
 
-Currently you have two choices: either C<full-fat> which is the default and
-provides the standard full-featured ExtJS frontend, or C<skinny> which is a
+Currently you have two choices: either C<extjs2> which is the default and
+provides the standard full-featured ExtJS2 frontend, or C<skinny> which is a
 read-only non-JavaScript alternative supporting listing, paging and sorting
 only.
 
 Set the frontend in your site config at its top level. Note that you cannot
-set the frontend on a per-schema or per-source basis, only per-site:
+set the frontend on a per-database or per-table basis, only per-site:
 
  <Plugin::AutoCRUD>
     <sites>
@@ -766,14 +792,14 @@ configuration:
  </Plugin::AutoCRUD>
 
 You'll notice that a non-default site is active because the path in your URLs
-changes to a more RPC-like verbose form, mentioning the site, schema and
-source:
+changes to a more RPC-like verbose form, mentioning the site, database and
+table:
 
  from this:
- .../autocrud/myschema/thesource    # (i.e. site == default)
+ .../autocrud/mydb/thetable    # (i.e. site == default)
   
  to this:
- .../autocrud/site/mysite/schema/myschema/source/thesource
+ .../autocrud/site/mysite/schema/mydb/source/thetable
 
 So let's say you've created a dumbed down site for your users which is
 read-only (i.e. C<update_allowed no> and C<delete_allowed no>), and called the
@@ -784,88 +810,6 @@ to users:
 
 You could also then place an access control on this path part in your web
 server (e.g. Apache) which is different from the default site itself.
-
-=head1 TROUBLESHOOTING
-
-=head2 Displaying Unicode
-
-It is essential that you load the L<Catalyst::Plugin::Unicode::Encoding>
-plugin to ensure proper decoding/encoding of incoming request parameters and
-the outgoing body response respectively. This is done in your C<MyApp.pm>:
-
- use Catalyst qw/ -Debug ConfigLoader Unicode::Encoding AutoCRUD /;
-
-Additionally, when connecting to the database, add a flag to the connection
-parameters, specific to your database engine, that enables Unicode. See the
-following link for more details:
-
-=over 4
-
-=item *
-
-https://metacpan.org/module/DBIx::Class::Manual::Cookbook#Using-Unicode
-
-=back
-
-=head2 Foreign keys should be configured with C<is_foreign_key>
-
-Any column in your result classes which contains the primary key of another
-table should have the C<< is_foreign_key => 1 >> option added to its
-configuration.
-
-If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent release from CPAN to have this automatically
-configured for you.
-
-=head2 Make sure C<belongs_to> follows C<add_columns>
-
-Whenver you use C<belongs_to()> in a result class, it B<must> come after any
-calls to C<add_column()> which affect the foreign key. A situation where this
-may not be the case is if you add additional column options in a second call
-to C<add_column()>, after the C<DO NOT MODIFY THIS OR ANYTHING ABOVE> line.
-
-If you do not follow this guideline, then you won't see any related data in 
-the views generated by this plugin. Furthermore, you'll be losing much of
-the advantage of C<DBIx::Class>.
-
-A better solution is to re-generate your result class using a recent version
-of C<DBIx::Class::Schema::Loader> from the CPAN (which may be 0.05 or later).
-
-=head2 Optional C<belongs_to> relations must have a C<join_type>
-
-If you have any C<belongs_to> type relations where the column containing the
-foreign key can be NULL, it's I<strongly recommended> that you add a
-C<join_type> parameter to the end of the relevant options to C<add_columns()>,
-like so:
-
- # in a Book class, the book optionally has an Owner
- __PACKAGE__->belongs_to(
-     'my_owner',                      # accessor name
-     'My::DBIC::Schema::Owner',       # related class
-     'owner_id',                      # our FK column (or join condition)
-     { join_type => 'LEFT OUTER' }    # attributes
- );
-
-If you don't do this, some database records will be missing! The technical
-reason for this, if you are interested, is that C<DBIx::Class> defaults to an
-INNER join for the C<belongs_to()> relation, but if the column can be null
-(that is, C<is_nullable>) then you most likely want a LEFT OUTER join.
-
-If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent release from CPAN to have this automatically
-configured for you.
-
-=head2 Columns with auto-increment data types
-
-For those columns where your database uses an auto-incremented value, add the
-C<< is_auto_increment => 1 >> parameter to the options list in
-C<add_columns()>.  This will let the plugin know you don't need to supply a
-value for new or updated records. The interface will look much better as a
-result.
-
-If using C<DBIx::Class::Schema::Loader> to generate your Schema, use at least
-version 0.05 or the most recent release from CPAN to have this automatically
-configured for you.
 
 =head1 INSTANT DEMO APPLICATIONS
 
@@ -925,22 +869,13 @@ script:
 
  demo> perl ./server_other_features.pl
 
+=head1 TROUBLESHOOTING
+
+See L<Catalyst::Plugin::AutoCRUD::Manual::Troubleshooting>.
+
 =head1 LIMITATIONS
 
-=over 4
-
-=item Time Zone settings are lost during SELECT/UPDATE
-
-Database fields of types such as (PostgreSQL) C<timestamp with time zone> will
-be displayed with a date and time picker, but you'll lose the time zone's UTC
-offset value, sorry. This could be fixed and retained through an improved UI
-widget, for example.
-
-=back
-
-For the issues above, if you're desperate that the feature be implemented
-soon, please drop me a line at the address below, because you might be able to
-buy some of my time for the development.
+See L<Catalyst::Plugin::AutoCRUD::Manual::Limitations>.
 
 =head1 SEE ALSO
 

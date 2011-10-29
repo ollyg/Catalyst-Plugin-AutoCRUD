@@ -3,7 +3,7 @@
     [% NEXT IF cpac.tc.hidden_cols.exists(col)
         OR (cpac.tm.f.$col.extra('is_reverse') AND cpac.tm.f.$col.extra('rel_type').match('_many')) %]
     <td class="cpac_cell">
-        [% PROCESS cell.tt
+        [% PROCESS skinny/cell.tt
             value = item.$col
             meta  = cpac.tm.f.$col
         %]

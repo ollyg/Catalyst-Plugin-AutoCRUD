@@ -12,7 +12,7 @@ use Test::More 'no_plan';
 
 # application loads
 BEGIN {
-    $ENV{AUTOCRUD_TESTING} = 1;
+    $ENV{AUTOCRUD_DEBUG} = 1;
     $ENV{AUTOCRUD_CONFIG} = 't/lib/headings_byhash.conf';
     use_ok "Test::WWW::Mechanize::Catalyst::AJAX" => "TestAppCustomConfig";
 }

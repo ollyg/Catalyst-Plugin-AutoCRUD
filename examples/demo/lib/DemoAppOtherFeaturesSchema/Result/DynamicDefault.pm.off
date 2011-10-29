@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 use base 'DBIx::Class::Core';
- __PACKAGE__->load_components(qw( TimeStamp ));
+__PACKAGE__->load_components(qw( TimeStamp ));
 
 =head1 NAME
 

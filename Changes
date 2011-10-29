@@ -1,3 +1,21 @@
+2.113020_004 2011-10-29 19:42:16 Europe/London
+
+  [ENHANCEMENTS]
+
+  * New manual pages for Troubleshooting, DBIC Tips, and Limitations
+  * Frontend now called DisplayEngine (except for config)
+  * Backend now called StorageEngine (except for config)
+  * User can specify "backends" in config for non-DBIC storage
+  * Always forward() to DisplayEngine, for consistency
+  * Template Toolkit now configured to PRE_CHOMP for source readability
+  * wrapper.tt template is factored out into five parts, easier overriding
+
+  [BUG FIXES]
+
+  * Clearing the ExtJS2 filters also now clears "Browse" link params
+  * Works when there are no sources within a DB schema
+  * Skinny template was using old stashed metadata var names
+
 2.112890_003 2011-10-16 11:02:30 Europe/London
 
   [BUG FIXES]

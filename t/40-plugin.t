@@ -8,7 +8,7 @@ use Test::More 'no_plan';
 
 # application loads
 BEGIN {
-    $ENV{AUTOCRUD_TESTING} = 1;
+    $ENV{AUTOCRUD_DEBUG} = 1;
     use_ok "Test::WWW::Mechanize::Catalyst" => "TestApp"
 }
 my $mech = Test::WWW::Mechanize::Catalyst->new;
