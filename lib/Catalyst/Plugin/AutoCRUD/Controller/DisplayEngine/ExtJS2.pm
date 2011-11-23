@@ -104,7 +104,7 @@ sub filter_from_ext : Private {
     my @columns = @{$conf->{cols}};
 
     my $do_filter = sub {
-        my ($c, $ci, $col) = @_;
+        my ($ci, $col) = @_;
         return unless exists $c->req->params->{$col}
             and defined $c->req->params->{$col};
 
@@ -128,11 +128,11 @@ sub filter_from_ext : Private {
 
             foreach my $fcol (@{$link->extra('fields')}) {
                 my $fci = $link->f->{$fcol};
-                $do_filter->($c, $fci, "$col.$fcol");
+                $do_filter->($fci, "$col.$fcol");
             }
         }
         else {
-            $do_filter->($c, $ci, $col);
+            $do_filter->($ci, $col);
         }
     }
 }

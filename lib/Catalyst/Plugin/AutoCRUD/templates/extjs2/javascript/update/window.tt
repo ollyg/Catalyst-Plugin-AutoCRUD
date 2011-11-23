@@ -21,7 +21,7 @@
                 ,url: '[% c.uri_for(
                     c.controller('AutoCRUD::Root').action_for('source'),
                     [cpac.g.site,cpac_db], cpac_table
-                ) %]/' + method
+                ) %]/extjs2/' + method
                 ,autoHeight: true
                 ,layout: 'fit'
     
