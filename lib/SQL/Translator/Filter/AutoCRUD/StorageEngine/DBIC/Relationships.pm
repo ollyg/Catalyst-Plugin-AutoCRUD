@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships::VERSION = '2.113020_005';
+  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships::VERSION = '2.113270';
 }
 
 use strict;

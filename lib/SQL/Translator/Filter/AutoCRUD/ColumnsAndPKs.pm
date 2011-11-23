@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
 {
-  $SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs::VERSION = '2.113020_005';
+  $SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs::VERSION = '2.113270';
 }
 
 use strict;

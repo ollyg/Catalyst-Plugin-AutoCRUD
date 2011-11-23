@@ -69,7 +69,7 @@
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=Catalyst-Plugin-AutoCRUD"
@@ -81,6 +81,6 @@
          "web" : "https://github.com/ollyg/Catalyst-Plugin-AutoCRUD"
       }
    },
-   "version" : "2.113020_005"
+   "version" : "2.113270"
 }
 
