@@ -44,7 +44,7 @@
         ,items: [
              ' ' ,{
                 tooltip: 'Reset'
-                ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "page_lightning.png" ) %]'
+                ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "page_lightning.png" ) %]'
                 ,cls:"x-btn-icon"
                 ,handler: function (){
                     // clear the cookie storing grid state

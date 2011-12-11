@@ -18,7 +18,7 @@ my $dbfile = 'examples/sandpit/dbictest.sql';
 
 __PACKAGE__->config(
     'Plugin::AutoCRUD' => {
-        extjs2 => '/static/ext2',
+        extjs2 => '/cpacstatic/ext2',
         basepath => '',
         # sites => { default => { frontend => 'skinny' } },
     },
