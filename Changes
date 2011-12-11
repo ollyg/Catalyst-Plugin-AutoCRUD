@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+2.113450  2011-12-11 15:12:52 Europe/London
+
   [ENHANCEMENTS]
 
   * Change /static for /cpacstatic to play nice with Plugin::Static (Caelum)
