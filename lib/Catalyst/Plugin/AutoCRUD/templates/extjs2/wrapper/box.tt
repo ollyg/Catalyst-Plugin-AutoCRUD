@@ -49,7 +49,7 @@
                                                         [cpac.g.site,cpac_db], cpac_table, 'browse', cpac.g.filter_params ) %]"
               [% END %]
                     title="Skinny (non-JS) Browser">
-                    <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "application_view_detail.png" ) %]"
+                    <img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "application_view_detail.png" ) %]"
                         alt="Skinny (non-JS) Browser" />
                 </a>
             </div>

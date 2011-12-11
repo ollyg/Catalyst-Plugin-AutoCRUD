@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Static;
 {
-  $Catalyst::Plugin::AutoCRUD::Controller::Static::VERSION = '2.113270';
+  $Catalyst::Plugin::AutoCRUD::Controller::Static::VERSION = '2.113450';
 }
 
 use strict;
@@ -23,7 +23,7 @@ my %mime = (
 # cheap. there are a couple of nice icons we want to make sure the users have
 # but it'd be too much hassle to ask them to install, so we bundle them.
 #
-sub static : Chained('/autocrud/root/base') Args {
+sub cpacstatic : Chained('/autocrud/root/base') Args {
     my ($self, $c, @target) = @_;
     my $file = join '/', @target;
     $c->log->debug("Static request for file [$file], generated from parts")

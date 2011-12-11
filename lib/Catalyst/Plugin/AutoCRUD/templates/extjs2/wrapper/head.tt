@@ -10,10 +10,10 @@
 <link rel="stylesheet" type="text/css" href="[% cpac.g.extjs2 %]/resources/css/ext-all.css" />
 [% END %]
 
-<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "body.css" ) %]" />
-<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "cpac.css" ) %]" />
+<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "body.css" ) %]" />
+<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "cpac.css" ) %]" />
 [% IF c.req.user_agent.match('\.NET CLR') %]
-<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "iefix.css" ) %]" />
+<link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "iefix.css" ) %]" />
 [% END %]
 
 [% IF NOT cpac.g.extjs2 %]
@@ -24,5 +24,5 @@
 <script type="text/javascript" src="[% cpac.g.extjs2 %]/ext-all.js"></script>
 [% END %]
 
-<script type="text/javascript" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'), "xdatetime.js" ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "xdatetime.js" ) %]"></script>
 </head>

@@ -21,7 +21,7 @@
                     }
                 ).submit();
             }
-            ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+            ,icon: '[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'),
                                             "table_go.png" ) %]'
         }).render(document.body, id);
     }
@@ -171,7 +171,7 @@
                         + record.get('[% col | replace('\'', '\\\'') %]').join('<br />') + '"';
                     return '<img ext:qtitle="[% cpac.tc.headings.$col %]" ext:qtip="'
                         + record.get('[% col | replace('\'', '\\\'') %]').join('<br />')
-                        + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                        + '" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'),
                                         "magnifier.png" ) %]" />'
                         + ' Show';
                 }
@@ -205,11 +205,11 @@
               [% IF cpac.tm.f.$col.extra('extjs_xtype') == 'checkbox' %]
                 if (rowindex === 0) { return '' }
                 if (value == '1') {
-                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'),
                                         "bullet_green.png" ) %]" />';
                 }
                 else {
-                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                  return '<img src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'),
                                         "bullet_red.png" ) %]" />';
                 }
               [% ELSE %]
@@ -232,7 +232,7 @@
                 else {
                     metadata.attr += 'ext:qtitle="Delete" ext:qtip="' + record.get('cpac__display_name') + '"';
                     return '<img ext:qtitle="Delete" ext:qtip="' + record.get('cpac__display_name') + '"'
-                        + ' src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('static'),
+                        + ' src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'),
                                         "bin_closed.png" ) %]" />';
                 }
             }
