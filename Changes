@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+  [BUG FIXES]
+
+  * Depend on DBIx::Class 0.08127 (rt.cpan #74320 and #74283, M. Rusko)
+
 2.113450  2011-12-11 15:12:52 Europe/London
 
   [ENHANCEMENTS]
