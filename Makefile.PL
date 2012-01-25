@@ -42,6 +42,8 @@ my %WriteMakefileArgs = (
     "Catalyst::Utils" => 0,
     "Catalyst::View::JSON" => 0,
     "Catalyst::View::TT" => 0,
+    "DBD::SQLite" => 0,
+    "DBIx::Class" => "0.08127",
     "DBIx::Class::Schema::Loader" => 0,
     "Data::Dumper" => 0,
     "Data::Page" => 0,
@@ -63,7 +65,7 @@ my %WriteMakefileArgs = (
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "2.113450",
+  "VERSION" => "2.120250",
   "test" => {
     "TESTS" => "t/*.t"
   }

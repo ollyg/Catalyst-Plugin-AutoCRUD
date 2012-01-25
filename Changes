@@ -1,3 +1,10 @@
+2.120250  2012-01-25 23:00:17 Europe/London
+
+  [BUG FIXES]
+
+  * Depend on DBIx::Class 0.08127 (rt.cpan #74320 and #74283, M. Rusko)
+  * Depend on DBD::SQLite (rt.cpan #74133, Todd R.)
+
 2.113450  2011-12-11 15:12:52 Europe/London
 
   [ENHANCEMENTS]

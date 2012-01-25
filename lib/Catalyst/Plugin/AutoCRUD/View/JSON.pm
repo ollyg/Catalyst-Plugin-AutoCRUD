@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::View::JSON;
 {
-  $Catalyst::Plugin::AutoCRUD::View::JSON::VERSION = '2.113450';
+  $Catalyst::Plugin::AutoCRUD::View::JSON::VERSION = '2.120250';
 }
 
 use strict;
