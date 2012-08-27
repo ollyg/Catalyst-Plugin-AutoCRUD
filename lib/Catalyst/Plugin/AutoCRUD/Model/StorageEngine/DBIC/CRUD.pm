@@ -258,8 +258,11 @@ sub list {
             else {
                 # proxy cols must be called as accessors, but normally we'd
                 # prefer to use get_column, so try both, otherwise empty str
-                $data->{$col} = eval{$row->get_column($col)}
-                    ? eval{$row->get_column($col)} : (eval{$row->$col} || '');
+
+                my $evalue = eval{$row->get_column($col)};
+                if ($@) { $evalue = eval{$row->$col} }
+                if ($@) { $evalue = '' }
+                $data->{$col} = (defined $evalue ? $evalue : '');
             }
         }
 
