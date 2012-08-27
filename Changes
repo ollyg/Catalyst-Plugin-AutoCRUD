@@ -1,3 +1,9 @@
+2.122400  2012-08-27 13:34:48 Europe/London
+
+  [BUG FIXES]
+
+  * On column value retrieval, don't squash "0" (int or char) to "" (piotr)
+
 2.120250  2012-01-25 23:00:17 Europe/London
 
   [BUG FIXES]

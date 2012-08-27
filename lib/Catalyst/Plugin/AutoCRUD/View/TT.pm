@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
 {
-  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '2.120250';
+  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '2.122400';
 }
 
 use strict;
