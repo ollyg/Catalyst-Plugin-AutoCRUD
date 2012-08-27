@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+2.122400  2012-08-27 13:34:48 Europe/London
+
   [BUG FIXES]
 
   * On column value retrieval, don't squash "0" (int or char) to "" (piotr)
