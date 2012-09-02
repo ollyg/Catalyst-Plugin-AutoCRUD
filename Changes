@@ -1,3 +1,9 @@
+2.122460  2012-09-02 12:58:11 Europe/London
+
+  [BUG FIXES]
+
+  * Bug with is_nullable = false + default = '' (SineSwiper, closes #22)
+
 2.122400  2012-08-27 13:34:48 Europe/London
 
   [BUG FIXES]
