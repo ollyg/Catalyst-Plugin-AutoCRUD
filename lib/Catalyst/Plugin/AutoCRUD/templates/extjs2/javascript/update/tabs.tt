@@ -59,11 +59,12 @@
                   ,anchor: '-20'
                   ,autoHeight: true
                   
-                  [%= IF meta.f.$field.default_value %]
+                  [%= IF meta.f.$field.default_value.defined %]
                     ,value: '[% meta.f.$field.default_value | replace('\'', '\\\'') %]'
                   [% END %]
 
-                  [%= IF NOT meta.f.$field.is_nullable %]
+                  [%= IF NOT meta.f.$field.is_nullable
+                        AND (NOT meta.f.$field.default_value.defined OR meta.f.$field.default_value) %]
                     ,allowBlank: false
                   [% END %]
 
