@@ -460,7 +460,9 @@ sub _create_update_core {
                 $f => $proxy_updates->{$rel}->{$f}
             });
         }
-        $self_row->$rel->update; # save it
+        $self_row->result_source->schema->txn_do(
+            sub { $self_row->$rel->update }
+        ); # save it
     }
 
     if ($ENV{AUTOCRUD_DEBUG} and $c->debug) {
@@ -468,7 +470,9 @@ sub _create_update_core {
         $c->log->debug( Dumper $params );
     }
 
-    return $self_row->in_storage ? $self_row->update : $self_row->insert;
+    return $self_row->result_source->schema->txn_do(sub {
+        $self_row->in_storage ? $self_row->update : $self_row->insert
+    });
 }
 
 sub delete {
@@ -484,7 +488,8 @@ sub delete {
     }
     my $row = eval { $c->model($meta->extra('model'))->find($filter) };
 
-    if (blessed $row and eval {$row->delete}) {
+    if (blessed $row
+        and eval { $row->result_source->schema->txn_do(sub { $row->delete }) }) {
         $response->{'success'} = 1;
     }
 

@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+  [ENHANCEMENTS]
+
+  * Support for hook-systems such as DBIC::AuditLog and DBIC::Journal (SineSwiper, closes #24)
+
 2.122460  2012-09-02 12:58:11 Europe/London
 
   [BUG FIXES]
