@@ -2,7 +2,7 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    version 2.123270
+    version 2.123480
 
 PURPOSE
     You have a database, and wish to have a basic web interface supporting

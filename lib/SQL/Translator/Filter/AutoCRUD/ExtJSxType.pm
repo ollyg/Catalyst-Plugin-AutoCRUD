@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::ExtJSxType;
 {
-  $SQL::Translator::Filter::AutoCRUD::ExtJSxType::VERSION = '2.123270';
+  $SQL::Translator::Filter::AutoCRUD::ExtJSxType::VERSION = '2.123480';
 }
 
 use strict;
