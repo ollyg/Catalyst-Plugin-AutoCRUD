@@ -16,7 +16,7 @@ __PACKAGE__->add_columns(
     size => undef,
   },
   "rights owner",
-  { data_type => "varchar", is_nullable => 0, size => 255 },
+  { data_type => "varchar", is_nullable => 0, size => 255, accessor => 'rights_owner' },
   "copyright_year",
   { data_type => "integer", is_nullable => 0, size => undef },
 );
