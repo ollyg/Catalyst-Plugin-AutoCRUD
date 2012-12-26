@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+  * Do not squash case in table names (MySQL support - J.A. Marshall, closes #20)
+
 2.123480  2012-12-13 21:17:34 Europe/London
 
   * Fix test schema to have valid accessor name for 'rights owner' col
