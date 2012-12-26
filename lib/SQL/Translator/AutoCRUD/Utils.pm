@@ -1,6 +1,6 @@
 package SQL::Translator::AutoCRUD::Utils;
 {
-  $SQL::Translator::AutoCRUD::Utils::VERSION = '2.123480';
+  $SQL::Translator::AutoCRUD::Utils::VERSION = '2.123610';
 }
 
 use strict;
@@ -16,13 +16,13 @@ sub make_path {
     my $rs = shift;
 
     my $from = ref $rs->from ? ${$rs->from} : $rs->from;
-    return lc $from if $from =~ m/^\w+$/;
+    return $from if $from =~ m/^\w+$/;
 
     my $name = $rs->source_name;
     $name =~ s/([a-z])([A-Z])/$1_$2/g;
     $name =~ s/([a-zA-Z])([0-9])/$1_$2/g;
     $name =~ s/([0-9])([A-Za-z])/$1_$2/g;
-    return lc $name;
+    return $name;
 }
 
 sub make_label {

@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault::VERSION = '2.123480';
+  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault::VERSION = '2.123610';
 }
 
 # DBIx:Class extensions such as DBIx::Class::TimeStamp or

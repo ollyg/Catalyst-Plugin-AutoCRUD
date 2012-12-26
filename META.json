@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300002, CPAN::Meta::Converter version 2.112150",
+   "generated_by" : "Dist::Zilla version 4.300002, CPAN::Meta::Converter version 2.112621",
    "license" : [
       "perl_5"
    ],
@@ -83,6 +83,6 @@
          "web" : "https://github.com/ollyg/Catalyst-Plugin-AutoCRUD"
       }
    },
-   "version" : "2.123480"
+   "version" : "2.123610"
 }
 
