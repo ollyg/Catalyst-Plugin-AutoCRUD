@@ -17,6 +17,7 @@ __PACKAGE__->config(
     INCLUDE_PATH => "$directory../templates",
     CATALYST_VAR => 'c',
     WRAPPER => 'wrapper.tt',
+    ENCODING => 'utf-8',
     PRE_CHOMP => 1,
     render_die => 1,
 );

@@ -557,6 +557,19 @@ If you want to override any of the CSS used in the app, copy the C<head.tt>
 template from whichever C<site> you are using, edit, and install in a local
 C<tt_path> set with this directive.
 
+=head2 Reconfiguring Embedded Plugins
+
+Embedded plugins such as L<Catalyst::View:TT>, L<Catalyst::View::JSON>, etc,
+can be reconfigured in your C<myapp.yml> file using a simple naming
+convention. Remove the leading "Catalyst", and insert "AutoCRUD" after the
+first namespace component. For example:
+
+ View::AutoCRUD::TT:
+   ENCODING: utf-8
+
+Note that this does not affect your own App's usage of the same plugins, only
+the AutoCRUD plugin's instances are reconfigured.
+
 =head1 SITES CONFIGURATION
 
 It's possible to have multiple views of the source data, tailored in various
