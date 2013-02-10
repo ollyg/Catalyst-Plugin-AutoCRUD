@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.123610';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.130410';
 }
 
 use strict;
@@ -192,7 +192,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.123610
+version 2.130410
 
 =head1 PURPOSE
 
@@ -568,6 +568,19 @@ If you want to override any of the CSS used in the app, copy the C<head.tt>
 template from whichever C<site> you are using, edit, and install in a local
 C<tt_path> set with this directive.
 
+=head2 Reconfiguring Embedded Plugins
+
+Embedded plugins such as L<Catalyst::View:TT>, L<Catalyst::View::JSON>, etc,
+can be reconfigured in your C<myapp.yml> file using a simple naming
+convention. Remove the leading "Catalyst", and insert "AutoCRUD" after the
+first namespace component. For example:
+
+ View::AutoCRUD::TT:
+   ENCODING: utf-8
+
+Note that this does not affect your own App's usage of the same plugins, only
+the AutoCRUD plugin's instances are reconfigured.
+
 =head1 SITES CONFIGURATION
 
 It's possible to have multiple views of the source data, tailored in various
@@ -896,7 +909,7 @@ Oliver Gorwits <oliver@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Oliver Gorwits.
+This software is copyright (c) 2013 by Oliver Gorwits.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

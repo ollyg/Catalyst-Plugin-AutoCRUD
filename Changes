@@ -1,3 +1,7 @@
+2.130410  2013-02-10 14:17:38 Europe/London
+
+  * Set default Template Toolkit template encoding to be UTF-8 (N. Arakawa)
+
 2.123610  2012-12-26 13:15:42 Europe/London
 
   * Do not squash case in table names (MySQL support - J.A. Marshall, closes #20)

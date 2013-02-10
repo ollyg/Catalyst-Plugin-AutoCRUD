@@ -2,7 +2,7 @@ NAME
     Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 VERSION
-    version 2.123610
+    version 2.130410
 
 PURPOSE
     You have a database, and wish to have a basic web interface supporting
@@ -351,6 +351,18 @@ TIPS AND TRICKS
     "head.tt" template from whichever "site" you are using, edit, and
     install in a local "tt_path" set with this directive.
 
+  Reconfiguring Embedded Plugins
+    Embedded plugins such as Catalyst::View:TT, Catalyst::View::JSON, etc,
+    can be reconfigured in your "myapp.yml" file using a simple naming
+    convention. Remove the leading "Catalyst", and insert "AutoCRUD" after
+    the first namespace component. For example:
+
+     View::AutoCRUD::TT:
+       ENCODING: utf-8
+
+    Note that this does not affect your own App's usage of the same plugins,
+    only the AutoCRUD plugin's instances are reconfigured.
+
 SITES CONFIGURATION
     It's possible to have multiple views of the source data, tailored in
     various ways. For example you might choose to hide some tables, or
@@ -661,7 +673,7 @@ AUTHOR
     Oliver Gorwits <oliver@cpan.org>
 
 COPYRIGHT AND LICENSE
-    This software is copyright (c) 2012 by Oliver Gorwits.
+    This software is copyright (c) 2013 by Oliver Gorwits.
 
     This is free software; you can redistribute it and/or modify it under
     the same terms as the Perl 5 programming language system itself.

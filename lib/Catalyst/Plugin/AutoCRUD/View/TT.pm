@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
 {
-  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '2.123610';
+  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '2.130410';
 }
 
 use strict;
@@ -20,6 +20,7 @@ __PACKAGE__->config(
     INCLUDE_PATH => "$directory../templates",
     CATALYST_VAR => 'c',
     WRAPPER => 'wrapper.tt',
+    ENCODING => 'utf-8',
     PRE_CHOMP => 1,
     render_die => 1,
 );
