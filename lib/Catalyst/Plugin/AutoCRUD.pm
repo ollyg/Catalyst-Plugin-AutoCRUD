@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.130410';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.131060';
 }
 
 use strict;
@@ -192,7 +192,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.130410
+version 2.131060
 
 =head1 PURPOSE
 
