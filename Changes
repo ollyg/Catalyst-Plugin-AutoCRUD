@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+  * Revert c9a134b (#20) squash table names
+
 2.130410  2013-02-10 14:17:38 Europe/London
 
   * Set default Template Toolkit template encoding to be UTF-8 (N. Arakawa)
