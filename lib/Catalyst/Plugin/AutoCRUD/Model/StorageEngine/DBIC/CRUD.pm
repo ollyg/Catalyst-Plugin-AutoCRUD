@@ -89,6 +89,7 @@ sub _likeop_for {
     my %ops = (
         SQLite => '-like',
         MySQL  => '-like',
+        Oracle => '-like',
     );
     return $ops{$sqlt_type} || '-ilike';
 }

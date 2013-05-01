@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+  * Support Oracle LIKE syntax properly (tunakermit)
+
 2.131060  2013-04-16 13:00:35 Europe/London
 
   * Revert c9a134b (#20) squash table names
