@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::ExtJS2;
 {
-  $Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::ExtJS2::VERSION = '2.131060';
+  $Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::ExtJS2::VERSION = '2.131210';
 }
 
 use strict;

@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::CRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::CRUD::VERSION = '2.131060';
+  $Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::CRUD::VERSION = '2.131210';
 }
 
 use strict;
@@ -92,6 +92,7 @@ sub _likeop_for {
     my %ops = (
         SQLite => '-like',
         MySQL  => '-like',
+        Oracle => '-like',
     );
     return $ops{$sqlt_type} || '-ilike';
 }

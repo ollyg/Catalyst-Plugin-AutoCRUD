@@ -1,3 +1,7 @@
+2.131210  2013-05-01 21:12:25 Europe/London
+
+  * Support Oracle LIKE syntax properly (tunakermit)
+
 2.131060  2013-04-16 13:00:35 Europe/London
 
   * Revert c9a134b (#20) squash table names
