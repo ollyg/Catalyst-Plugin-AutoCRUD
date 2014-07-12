@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+  * extjs from the CDN over HTTPS (mendel)
+
 2.131210  2013-05-01 21:12:25 Europe/London
 
   * Support Oracle LIKE syntax properly (tunakermit)
