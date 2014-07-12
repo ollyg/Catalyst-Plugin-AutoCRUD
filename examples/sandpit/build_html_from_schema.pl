@@ -15,7 +15,7 @@ use SQL::Translator::Filter::AutoCRUD;
 
 my $t = SQL::Translator->new(
     parser => 'SQL::Translator::Parser::DBIx::Class',
-    parser_args => { package => 'DBICTest::Schema' },
+    parser_args => { dbic_schema => 'DBICTest::Schema' },
     filters => ['SQL::Translator::Filter::AutoCRUD'],
     producer => 'SQL::Translator::Producer::CustomHTML',
     producer_args => { pretty => 1 },
