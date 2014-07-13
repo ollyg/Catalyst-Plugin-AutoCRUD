@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300002, CPAN::Meta::Converter version 2.112621",
+   "generated_by" : "Dist::Zilla version 4.300002, CPAN::Meta::Converter version 2.131560",
    "license" : [
       "perl_5"
    ],
@@ -21,53 +21,54 @@
       },
       "runtime" : {
          "requires" : {
-            "Catalyst::Action::RenderView" : 0,
-            "Catalyst::Controller" : 0,
-            "Catalyst::Model" : 0,
-            "Catalyst::Model::DBIC::Schema" : 0,
-            "Catalyst::Plugin::ConfigLoader" : 0,
-            "Catalyst::Plugin::Unicode::Encoding" : 0,
+            "Catalyst::Action::RenderView" : "0",
+            "Catalyst::Controller" : "0",
+            "Catalyst::Model" : "0",
+            "Catalyst::Model::DBIC::Schema" : "0",
+            "Catalyst::Plugin::ConfigLoader" : "0",
+            "Catalyst::Plugin::Unicode::Encoding" : "0",
             "Catalyst::Runtime" : "5.70",
-            "Catalyst::Utils" : 0,
-            "Catalyst::View::JSON" : 0,
-            "Catalyst::View::TT" : 0,
-            "DBD::SQLite" : 0,
+            "Catalyst::Utils" : "0",
+            "Catalyst::View::JSON" : "0",
+            "Catalyst::View::TT" : "0",
+            "DBD::SQLite" : "0",
             "DBIx::Class" : "0.08127",
-            "DBIx::Class::Schema::Loader" : 0,
-            "Data::Dumper" : 0,
-            "Data::Page" : 0,
-            "Devel::InnerPackage" : 0,
-            "Exporter" : 0,
-            "File::Basename" : 0,
-            "File::Slurp" : 0,
-            "File::stat" : 0,
-            "Lingua::EN::Inflect::Number" : 0,
-            "List::MoreUtils" : 0,
-            "List::Util" : 0,
-            "MRO::Compat" : 0,
-            "SQL::Translator" : 0,
-            "SQL::Translator::Schema" : 0,
-            "SQL::Translator::Schema::Table" : 0,
-            "Scalar::Util" : 0,
-            "base" : 0,
-            "overload" : 0,
-            "strict" : 0,
-            "warnings" : 0
+            "DBIx::Class::Schema::Loader" : "0",
+            "Data::Dumper" : "0",
+            "Data::Page" : "0",
+            "Devel::InnerPackage" : "0",
+            "Exporter" : "0",
+            "File::Basename" : "0",
+            "File::Slurp" : "0",
+            "File::stat" : "0",
+            "JSON" : "2.90",
+            "Lingua::EN::Inflect::Number" : "0",
+            "List::MoreUtils" : "0",
+            "List::Util" : "0",
+            "MRO::Compat" : "0",
+            "SQL::Translator" : "0",
+            "SQL::Translator::Schema" : "0",
+            "SQL::Translator::Schema::Table" : "0",
+            "Scalar::Util" : "0",
+            "base" : "0",
+            "overload" : "0",
+            "strict" : "0",
+            "warnings" : "0"
          }
       },
       "test" : {
          "requires" : {
-            "Catalyst" : 0,
-            "Catalyst::ScriptRunner" : 0,
-            "Class::Data::Inheritable" : 0,
-            "DBI" : 0,
-            "DBIx::Class" : 0,
-            "DBIx::Class::Schema" : 0,
-            "File::Temp" : 0,
-            "JSON::XS" : 0,
-            "Storable" : 0,
-            "Test::More" : 0,
-            "Test::WWW::Mechanize::Catalyst" : 0
+            "Catalyst" : "0",
+            "Catalyst::ScriptRunner" : "0",
+            "Class::Data::Inheritable" : "0",
+            "DBI" : "0",
+            "DBIx::Class" : "0",
+            "DBIx::Class::Schema" : "0",
+            "File::Temp" : "0",
+            "JSON::XS" : "0",
+            "Storable" : "0",
+            "Test::More" : "0",
+            "Test::WWW::Mechanize::Catalyst" : "0"
          }
       }
    },
@@ -83,6 +84,6 @@
          "web" : "https://github.com/ollyg/Catalyst-Plugin-AutoCRUD"
       }
    },
-   "version" : "2.131210"
+   "version" : "2.141940"
 }
 

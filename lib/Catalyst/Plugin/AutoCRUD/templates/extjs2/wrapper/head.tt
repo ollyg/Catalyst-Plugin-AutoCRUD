@@ -4,11 +4,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=[% cpac.g.html_charset OR 'utf-8' | html %]" />
 <title>[% cpac.g.title %][% ' - Powered by ' IF cpac.g.title %][% cpac.g.version %]</title>
 
-[% IF NOT cpac.g.extjs2 %]
-<link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />
-[% ELSE %]
-<link rel="stylesheet" type="text/css" href="[% cpac.g.extjs2 %]/resources/css/ext-all.css" />
-[% END %]
+[%
+    SET extjs_base_uri = cpac.g.extjs2 OR (
+        c.req.secure
+            ? 'https://extjs.cachefly.net/ext-2.2'
+            : 'http://extjs.cachefly.net/ext-2.2'
+    )
+%]
+
+<link rel="stylesheet" type="text/css" href="[% extjs_base_uri %]/resources/css/ext-all.css" />
 
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "body.css" ) %]" />
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "cpac.css" ) %]" />
@@ -16,13 +20,8 @@
 <link rel="stylesheet" type="text/css" href="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "iefix.css" ) %]" />
 [% END %]
 
-[% IF NOT cpac.g.extjs2 %]
-<script type="text/javascript" src="http://extjs.cachefly.net/ext-2.2/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="http://extjs.cachefly.net/ext-2.2/ext-all.js"></script>
-[% ELSE %]
-<script type="text/javascript" src="[% cpac.g.extjs2 %]/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="[% cpac.g.extjs2 %]/ext-all.js"></script>
-[% END %]
+<script type="text/javascript" src="[% extjs_base_uri %]/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="[% extjs_base_uri %]/ext-all.js"></script>
 
 <script type="text/javascript" src="[% c.uri_for( c.controller('AutoCRUD::Static').action_for('cpacstatic'), "xdatetime.js" ) %]"></script>
 </head>

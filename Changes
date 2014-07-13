@@ -1,3 +1,8 @@
+2.141940  2014-07-13 10:22:41 Europe/London
+
+  * extjs from the CDN over HTTPS (mendel)
+  * Fix deprecation warning from SQL::Translator
+
 2.131210  2013-05-01 21:12:25 Europe/London
 
   * Support Oracle LIKE syntax properly (tunakermit)

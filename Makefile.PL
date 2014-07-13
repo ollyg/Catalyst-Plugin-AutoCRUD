@@ -52,6 +52,7 @@ my %WriteMakefileArgs = (
     "File::Basename" => 0,
     "File::Slurp" => 0,
     "File::stat" => 0,
+    "JSON" => "2.90",
     "Lingua::EN::Inflect::Number" => 0,
     "List::MoreUtils" => 0,
     "List::Util" => 0,
@@ -65,7 +66,7 @@ my %WriteMakefileArgs = (
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "2.131210",
+  "VERSION" => "2.141940",
   "test" => {
     "TESTS" => "t/*.t"
   }

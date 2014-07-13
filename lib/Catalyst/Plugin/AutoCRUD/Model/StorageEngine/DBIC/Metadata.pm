@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::Metadata;
 {
-  $Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::Metadata::VERSION = '2.131210';
+  $Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::Metadata::VERSION = '2.141940';
 }
 
 use strict;
@@ -131,7 +131,7 @@ sub schema_metadata {
         $self->_schema_cache->{handles}->{$db}->{model})->schema;
     my $sqlt = SQL::Translator->new(
         parser => 'SQL::Translator::Parser::DBIx::Class',
-        parser_args => { package => $dbic },
+        parser_args => { dbic_schema => $dbic },
         filters => [
             ['AutoCRUD::StorageEngine::DBIC::ViewsAsTables', $dbic],
             ['AutoCRUD::StorageEngine::DBIC::Relationships', $dbic],
