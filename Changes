@@ -1,3 +1,7 @@
+2.142820  2014-10-09 13:26:50 Europe/London
+
+  * [#98954] Fix malformed tests missing foreign/self prefix
+
 2.141940  2014-07-13 10:22:41 Europe/London
 
   * extjs from the CDN over HTTPS (mendel)
