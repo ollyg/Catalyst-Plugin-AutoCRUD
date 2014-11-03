@@ -1,7 +1,7 @@
 package TestAppM2M;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use DBI;
 use File::Temp;

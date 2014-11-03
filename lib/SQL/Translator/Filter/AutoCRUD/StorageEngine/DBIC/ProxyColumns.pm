@@ -5,7 +5,7 @@ package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ProxyColumns;
 # which AutoCRUD will display.
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use SQL::Translator::AutoCRUD::Utils;
 

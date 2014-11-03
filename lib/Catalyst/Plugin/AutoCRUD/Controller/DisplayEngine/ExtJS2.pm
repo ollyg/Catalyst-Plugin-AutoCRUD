@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::ExtJS2;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Catalyst::Controller';
 

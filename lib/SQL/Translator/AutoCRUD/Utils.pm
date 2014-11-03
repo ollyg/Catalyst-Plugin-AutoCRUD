@@ -1,7 +1,7 @@
 package SQL::Translator::AutoCRUD::Utils;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 our @EXPORT;
 BEGIN {

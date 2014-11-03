@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Model::DBIC;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Catalyst::Model::DBIC::Schema';
 

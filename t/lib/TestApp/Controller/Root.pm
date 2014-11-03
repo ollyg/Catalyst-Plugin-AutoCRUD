@@ -1,7 +1,7 @@
 package TestApp::Controller::Root;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Catalyst::Controller';
 

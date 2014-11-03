@@ -8,7 +8,7 @@ package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ViewsAsTables;
 # run very early on in the Filter list, if not first.
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use SQL::Translator::AutoCRUD::Utils;
 

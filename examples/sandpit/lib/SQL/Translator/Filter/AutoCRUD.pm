@@ -1,7 +1,7 @@
 package SQL::Translator::Filter::AutoCRUD;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use Scalar::Util 'blessed';
 use Lingua::EN::Inflect::Number;
 use SQL::Translator::Schema::Constraint;

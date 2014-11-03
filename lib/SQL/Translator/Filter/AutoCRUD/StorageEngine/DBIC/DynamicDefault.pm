@@ -6,7 +6,7 @@ package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault;
 # ignores the fields for create and update.
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use SQL::Translator::AutoCRUD::Utils;
 

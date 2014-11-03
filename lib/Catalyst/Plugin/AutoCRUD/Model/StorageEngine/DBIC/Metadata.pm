@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::Metadata;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 our @EXPORT;
 BEGIN {

@@ -1,7 +1,7 @@
 package SQL::Translator::Filter::AutoCRUD::ExtJSxType;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 my %xtype_for = (
     boolean => 'checkbox',

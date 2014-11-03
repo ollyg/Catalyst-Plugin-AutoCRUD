@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;

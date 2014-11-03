@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Root;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Catalyst::Controller';
 use Catalyst::Utils;

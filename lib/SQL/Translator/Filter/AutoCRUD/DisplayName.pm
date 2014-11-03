@@ -1,7 +1,7 @@
 package SQL::Translator::Filter::AutoCRUD::DisplayName;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use Scalar::Util 'blessed';
 use SQL::Translator::AutoCRUD::Utils;

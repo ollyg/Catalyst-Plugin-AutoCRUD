@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Catalyst::View::TT';
 use File::Basename;

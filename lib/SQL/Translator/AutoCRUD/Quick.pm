@@ -1,7 +1,7 @@
 package SQL::Translator::AutoCRUD::Quick;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 {
     package # hide from toolchain

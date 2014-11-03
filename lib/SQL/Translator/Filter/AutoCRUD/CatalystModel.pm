@@ -1,7 +1,7 @@
 package SQL::Translator::Filter::AutoCRUD::CatalystModel;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 sub filter {
     my ($schema, @args) = @_;

@@ -1,7 +1,7 @@
 package SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 # PK can be FK so need to unique fields
 use List::MoreUtils 'uniq';

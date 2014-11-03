@@ -5,7 +5,7 @@ package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::AccessorDisplayN
 # to show that as the display name instead of the column's native name.
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use SQL::Translator::AutoCRUD::Utils;
 
