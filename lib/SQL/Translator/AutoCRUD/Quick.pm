@@ -1,10 +1,10 @@
 package SQL::Translator::AutoCRUD::Quick;
 {
-  $SQL::Translator::AutoCRUD::Quick::VERSION = '2.142820';
+  $SQL::Translator::AutoCRUD::Quick::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 {
     package # hide from toolchain

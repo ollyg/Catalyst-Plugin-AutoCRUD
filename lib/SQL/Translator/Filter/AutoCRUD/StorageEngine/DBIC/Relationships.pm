@@ -1,10 +1,10 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships::VERSION = '2.142820';
+  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use Lingua::EN::Inflect::Number;
 use SQL::Translator::AutoCRUD::Utils;

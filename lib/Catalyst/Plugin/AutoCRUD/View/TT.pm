@@ -1,10 +1,10 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
 {
-  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '2.142820';
+  $Catalyst::Plugin::AutoCRUD::View::TT::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Catalyst::View::TT';
 use File::Basename;

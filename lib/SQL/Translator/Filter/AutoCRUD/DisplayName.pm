@@ -1,10 +1,10 @@
 package SQL::Translator::Filter::AutoCRUD::DisplayName;
 {
-  $SQL::Translator::Filter::AutoCRUD::DisplayName::VERSION = '2.142820';
+  $SQL::Translator::Filter::AutoCRUD::DisplayName::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use Scalar::Util 'blessed';
 use SQL::Translator::AutoCRUD::Utils;

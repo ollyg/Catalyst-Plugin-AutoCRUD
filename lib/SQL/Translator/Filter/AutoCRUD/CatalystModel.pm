@@ -1,10 +1,10 @@
 package SQL::Translator::Filter::AutoCRUD::CatalystModel;
 {
-  $SQL::Translator::Filter::AutoCRUD::CatalystModel::VERSION = '2.142820';
+  $SQL::Translator::Filter::AutoCRUD::CatalystModel::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 sub filter {
     my ($schema, @args) = @_;

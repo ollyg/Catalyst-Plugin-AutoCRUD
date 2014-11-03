@@ -1,10 +1,10 @@
 package SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
 {
-  $SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs::VERSION = '2.142820';
+  $SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 # PK can be FK so need to unique fields
 use List::MoreUtils 'uniq';

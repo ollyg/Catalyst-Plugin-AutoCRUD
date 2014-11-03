@@ -1,10 +1,10 @@
 package SQL::Translator::AutoCRUD::Utils;
 {
-  $SQL::Translator::AutoCRUD::Utils::VERSION = '2.142820';
+  $SQL::Translator::AutoCRUD::Utils::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 our @EXPORT;
 BEGIN {

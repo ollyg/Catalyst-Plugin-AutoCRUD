@@ -1,10 +1,10 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.142820';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.143070';
 }
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use MRO::Compat;
 use Devel::InnerPackage qw/list_packages/;
@@ -192,7 +192,7 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.142820
+version 2.143070
 
 =head1 PURPOSE
 

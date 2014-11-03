@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault::VERSION = '2.142820';
+  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault::VERSION = '2.143070';
 }
 
 # DBIx:Class extensions such as DBIx::Class::TimeStamp or
@@ -9,7 +9,7 @@ package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::DynamicDefault;
 # ignores the fields for create and update.
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use SQL::Translator::AutoCRUD::Utils;
 

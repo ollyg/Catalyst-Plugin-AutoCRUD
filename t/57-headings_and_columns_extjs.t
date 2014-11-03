@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use lib qw( t/lib );
 
 use Test::More 'no_plan';
