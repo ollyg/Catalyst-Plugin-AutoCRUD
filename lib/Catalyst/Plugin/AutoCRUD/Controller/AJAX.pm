@@ -1,6 +1,5 @@
 package Catalyst::Plugin::AutoCRUD::Controller::AJAX;
 {
-  $Catalyst::Plugin::AutoCRUD::Controller::AJAX::VERSION = '2.143070';
 }
 
 use strict;

@@ -1,6 +1,5 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ViewsAsTables;
 {
-  $SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ViewsAsTables::VERSION = '2.143070';
 }
 
 # SQLT doesn't provide for proper Field objects in Views
