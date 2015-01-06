@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::CatalystModel;
-{
-}
+
+
 
 use strict;
 use warnings;

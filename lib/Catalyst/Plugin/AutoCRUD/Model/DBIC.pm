@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::DBIC;
-{
-}
+
+
 
 use strict;
 use warnings;

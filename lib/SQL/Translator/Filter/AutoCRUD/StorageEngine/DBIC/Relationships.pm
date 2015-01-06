@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::Relationships;
-{
-}
+
+
 
 use strict;
 use warnings;

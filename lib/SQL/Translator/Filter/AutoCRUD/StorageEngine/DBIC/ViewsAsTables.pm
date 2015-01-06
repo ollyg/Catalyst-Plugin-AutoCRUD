@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::StorageEngine::DBIC::ViewsAsTables;
-{
-}
+
+
 
 # SQLT doesn't provide for proper Field objects in Views
 # instead, there is simply an ordered list of field names.

@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::Static;
-{
-}
+
+
 
 use strict;
 use warnings;

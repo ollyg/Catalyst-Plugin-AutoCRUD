@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::View::TT;
-{
-}
+
+
 
 use strict;
 use warnings;

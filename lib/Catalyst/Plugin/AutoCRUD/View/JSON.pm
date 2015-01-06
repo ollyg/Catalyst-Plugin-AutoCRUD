@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::View::JSON;
-{
-}
+
+
 
 use strict;
 use warnings;

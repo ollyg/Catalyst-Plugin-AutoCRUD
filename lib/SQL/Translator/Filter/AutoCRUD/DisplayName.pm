@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::DisplayName;
-{
-}
+
+
 
 use strict;
 use warnings;

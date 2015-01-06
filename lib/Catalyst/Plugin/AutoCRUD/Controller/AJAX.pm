@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::AJAX;
-{
-}
+
+
 
 use strict;
 use warnings;

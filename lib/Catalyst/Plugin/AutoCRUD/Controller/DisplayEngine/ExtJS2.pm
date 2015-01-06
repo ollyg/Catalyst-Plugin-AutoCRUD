@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::ExtJS2;
-{
-}
+
+
 
 use strict;
 use warnings;
