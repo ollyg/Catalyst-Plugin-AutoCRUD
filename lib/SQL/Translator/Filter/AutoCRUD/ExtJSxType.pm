@@ -9,9 +9,12 @@ my %xtype_for = (
     boolean => 'checkbox',
 );
 
-$xtype_for{$_} = 'numberfield' for (
+$xtype_for{$_} = 'textfield' for (
     'bigint',
     'bigserial',
+);
+
+$xtype_for{$_} = 'numberfield' for (
     'dec',
     'decimal',
     'double precision',
