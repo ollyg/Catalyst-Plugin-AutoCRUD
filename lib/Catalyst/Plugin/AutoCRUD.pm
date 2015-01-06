@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD;
 {
-  $Catalyst::Plugin::AutoCRUD::VERSION = '2.143070';
+  $Catalyst::Plugin::AutoCRUD::VERSION = '2.200000';
 }
 
 use strict;
@@ -192,7 +192,19 @@ Catalyst::Plugin::AutoCRUD - Instant AJAX web front-end for DBIx::Class
 
 =head1 VERSION
 
-version 2.143070
+version 2.200000
+
+=head1 STATUS
+
+B<Important Notice>
+
+This distribution is no longer under active maintenance.  The status of
+AutoCRUD is now "pull-request" only, meaning there will only be updates when
+the author receives a patch or pull request (via Github).
+
+You are recommended to take a look at the excellent L<RapidApp> distributiuon
+and in particular the L<rdbic.pl> script which can do the same thing as
+AutoCRUD (only better, and maintained).
 
 =head1 PURPOSE
 
@@ -909,7 +921,7 @@ Oliver Gorwits <oliver@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by Oliver Gorwits.
+This software is copyright (c) 2015 by Oliver Gorwits.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
