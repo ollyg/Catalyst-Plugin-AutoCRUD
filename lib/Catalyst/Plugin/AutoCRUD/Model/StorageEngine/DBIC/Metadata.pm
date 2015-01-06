@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::Metadata;
-
-
+{
+}
 
 use strict;
 use warnings;

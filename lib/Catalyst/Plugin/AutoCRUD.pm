@@ -1,7 +1,7 @@
 package Catalyst::Plugin::AutoCRUD;
-
+{
   $Catalyst::Plugin::AutoCRUD::VERSION = '2.200000';
-
+}
 
 use strict;
 use warnings;

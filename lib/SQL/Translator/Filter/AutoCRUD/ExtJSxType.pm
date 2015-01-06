@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::ExtJSxType;
-
-
+{
+}
 
 use strict;
 use warnings;

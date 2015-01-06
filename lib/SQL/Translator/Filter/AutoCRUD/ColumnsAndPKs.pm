@@ -1,6 +1,6 @@
 package SQL::Translator::Filter::AutoCRUD::ColumnsAndPKs;
-
-
+{
+}
 
 use strict;
 use warnings;

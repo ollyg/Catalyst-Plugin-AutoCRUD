@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Controller::DisplayEngine::Skinny;
-
-
+{
+}
 
 use strict;
 use warnings;

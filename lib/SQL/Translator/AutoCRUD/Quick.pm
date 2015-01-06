@@ -1,6 +1,6 @@
 package SQL::Translator::AutoCRUD::Quick;
-
-
+{
+}
 
 use strict;
 use warnings;

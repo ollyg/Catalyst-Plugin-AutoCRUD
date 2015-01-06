@@ -1,6 +1,6 @@
 package Catalyst::Plugin::AutoCRUD::Model::StorageEngine::DBIC::CRUD;
-
-
+{
+}
 
 use strict;
 use warnings;
