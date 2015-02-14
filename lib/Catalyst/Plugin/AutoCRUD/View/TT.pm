@@ -31,7 +31,7 @@ sub process {
     # this is done to cope with users of RenderView who have not set
     # default_view, meaning $c->view ends here by mistake
 
-    if (!exists $c->{stash}->{current_view}) {
+    if (!exists $c->stash->{current_view}) {
         my @views = grep {$_ !~ m/^AutoCRUD::/} $c->views;
         scalar @views || die "View::AutoCRUD::TT called, but not by CPAC.\n";
         $c->forward( $c->view( $views[0] ) );
