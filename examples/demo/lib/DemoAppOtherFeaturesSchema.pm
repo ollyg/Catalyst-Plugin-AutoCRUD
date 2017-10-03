@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

@@ -1,4 +1,5 @@
-package DemoAppMusicSchema::Result::AlbumArtist;
+package # hide from PAUSE
+    DemoAppMusicSchema::Result::AlbumArtist;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

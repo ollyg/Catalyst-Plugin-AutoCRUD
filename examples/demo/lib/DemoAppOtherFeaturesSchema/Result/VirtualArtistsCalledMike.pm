@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::VirtualArtistsCalledMike;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema::Result::VirtualArtistsCalledMike;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

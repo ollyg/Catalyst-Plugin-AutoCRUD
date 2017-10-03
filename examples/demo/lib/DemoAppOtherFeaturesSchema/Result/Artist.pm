@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::Artist;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema::Result::Artist;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

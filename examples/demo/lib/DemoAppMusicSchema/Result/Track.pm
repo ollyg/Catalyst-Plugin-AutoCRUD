@@ -1,4 +1,5 @@
-package DemoAppMusicSchema::Result::Track;
+package # hide from PAUSE
+    DemoAppMusicSchema::Result::Track;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

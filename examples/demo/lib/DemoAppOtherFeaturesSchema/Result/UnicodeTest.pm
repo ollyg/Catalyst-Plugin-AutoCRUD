@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::UnicodeTest;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema::Result::UnicodeTest;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

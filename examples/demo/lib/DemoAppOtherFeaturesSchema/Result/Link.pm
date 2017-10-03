@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::Link;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema::Result::Link;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

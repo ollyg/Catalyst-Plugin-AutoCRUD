@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::Twokey;
+    DemoAppOtherFeaturesSchema::Result::Twokey;
+package # hide from PAUSE
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::BookmarkWithLinkProxy;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema::Result::BookmarkWithLinkProxy;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
