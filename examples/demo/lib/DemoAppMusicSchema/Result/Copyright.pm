@@ -1,4 +1,5 @@
-package DemoAppMusicSchema::Result::Copyright;
+package # hide from PAUSE
+    DemoAppMusicSchema::Result::Copyright;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

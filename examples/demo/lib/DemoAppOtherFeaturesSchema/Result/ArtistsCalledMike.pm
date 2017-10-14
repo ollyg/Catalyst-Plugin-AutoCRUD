@@ -1,4 +1,5 @@
-package DemoAppOtherFeaturesSchema::Result::ArtistsCalledMike;
+package # hide from PAUSE
+    DemoAppOtherFeaturesSchema::Result::ArtistsCalledMike;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
